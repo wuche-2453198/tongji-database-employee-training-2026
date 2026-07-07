@@ -1,0 +1,73 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor and IDE
+.vscode/
+.idea/
+.vs/
+.obsidian/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# .NET
+bin/
+obj/
+TestResults/
+*.nupkg
+*.snupkg
+*.dll
+*.pdb
+*.cache
+*.trx
+
+# ASP.NET local configuration
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
+
+# Node / frontend
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.nuxt/
+.next/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Database and local exports
+*.dmp
+*.dump
+*.bak
+*.backup
+*.sqlplan
+*.sqlite
+*.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+
+# Local tool files
+.history/
+.ionide/
