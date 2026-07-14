@@ -11,16 +11,26 @@ This directory manages the deployment, lifecycle initialization, and seed data f
 > Note: Not the default 1521. Dynamically assigned by the setup assistant.
 * **Global Container Database (CDB):** `FREE`
 * **Pluggable Database (PDB):** **`FREEPDB1`** (Target for all application data)
+* **CPU & Memory**: `2 vCPUs 4 GiB`
+* **Public IP （公网IP）**: `47.100.108.150`
+* **Primary Private IP Address （主私网IP）** : `172.28.175.23`
 
 ---
 
 ## 2. Database Accounts & Test Credentials
-To simplify backend integration testing, use the following designated test environment credentials to connect:
+Use the following designated test environment credentials to connect:
 
 | Account Name | Password | Role / Intent |
 | :--- | :--- | :--- |
 | **`TRAINING_OWNER`** | `Owner_Password_2026#` | Schema Owner. Used exclusively by migrations to manage structures, indexes, and grants. |
 | **`TRAINING_APP`** | `App_Runtime_2026#` | Application User. Used securely by the C# Web API for runtime DML operations. |
+
+Example command to run:
+```
+sqlplus TRAINING_OWNER/Owner_Password_2026#@//localhost:1539/FREEPDB1.localdomain
+```
+
+
 
 > ⚠️ **Crucial Runtime Rule:** Upon opening a connection instance, the C# application data access layer must immediately execute the following session context command:
 > ```sql
