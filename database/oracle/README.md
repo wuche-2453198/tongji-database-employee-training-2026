@@ -1,6 +1,7 @@
 # Oracle Database README
 
 This directory manages the deployment, lifecycle initialization, and seed data for the 13 core business tables.
+Maintained by 2350439 钮培源
 
 ## 1. Environment Configurations
 * **Cloud Platform:** AliCloud ECS
@@ -65,23 +66,30 @@ database/oracle/
 
 > Migrations (V001 - V003) loaded, ECS & oracle fundamentals configured.
 
-Proposed Task Board Changes:
+#### Proposed Task Board Changes:
 
 P0-08 : Change status to DONE.
-* Evidence: Oracle Free 23ai instance running on AliCloud Linux 4 (47.100.108.150:1539/FREEPDB1), with separate TRAINING_OWNER and TRAINING_APP schemas successfully initialized. 
-
 P0-11 : Change status to DONE.
-* Evidence: 13 core database tables, query indexes, and minimal application DML permission rules successfully compiled and verified through the terminal. 
 
-Proposed Risk Ledger changes:
+#### Proposed Risk Ledger changes:
 
 R-001 : Change current status from OPEN to CLOSED. 
 
-* Verification Evidence: Remote connectivity achieved. Hostname loopback resolution and 4GB swap space configured on host. Port 1539 listener verified active and restricted via AliCloud Security Group inbound whitelisting rules.  
-
-Proposed Decision Logs changes:
+#### Proposed Decision Logs changes:
 
 * D-004 : Change status from PROPOSED to ACCEPTED.  
 * D-005: Change status from PROPOSED to ACCEPTED.  
 * D-006 (迁移账号 TRAINING_OWNER / 运行账号 TRAINING_APP): Change status from PROPOSED to ACCEPTED.  
 
+
+### Jun 17
+
+> Seeds (S001 - S003) planted, correctness verified with test commands and the verification query.
+
+#### Proposed Task Board Changes:
+
+* DB-06: Change status to DONE.
+* DB-07: Change status to DONE.
+* T03: Change status to DONE.
+
+> Stage 1 closed with T02 & T03 completed.
