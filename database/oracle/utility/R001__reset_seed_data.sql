@@ -7,6 +7,7 @@
 
 
 -- WARNING:  DESTRUCTIVE. Deletes ALL rows from every business table.
+-- 警告： 仅用作测试。将从所有business table中删除所有行。
 -- =========================================================================
 
 WHENEVER SQLERROR EXIT FAILURE ROLLBACK
