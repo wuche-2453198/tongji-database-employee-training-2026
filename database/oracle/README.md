@@ -44,7 +44,7 @@ sqlplus TRAINING_OWNER/Owner_Password_2026#@//localhost:1539/FREEPDB1.localdomai
 ## 3. Repository Directory Tree
 The database engine workspace is strictly structured as follows:
 
-```text
+```
 database/oracle/
 ├── README.md               # This connection and environment guide
 ├── migrations/             # Version-controlled structural DDL and scripts
@@ -56,13 +56,15 @@ database/oracle/
 │   ├── S002__basic_data.sql
 │   └── S003__demo_flow.sql
 └── samples/                # Sanity checking and validation operations
-    └── S001__verification.sql
+│   └── S001__verification.sql
+└── utility                 # Utility purposes
+    └── R001__reset_seed_data.sql
 ```
 
 
 ## 4. Dev Logs
 
-### Jue 14 
+### Jul 14 
 
 > Migrations (V001 - V003) loaded, ECS & oracle fundamentals configured.
 
@@ -82,7 +84,7 @@ R-001 : Change current status from OPEN to CLOSED.
 * D-006 (迁移账号 TRAINING_OWNER / 运行账号 TRAINING_APP): Change status from PROPOSED to ACCEPTED.  
 
 
-### Jun 17
+### Jul 17
 
 > Seeds (S001 - S003) planted, correctness verified with test commands and the verification query.
 
@@ -93,3 +95,20 @@ R-001 : Change current status from OPEN to CLOSED.
 * T03: Change status to DONE.
 
 > Stage 1 closed with T02 & T03 completed.
+
+
+### Jul 22
+
+> Applied fixes as per instructed. 
+
+> Added comments to enhance readability. 
+
+> Added utility module to store utility files. 
+
+#### Critical Decision Gaps:
+
+* Role code left as `MANAGER`. If the backend uses `DEPT_MANAGER`, S001 and S002's binding would need to be changed together.
+
+* `rdmgr` added as a new account rather than repurposing an existing one.
+
+* `EMPLOYEES.MANAGER_EMP_ID` left `NULL` : Approval routes by role + department. It should be populated iff the backend enforces a direct-manager link.
