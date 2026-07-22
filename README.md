@@ -61,10 +61,10 @@ dotnet run
 - 存活检查：`GET http://localhost:5156/api/health`
 - 数据库检查：`GET http://localhost:5156/api/health/db`
 
-如果使用仓库内置 SDK，可用本机路径执行：
+如果 `dotnet --version` 找不到 .NET 8 SDK，请先安装 .NET 8 SDK，或按本机实际 SDK 路径执行 `dotnet.exe`。
 
 ```powershell
-D:\code\.dotnet-sdk-8\dotnet.exe run --project src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj
+dotnet --version
 ```
 
 ## Oracle 连接说明

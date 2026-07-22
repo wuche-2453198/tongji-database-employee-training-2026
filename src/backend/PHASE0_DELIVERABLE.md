@@ -182,10 +182,11 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 
 ## 9. 验收命令
 
-本机如果没有全局 .NET 8 SDK，可使用本地 SDK：
+本机需要可用的 .NET 8 SDK：
 
 ```powershell
-D:\code\.dotnet-sdk-8\dotnet.exe build src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj
+dotnet --version
+dotnet build src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj
 ```
 
 启动：
