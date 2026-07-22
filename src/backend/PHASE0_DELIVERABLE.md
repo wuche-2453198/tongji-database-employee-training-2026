@@ -28,7 +28,7 @@
 | P0-15 | 明确角色权限初版 | DONE | `RoleCodes`、`PermissionCodes`、README 权限矩阵 |
 | P0-16 | 准备第一批测试账号规划 | DONE | 本地演示账号和远程数据库账号对接说明 |
 | T04 | 创建 C# Web API 项目 | DONE | `src/backend/TrainingManagement.Api` |
-| T05 | 配置 Oracle 连接和健康检查 | READY | `/api/health/db` 已实现；等数据库白名单放行后可真实成功 |
+| T05 | 配置 Oracle 连接和健康检查 | DONE | `/api/health/db` 已真实连接远程 Oracle 并返回成功；`/api/roles` 已验证运行账号可读业务表 |
 | T06 | 登录接口和当前用户接口 | DONE | `/api/auth/login`、`/api/auth/me` |
 
 ## 3. Oracle 对接约定
