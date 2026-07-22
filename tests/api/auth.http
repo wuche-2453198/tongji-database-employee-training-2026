@@ -1,7 +1,16 @@
 @baseUrl = http://localhost:5156
 @token = replace-with-login-token
 
-### Login as admin demo user
+### Login as Oracle seed admin user
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "admin",
+  "password": "Password2026!"
+}
+
+### Login as local fallback admin demo user
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 

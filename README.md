@@ -26,7 +26,7 @@
 | 数据库 | Oracle Database Free 23ai |
 | 数据访问 | Dapper、Oracle.ManagedDataAccess.Core |
 | 接口文档 | Swagger / OpenAPI |
-| 认证 | JWT Bearer |
+| 认证 | JWT Bearer、BCrypt 密码哈希 |
 | 前端 | 待定，统一通过 HTTP API 调用后端 |
 
 ## 目录结构
@@ -93,6 +93,8 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 - PDB 服务名是否为 `FREEPDB1.localdomain`
 - 本地配置中是否填写了正确密码
 
+如果 `/api/health/db` 成功但 Oracle 测试账号登录返回 401，优先核对种子脚本中的 `PASSWORD_HASH` 是否由对应测试密码生成。
+
 ## 认证接口
 
 | 方法 | 路径 | 说明 |
@@ -104,7 +106,16 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 | `GET` | `/api/health` | 后端存活检查 |
 | `GET` | `/api/health/db` | Oracle 连接检查 |
 
-开发环境演示账号：
+Oracle 种子测试账号：
+
+| 登录名 | 密码 | 角色 |
+| --- | --- | --- |
+| `admin` | `Password2026!` | 管理员 |
+| `hr` | `Password2026!` | HR |
+| `manager` | `Password2026!` | 部门主管 |
+| `employee` | `Password2026!` | 员工 |
+
+未配置 Oracle 或数据库连接失败时，开发环境可回退到本地演示账号：
 
 | 账号 | 密码 | 角色 |
 | --- | --- | --- |

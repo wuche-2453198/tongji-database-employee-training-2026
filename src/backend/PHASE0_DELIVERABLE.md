@@ -12,7 +12,7 @@
 - 目标框架使用 .NET 8，项目路径为 `src/backend/TrainingManagement.Api`。
 - Oracle 访问使用 `Oracle.ManagedDataAccess.Core` + Dapper。
 - API 文档使用 Swagger / OpenAPI。
-- 认证方式使用 JWT Bearer。
+- 认证方式使用 JWT Bearer，数据库密码使用 BCrypt 哈希校验。
 - 统一响应通过 `ApiResponse<T>` 和 `PagedResult<T>` 承载。
 - 全局异常由 `ExceptionHandlingMiddleware` 转换为统一错误响应。
 
@@ -22,7 +22,7 @@
 | --- | --- | --- | --- |
 | P0-02 | 决定数据访问方式 | DONE | Dapper + `Oracle.ManagedDataAccess.Core`，Repository 只负责参数化 SQL |
 | P0-11 | 固定后端项目骨架方案 | DONE | `Controllers`、`Services`、`Repositories`、`Dtos`、`Entities`、`Common`、`Middlewares` |
-| P0-12 | 固定 .NET SDK 与依赖包 | DONE | `TrainingManagement.Api.csproj`、`NuGet.config`、后端 README |
+| P0-12 | 固定 .NET SDK 与依赖包 | DONE | `TrainingManagement.Api.csproj`、`NuGet.config`、后端 README、BCrypt 依赖 |
 | P0-13 | 设计统一响应和分页格式 | DONE | `ApiResponse<T>`、`ApiError`、`PagedResult<T>`、统一 401/403/500 响应 |
 | P0-14 | 设计核心状态枚举 | DONE | `Common/Enums` 下的核心枚举 |
 | P0-15 | 明确角色权限初版 | DONE | `RoleCodes`、`PermissionCodes`、README 权限矩阵 |
@@ -150,16 +150,26 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 | `HR` | HR | HR 备案、签到管理、评分复核、测试成绩、证书管理 |
 | `ADMIN` | 管理员 | 员工、部门、黑名单、课程、角色等后台维护 |
 
-数据库里的中文角色名会被后端统一映射为稳定代码：
+数据库里的角色代码或中文角色名会被后端统一映射为稳定代码：
 
 - `员工` -> `EMPLOYEE`
+- `MANAGER` -> `DEPT_MANAGER`
 - `部门主管` -> `DEPT_MANAGER`
 - `HR` -> `HR`
 - `管理员` -> `ADMIN`
 
 ## 8. 测试账号规划
 
-在远程 Oracle 测试账号字段未最终确定前，后端提供本地演示账号用于前端联调。
+远程 Oracle 种子账号由 `origin/npy/oracle` 分支的 `database/oracle/seed/S001__roles_and_accounts.sql` 提供，登录字段为 `EMPLOYEES.LOGIN_NAME`，密码字段为 `EMPLOYEES.PASSWORD_HASH`。
+
+| 登录名 | 密码 | 数据库角色代码 | 后端规范角色 |
+| --- | --- | --- | --- |
+| `admin` | `Password2026!` | `ADMIN` | `ADMIN` |
+| `hr` | `Password2026!` | `HR` | `HR` |
+| `manager` | `Password2026!` | `MANAGER` | `DEPT_MANAGER` |
+| `employee` | `Password2026!` | `EMPLOYEE` | `EMPLOYEE` |
+
+未配置 Oracle 或数据库连接失败时，后端提供本地演示账号用于前端联调。
 
 | 账号 | 密码 | 角色 |
 | --- | --- | --- |

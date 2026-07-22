@@ -23,8 +23,9 @@ public sealed class OracleRoleRepository : IRoleRepository
         const string sql = """
             SELECT
                 r.ROLE_ID AS "RoleId",
+                r.ROLE_CODE AS "RoleCode",
                 r.ROLE_NAME AS "RoleName",
-                r.PERMISSIONS AS "Permissions"
+                NULL AS "Permissions"
             FROM ROLES r
             ORDER BY r.ROLE_ID
             """;

@@ -7,6 +7,7 @@
 - ASP.NET Core Web API，目标框架 `net8.0`
 - Swagger / OpenAPI
 - JWT Bearer 认证
+- BCrypt 密码哈希校验
 - Dapper + `Oracle.ManagedDataAccess.Core`
 
 ## 目录结构
@@ -87,6 +88,8 @@ GET /api/health/db
 
 如果本地或部署服务器没有被数据库负责人加入白名单，`/api/health/db` 会失败，这是网络权限问题，不是后端代码问题。开发后端前需要向数据库负责人提供当前后端出口 IP。
 
+如果 `/api/health/db` 成功但 Oracle 测试账号登录返回 401，优先核对种子脚本中的 `PASSWORD_HASH` 是否由对应测试密码生成。
+
 ## 认证接口
 
 | 方法 | 路径 | 说明 |
@@ -102,16 +105,29 @@ GET /api/health/db
 
 ```json
 {
-  "identifier": "admin@example.com",
-  "password": "123456"
+  "identifier": "admin",
+  "password": "Password2026!"
 }
 ```
 
-`identifier` 支持员工编号、邮箱、手机号或姓名。
+`identifier` 支持员工编号、登录名、邮箱、手机号或姓名。
 
-## 开发环境演示账号
+## Oracle 种子测试账号
 
-当前数据库设计文档的 `EMPLOYEES` 表尚未定义密码字段，因此开发环境提供本地演示账号，便于前端先联调登录态和权限菜单。
+`origin/npy/oracle` 分支已经将登录字段固定在 `EMPLOYEES.LOGIN_NAME` 和 `EMPLOYEES.PASSWORD_HASH`，密码使用 BCrypt 哈希保存。远程 Oracle 种子脚本提供四类测试账号：
+
+| 登录名 | 密码 | 数据库角色代码 | 后端规范角色 |
+| --- | --- | --- | --- |
+| `admin` | `Password2026!` | `ADMIN` | `ADMIN` |
+| `hr` | `Password2026!` | `HR` | `HR` |
+| `manager` | `Password2026!` | `MANAGER` | `DEPT_MANAGER` |
+| `employee` | `Password2026!` | `EMPLOYEE` | `EMPLOYEE` |
+
+数据库中部门主管角色代码暂为 `MANAGER`，后端会统一归一化为 `DEPT_MANAGER` 写入 JWT 和接口响应。
+
+## 本地演示账号
+
+未配置 Oracle 或数据库连接失败时，开发环境提供本地演示账号，便于前端先联调登录态和权限菜单。
 
 | 账号 | 密码 | 角色 |
 | --- | --- | --- |
@@ -120,7 +136,7 @@ GET /api/health/db
 | `manager@example.com` | `123456` | `DEPT_MANAGER` |
 | `employee@example.com` | `123456` | `EMPLOYEE` |
 
-连接 Oracle 后，登录会优先读取 `EMPLOYEES`、`USER_ROLES`、`ROLES`。在数据库密码字段确定前，Oracle 员工登录临时使用 `Auth:DatabaseDemoPassword`。
+连接 Oracle 后，登录会优先读取 `EMPLOYEES`、`USER_ROLES`、`ROLES`，并使用 BCrypt 校验 `PASSWORD_HASH`。
 
 ## 角色权限初版
 
@@ -131,7 +147,7 @@ GET /api/health/db
 | `HR` | HR | HR 备案、签到管理、评分复核、测试成绩、证书管理 |
 | `ADMIN` | 管理员 | 员工、部门、黑名单、课程、角色等后台维护 |
 
-数据库里角色名可以使用中文：员工、部门主管、HR、管理员。后端会统一映射成稳定角色代码写入 JWT。
+数据库里角色代码或角色名可以使用 `EMPLOYEE`、`MANAGER`、`HR`、`ADMIN` 或中文名。后端会统一映射成稳定角色代码写入 JWT，其中 `MANAGER` 会归一化为 `DEPT_MANAGER`。
 
 ## 统一响应
 
@@ -159,6 +175,5 @@ GET /api/health/db
 
 ## 后续对接事项
 
-- 数据库负责人需要确认 `EMPLOYEES` 是否增加密码哈希字段，或单独建立账号表。
-- 种子数据需要包含四类测试账号及 `ROLES.PERMISSIONS`。
+- 若数据库负责人后续决定把 `MANAGER` 改名为 `DEPT_MANAGER`，需要同步更新种子脚本和前端权限判断。
 - 生产环境应关闭本地演示账号，并使用强 JWT 签名密钥。

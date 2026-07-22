@@ -31,15 +31,19 @@ public sealed class OracleAuthRepository : IAuthRepository
             FROM (
                 SELECT
                     e.EMP_ID AS "EmpId",
+                    e.LOGIN_NAME AS "LoginName",
+                    e.PASSWORD_HASH AS "PasswordHash",
                     e.EMP_NAME AS "EmpName",
-                    e.DEPT_NAME AS "DeptName",
+                    d.DEPT_NAME AS "DeptName",
                     e.POSITION AS "Position",
                     e.EMAIL AS "Email",
                     e.PHONE AS "Phone",
                     e.STATUS AS "Status",
-                    e.CREATED_DATE AS "CreatedDate"
+                    e.CREATED_AT AS "CreatedAt"
                 FROM EMPLOYEES e
+                LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
                 WHERE (:EmpId IS NOT NULL AND e.EMP_ID = :EmpId)
+                   OR LOWER(e.LOGIN_NAME) = LOWER(:Identifier)
                    OR LOWER(e.EMAIL) = LOWER(:Identifier)
                    OR e.PHONE = :Identifier
                    OR e.EMP_NAME = :Identifier
@@ -67,14 +71,17 @@ public sealed class OracleAuthRepository : IAuthRepository
         const string sql = """
             SELECT
                 e.EMP_ID AS "EmpId",
+                e.LOGIN_NAME AS "LoginName",
+                e.PASSWORD_HASH AS "PasswordHash",
                 e.EMP_NAME AS "EmpName",
-                e.DEPT_NAME AS "DeptName",
+                d.DEPT_NAME AS "DeptName",
                 e.POSITION AS "Position",
                 e.EMAIL AS "Email",
                 e.PHONE AS "Phone",
                 e.STATUS AS "Status",
-                e.CREATED_DATE AS "CreatedDate"
+                e.CREATED_AT AS "CreatedAt"
             FROM EMPLOYEES e
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
             WHERE e.EMP_ID = :EmpId
             """;
 
@@ -98,8 +105,9 @@ public sealed class OracleAuthRepository : IAuthRepository
         const string sql = """
             SELECT
                 r.ROLE_ID AS "RoleId",
+                r.ROLE_CODE AS "RoleCode",
                 r.ROLE_NAME AS "RoleName",
-                r.PERMISSIONS AS "Permissions"
+                NULL AS "Permissions"
             FROM USER_ROLES ur
             INNER JOIN ROLES r ON r.ROLE_ID = ur.ROLE_ID
             WHERE ur.EMP_ID = :EmpId

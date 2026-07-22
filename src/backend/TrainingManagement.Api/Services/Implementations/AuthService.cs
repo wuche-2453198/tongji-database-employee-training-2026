@@ -107,7 +107,7 @@ public sealed class AuthService : IAuthService
                 return null;
             }
 
-            if (!string.Equals(password, _authOptions.DatabaseDemoPassword, StringComparison.Ordinal))
+            if (!VerifyPassword(password, employee.PasswordHash))
             {
                 throw new UnauthorizedApiException("Invalid identifier or password.");
             }
@@ -134,6 +134,23 @@ public sealed class AuthService : IAuthService
     {
         return _authOptions.EnableLocalDemoUsers
             && _authOptions.FallbackToLocalUsersOnDatabaseFailure;
+    }
+
+    private static bool VerifyPassword(string password, string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            return false;
+        }
+
+        try
+        {
+            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
+        }
+        catch (BCrypt.Net.SaltParseException)
+        {
+            return false;
+        }
     }
 
     private AuthUserResponse? FindLocalDemoUser(string identifier, string password)
@@ -197,7 +214,9 @@ public sealed class AuthService : IAuthService
 
     private static AuthRoleResponse ToAuthRoleResponse(RoleRecord role)
     {
-        var roleCode = RoleCodes.Normalize(role.RoleName);
+        var roleCode = RoleCodes.Normalize(string.IsNullOrWhiteSpace(role.RoleCode)
+            ? role.RoleName
+            : role.RoleCode);
 
         return new AuthRoleResponse
         {

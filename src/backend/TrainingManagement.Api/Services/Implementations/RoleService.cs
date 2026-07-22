@@ -35,7 +35,9 @@ public sealed class RoleService : IRoleService
 
     private static RoleResponse ToRoleResponse(RoleRecord role)
     {
-        var roleCode = RoleCodes.Normalize(role.RoleName);
+        var roleCode = RoleCodes.Normalize(string.IsNullOrWhiteSpace(role.RoleCode)
+            ? role.RoleName
+            : role.RoleCode);
 
         return new RoleResponse
         {

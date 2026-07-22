@@ -4,6 +4,10 @@ public sealed class EmployeeAuthRecord
 {
     public long EmpId { get; init; }
 
+    public string LoginName { get; init; } = string.Empty;
+
+    public string PasswordHash { get; init; } = string.Empty;
+
     public string EmpName { get; init; } = string.Empty;
 
     public string? DeptName { get; init; }
@@ -16,5 +20,5 @@ public sealed class EmployeeAuthRecord
 
     public string? Status { get; init; }
 
-    public DateTime? CreatedDate { get; init; }
+    public DateTime? CreatedAt { get; init; }
 }

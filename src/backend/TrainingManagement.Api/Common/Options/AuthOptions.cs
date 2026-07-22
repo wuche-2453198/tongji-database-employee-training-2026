@@ -8,8 +8,6 @@ public sealed class AuthOptions
 
     public bool FallbackToLocalUsersOnDatabaseFailure { get; init; } = true;
 
-    public string DatabaseDemoPassword { get; init; } = "123456";
-
     public string LocalDemoPassword { get; init; } = "123456";
 
     public IReadOnlyCollection<LocalDemoUserOptions> LocalDemoUsers { get; init; } =
