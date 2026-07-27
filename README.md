@@ -1,22 +1,31 @@
-# 员工培训管理系统
+# 企业内部培训管理系统
 
-同济数据库课程设计项目：基于 B/S 架构的员工培训管理系统。系统面向企业内部培训流程，覆盖员工与部门基础信息、培训课程、培训申请审批、报名签到、测试评分、证书与培训记录等业务。
+同济大学数据库课程设计项目，目标是在 15 个工作日内交付一个可部署、可演示、可恢复数据的企业内部培训管理系统。系统覆盖员工组织、课程培训、申请审批、报名签到、成果评估和证书记录等内部培训流程。
 
-## 项目状态
+当前状态：第 0 阶段准备与最小链路验证中。此阶段冻结技术、数据、接口和协作边界，不将未验证的业务功能合入集成线。
 
-当前处于第 0 阶段，重点是统一技术路线、目录结构、数据库连接方式、后端工程骨架、认证模块和接口规范。
+## 文档入口
 
-已完成的后端基础内容：
+- [文档中心](document/README.md)：按项目管理、技术设计、质量交付分类的唯一入口。
+- [项目执行与人员分工](document/01-项目管理/项目执行与人员分工.md)：十人职责、依赖、排程和第 0 阶段清单。
+- [第 0 阶段任务看板](document/01-项目管理/第0阶段任务看板.md)：阶段任务状态和完成证据。
+- [技术架构与开发规范](document/02-技术设计/技术架构与开发规范.md)：技术栈、API、代码、前端、Git 和安全规则。
+- [Oracle 数据库设计与 DDL](document/02-技术设计/Oracle数据库设计与DDL.md)：13 张表、迁移顺序、约束和种子规范。
+- [测试联调与发布验收](document/03-质量交付/测试联调与发布验收.md)：模块 DoD、联调、缺陷和发布门禁。
 
-- ASP.NET Core Web API 工程骨架
-- Swagger / OpenAPI 文档入口
-- JWT Bearer 认证基础设施
-- 统一响应、分页、异常处理和核心状态枚举
-- Oracle 连接工厂与数据库健康检查
-- 登录、当前用户、角色查询接口
-- 后端 README、阶段交付说明和 HTTP 测试脚本
+## 仓库结构
 
-后端第 0 阶段详细交付见 [src/backend/PHASE0_DELIVERABLE.md](src/backend/PHASE0_DELIVERABLE.md)。
+```text
+src/backend/                 ASP.NET Core API（王天宇协调）
+src/frontend/                Vue 3 前端（李司翰协调）
+database/oracle/             Oracle 迁移、种子、验证（钮培源）
+tests/backend/               后端测试
+tests/api/                   HTTP 主流程和失败用例（彭浩协调）
+scripts/dev/                 本地开发辅助脚本
+scripts/deploy/              部署和验证辅助脚本
+tools/postman/               Postman/Apifox 导出文件
+document/                    项目执行资料
+```
 
 ## 技术栈
 
@@ -27,26 +36,11 @@
 | 数据访问 | Dapper、Oracle.ManagedDataAccess.Core |
 | 接口文档 | Swagger / OpenAPI |
 | 认证 | JWT Bearer、BCrypt 密码哈希 |
-| 前端 | 待定，统一通过 HTTP API 调用后端 |
-
-## 目录结构
-
-```text
-tongji-database-employee-training-2026/
-├── document/                  # 项目分工、开发规范、阶段目标、目录结构说明
-├── src/
-│   └── backend/               # 后端源码与后端模块说明
-├── tests/
-│   └── api/                   # HTTP 接口测试脚本
-├── NuGet.config               # .NET 包源配置
-└── README.md                  # 项目总入口
-```
-
-完整目录规划见 [document/仓库目录结构.md](document/仓库目录结构.md)。
+| 前端 | Vue 3，统一通过 HTTP API 调用后端 |
 
 ## 后端快速启动
 
-本机需要安装 .NET 8 SDK。仓库中已提供后端项目：
+本机需要安装 .NET 8 SDK。后端项目位于 `src/backend/TrainingManagement.Api`。
 
 ```powershell
 cd src/backend/TrainingManagement.Api
@@ -63,22 +57,16 @@ dotnet run
 
 如果 `dotnet --version` 找不到 .NET 8 SDK，请先安装 .NET 8 SDK，或按本机实际 SDK 路径执行 `dotnet.exe`。
 
-```powershell
-dotnet --version
-```
-
 ## Oracle 连接说明
 
-数据库连接信息以数据库负责人维护的 `database/oracle/README.md` 为准。后端当前使用 Oracle PDB `FREEPDB1.localdomain`，端口是 `1539`，不是 Oracle 默认端口 `1521`。
+数据库连接信息以 [database/oracle/README.md](database/oracle/README.md) 为准。当前测试库要点：
 
-仓库不提交真实数据库密码。开发时复制示例配置：
+- Oracle 端口：`1539`，不是默认的 `1521`
+- PDB 服务名：`FREEPDB1.localdomain`
+- 后端运行账号：`TRAINING_APP`
+- 业务表 Owner：`TRAINING_OWNER`
 
-```powershell
-cd src/backend/TrainingManagement.Api
-copy appsettings.Local.example.json appsettings.Local.json
-```
-
-然后在 `appsettings.Local.json` 中填写本地数据库连接串。该文件已被 `.gitignore` 忽略，不应提交。
+仓库不提交真实数据库密码。开发时复制 `src/backend/TrainingManagement.Api/appsettings.Local.example.json` 为未提交的 `appsettings.Local.json`，或使用环境变量配置连接串和 JWT 签名密钥。
 
 后端每次打开 Oracle 连接后会自动执行：
 
@@ -86,21 +74,11 @@ copy appsettings.Local.example.json appsettings.Local.json
 ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 ```
 
-如果 `/api/health/db` 返回连接失败，优先检查：
-
-- 当前机器或后端服务器出口 IP 是否已加入数据库白名单
-- Oracle 端口是否使用 `1539`
-- PDB 服务名是否为 `FREEPDB1.localdomain`
-- 本地配置中是否填写了正确密码
-
-如果 `/api/health/db` 成功但 Oracle 测试账号登录返回 401，优先核对种子脚本中的 `PASSWORD_HASH` 是否由对应测试密码生成。
-
 ## 认证接口
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | `POST` | `/api/auth/login` | 登录并返回 JWT |
-| `POST` | `/api/auth/logout` | 退出登录 |
 | `GET` | `/api/auth/me` | 获取当前登录用户、角色和权限 |
 | `GET` | `/api/roles` | 获取角色列表，仅管理员可访问 |
 | `GET` | `/api/health` | 后端存活检查 |
@@ -110,52 +88,21 @@ Oracle 种子测试账号：
 
 | 登录名 | 密码 | 角色 |
 | --- | --- | --- |
-| `admin` | `Password2026!` | 管理员 |
-| `hr` | `Password2026!` | HR |
-| `manager` | `Password2026!` | 部门主管 |
-| `employee` | `Password2026!` | 员工 |
+| `admin` | `Password2026!` | `ADMIN` |
+| `hr` | `Password2026!` | `HR` |
+| `manager` | `Password2026!` | `DEPT_MANAGER` |
+| `employee` | `Password2026!` | `EMPLOYEE` |
 
-未配置 Oracle 或数据库连接失败时，开发环境可回退到本地演示账号：
+数据库中部门主管角色代码为 `MANAGER`，后端统一归一化为 `DEPT_MANAGER` 写入 JWT 和接口响应。
 
-| 账号 | 密码 | 角色 |
-| --- | --- | --- |
-| `admin@example.com` | `123456` | 管理员 |
-| `hr@example.com` | `123456` | HR |
-| `manager@example.com` | `123456` | 部门主管 |
-| `employee@example.com` | `123456` | 员工 |
+开发环境可显式开启本地演示账号，用于 Oracle 不可用时的登录页联调；默认生产配置关闭本地演示账号。
 
-更多后端接口和响应格式见 [src/backend/README.md](src/backend/README.md)。
+## 协作规则
 
-## 接口测试
+- `main` 只保留可演示版本，`develop` 作为日常集成线，个人工作使用 `feature/{module}-{topic}`。
+- 业务开发必须在 DDL、状态枚举、角色权限和 OpenAPI v0.1 评审通过后开始。
+- 所有数据库变更必须提交迁移脚本；前端不得直连 Oracle。
+- 不提交真实密码、私钥、Token、连接串、构建产物或个人本地配置。
+- PR 合并前执行 `./scripts/verify-project-structure.sh`，并满足对应模块的测试和审查要求。
 
-HTTP 测试脚本位于 [tests/api](tests/api)：
-
-- [tests/api/health.http](tests/api/health.http)
-- [tests/api/auth.http](tests/api/auth.http)
-
-可以使用 JetBrains Rider、Visual Studio Code REST Client 插件或其他 HTTP 客户端执行。
-
-## 协作规范入口
-
-| 文档 | 内容 |
-| --- | --- |
-| [document/项目分工计划.md](document/项目分工计划.md) | 成员职责与模块分工 |
-| [document/项目开发规范.md](document/项目开发规范.md) | 分支、提交、接口、命名和安全规范 |
-| [document/第0阶段详细目标.md](document/第0阶段详细目标.md) | 第 0 阶段任务与验收标准 |
-| [document/仓库目录结构.md](document/仓库目录结构.md) | 仓库目录边界和 README 维护方式 |
-
-## 提交注意事项
-
-不要提交以下内容：
-
-- 真实数据库密码、云服务器账号、SSH 私钥
-- `appsettings.Local.json`
-- `bin/`、`obj/`、`dist/`、`node_modules/`
-- IDE 缓存、临时日志和个人数据库客户端配置
-
-提交前建议至少执行：
-
-```powershell
-dotnet build src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj
-git status --short --ignored
-```
+具体启动顺序以 [第 0 阶段任务看板](document/01-项目管理/第0阶段任务看板.md) 为准。

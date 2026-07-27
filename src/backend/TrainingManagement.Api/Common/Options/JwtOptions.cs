@@ -8,7 +8,7 @@ public sealed class JwtOptions
 
     public string Audience { get; init; } = "TrainingManagement.Web";
 
-    public string SigningKey { get; init; } = "dev-only-training-management-signing-key-change-me";
+    public string SigningKey { get; init; } = string.Empty;
 
     public int ExpireMinutes { get; init; } = 120;
 }

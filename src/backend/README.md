@@ -1,6 +1,12 @@
-# 后端基础架构与认证模块
+# 后端入口
 
-第 0 阶段交付详情见 `src/backend/PHASE0_DELIVERABLE.md`。
+维护协调人：王天宇。
+
+第 0 阶段交付：`.NET 8` Web API 工程、Swagger、Dapper Oracle 连接、统一响应/错误/分页、JWT 认证、角色策略、`/api/health`、`/api/health/db` 和一个可复用的模块模板。
+
+实现规范见 [技术架构与开发规范](../../document/02-技术设计/技术架构与开发规范.md)。数据库连接、Schema 和迁移顺序见 [Oracle 数据库设计与 DDL](../../document/02-技术设计/Oracle数据库设计与DDL.md)。
+
+业务模块不得在此目录外散落 Controller、Service、Repository 或 DTO。真实连接串和 JWT 密钥必须从环境变量或不入库的本地配置读取。
 
 ## 技术栈
 
@@ -43,18 +49,9 @@ dotnet run
 - API: `http://localhost:5156`
 - Swagger: `http://localhost:5156/swagger`
 
-## Oracle 连接配置
+## 配置
 
-数据库连接信息以 `origin/npy/oracle` 分支的 `database/oracle/README.md` 为准。当前测试库要点：
-
-- 公网地址：`47.100.108.150`
-- Oracle 端口：`1539`，不是默认的 `1521`
-- PDB 服务名：`FREEPDB1.localdomain`
-- 后端运行账号：`TRAINING_APP`
-- 业务表 Owner：`TRAINING_OWNER`
-- 云服务器安全组只放行数据库负责人允许的后端 IP
-
-仓库不提交真实数据库密码。开发时可以复制 `appsettings.Local.example.json` 为未提交的 `appsettings.Local.json`，或使用环境变量配置：
+仓库不提交真实数据库密码和生产 JWT 签名密钥。开发时可以复制 `appsettings.Local.example.json` 为未提交的 `appsettings.Local.json`，或使用环境变量配置：
 
 ```json
 {
@@ -63,16 +60,32 @@ dotnet run
   },
   "Oracle": {
     "CurrentSchema": "TRAINING_OWNER"
+  },
+  "Jwt": {
+    "SigningKey": "replace-with-at-least-32-byte-local-signing-key"
   }
 }
 ```
 
-也可以使用环境变量：
+环境变量示例：
 
 ```powershell
 $env:ConnectionStrings__OracleDb="User Id=TRAINING_APP;Password=***;Data Source=47.100.108.150:1539/FREEPDB1.localdomain"
 $env:Oracle__CurrentSchema="TRAINING_OWNER"
+$env:Jwt__SigningKey="replace-with-at-least-32-byte-runtime-signing-key"
 ```
+
+非开发环境中，如果 `Jwt:SigningKey` 为空或仍为开发默认值，应用会启动失败。开发环境的本地演示账号只在 `appsettings.Development.json` 中开启；主配置默认关闭。
+
+## Oracle 连接配置
+
+数据库连接信息以 `database/oracle/README.md` 为准。当前测试库要点：
+
+- Oracle 端口：`1539`，不是默认的 `1521`
+- PDB 服务名：`FREEPDB1.localdomain`
+- 后端运行账号：`TRAINING_APP`
+- 业务表 Owner：`TRAINING_OWNER`
+- 云服务器安全组只放行数据库负责人允许的后端 IP
 
 后端打开 Oracle 连接后会自动执行：
 
@@ -86,16 +99,13 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 GET /api/health/db
 ```
 
-如果本地或部署服务器没有被数据库负责人加入白名单，`/api/health/db` 会失败，这是网络权限问题，不是后端代码问题。开发后端前需要向数据库负责人提供当前后端出口 IP。
-
-如果 `/api/health/db` 成功但 Oracle 测试账号登录返回 401，优先核对种子脚本中的 `PASSWORD_HASH` 是否由对应测试密码生成。
+如果本地或部署服务器没有被数据库负责人加入白名单，`/api/health/db` 会失败，这是网络权限问题，不是后端代码问题。
 
 ## 认证接口
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | `POST` | `/api/auth/login` | 登录，返回用户信息和 JWT |
-| `POST` | `/api/auth/logout` | 退出登录，JWT 模式下返回成功即可 |
 | `GET` | `/api/auth/me` | 获取当前登录用户、角色和权限 |
 | `GET` | `/api/roles` | 查询角色列表，仅管理员可访问 |
 | `GET` | `/api/health` | 后端存活检查 |
@@ -114,7 +124,7 @@ GET /api/health/db
 
 ## Oracle 种子测试账号
 
-`origin/npy/oracle` 分支已经将登录字段固定在 `EMPLOYEES.LOGIN_NAME` 和 `EMPLOYEES.PASSWORD_HASH`，密码使用 BCrypt 哈希保存。远程 Oracle 种子脚本提供四类测试账号：
+数据库登录字段为 `EMPLOYEES.LOGIN_NAME` 和 `EMPLOYEES.PASSWORD_HASH`，密码使用 BCrypt 哈希保存。
 
 | 登录名 | 密码 | 数据库角色代码 | 后端规范角色 |
 | --- | --- | --- | --- |
@@ -123,11 +133,11 @@ GET /api/health/db
 | `manager` | `Password2026!` | `MANAGER` | `DEPT_MANAGER` |
 | `employee` | `Password2026!` | `EMPLOYEE` | `EMPLOYEE` |
 
-数据库中部门主管角色代码暂为 `MANAGER`，后端会统一归一化为 `DEPT_MANAGER` 写入 JWT 和接口响应。
+数据库中部门主管角色代码为 `MANAGER`，后端会统一归一化为 `DEPT_MANAGER` 写入 JWT 和接口响应。
 
 ## 本地演示账号
 
-未配置 Oracle 或数据库连接失败时，开发环境提供本地演示账号，便于前端先联调登录态和权限菜单。
+本地演示账号仅用于开发环境或显式开启配置时的联调。主配置默认关闭，避免数据库正常但查不到用户时误登录演示账号。
 
 | 账号 | 密码 | 角色 |
 | --- | --- | --- |
@@ -135,19 +145,6 @@ GET /api/health/db
 | `hr@example.com` | `123456` | `HR` |
 | `manager@example.com` | `123456` | `DEPT_MANAGER` |
 | `employee@example.com` | `123456` | `EMPLOYEE` |
-
-连接 Oracle 后，登录会优先读取 `EMPLOYEES`、`USER_ROLES`、`ROLES`，并使用 BCrypt 校验 `PASSWORD_HASH`。
-
-## 角色权限初版
-
-| 角色代码 | 说明 | 主要权限 |
-| --- | --- | --- |
-| `EMPLOYEE` | 员工 | 查看课程、提交申请、报名、评分、查看证书 |
-| `DEPT_MANAGER` | 部门主管 | 员工只读、课程只读、申请审批 |
-| `HR` | HR | HR 备案、签到管理、评分复核、测试成绩、证书管理 |
-| `ADMIN` | 管理员 | 员工、部门、黑名单、课程、角色等后台维护 |
-
-数据库里角色代码或角色名可以使用 `EMPLOYEE`、`MANAGER`、`HR`、`ADMIN` 或中文名。后端会统一映射成稳定角色代码写入 JWT，其中 `MANAGER` 会归一化为 `DEPT_MANAGER`。
 
 ## 统一响应
 
@@ -172,8 +169,3 @@ GET /api/health/db
   "traceId": "string"
 }
 ```
-
-## 后续对接事项
-
-- 若数据库负责人后续决定把 `MANAGER` 改名为 `DEPT_MANAGER`，需要同步更新种子脚本和前端权限判断。
-- 生产环境应关闭本地演示账号，并使用强 JWT 签名密钥。

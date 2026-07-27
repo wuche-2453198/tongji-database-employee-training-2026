@@ -30,15 +30,6 @@ public sealed class AuthController : ApiControllerBase
     }
 
     [Authorize]
-    [HttpPost("logout")]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
-    public ActionResult<ApiResponse<object>> Logout()
-    {
-        return OkResponse<object>(new { loggedOut = true });
-    }
-
-    [Authorize]
     [HttpGet("me")]
     [ProducesResponseType(typeof(ApiResponse<AuthUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

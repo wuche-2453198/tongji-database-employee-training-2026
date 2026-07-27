@@ -1,0 +1,30 @@
+-- =========================================================================
+-- Use Case(TEST DATABASE ONLY):
+-- Return the 13 business tables to empty so S001-S003 can be re-seeded into a known-clean state.
+-- Author:   钮培源
+-- Date:     2026-07-22
+
+
+
+-- WARNING:  DESTRUCTIVE. Deletes ALL rows from every business table.
+-- 警告： 仅用作测试。将从所有business table中删除所有行。
+-- =========================================================================
+
+WHENEVER SQLERROR EXIT FAILURE ROLLBACK
+ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
+
+DELETE FROM TRAINING_CERTIFICATES;
+DELETE FROM TRAINING_TESTS;
+DELETE FROM TRAINER_RATINGS;
+DELETE FROM TRAINING_ATTENDANCE;
+DELETE FROM TRAINING_REGISTRATIONS;
+DELETE FROM TRAINING_REQUESTS;
+DELETE FROM TRAINING_COURSES;
+DELETE FROM TRAINERS;
+DELETE FROM BLACKLIST;
+DELETE FROM USER_ROLES;
+DELETE FROM EMPLOYEES;
+DELETE FROM ROLES;
+DELETE FROM DEPARTMENTS_TRAINING;
+
+COMMIT;

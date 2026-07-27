@@ -61,9 +61,14 @@ Copy-Item appsettings.Local.example.json appsettings.Local.json
   },
   "Oracle": {
     "CurrentSchema": "TRAINING_OWNER"
+  },
+  "Jwt": {
+    "SigningKey": "replace-with-at-least-32-byte-local-signing-key"
   }
 }
 ```
+
+生产或非开发环境必须通过环境变量或未提交的本地配置提供强 JWT 签名密钥。如果 `Jwt:SigningKey` 为空，或非开发环境仍使用开发默认密钥，应用会启动失败。
 
 后端每次打开 Oracle 连接后会自动执行：
 
@@ -85,7 +90,6 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 | GET | `/api/health` | 后端存活检查 | 不需要 |
 | GET | `/api/health/db` | Oracle 连接检查 | 不需要 |
 | POST | `/api/auth/login` | 登录并返回 JWT | 不需要 |
-| POST | `/api/auth/logout` | 退出登录 | 需要 |
 | GET | `/api/auth/me` | 当前用户、角色、权限 | 需要 |
 | GET | `/api/roles` | 角色列表 | 管理员 |
 
@@ -169,7 +173,7 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 | `manager` | `Password2026!` | `MANAGER` | `DEPT_MANAGER` |
 | `employee` | `Password2026!` | `EMPLOYEE` | `EMPLOYEE` |
 
-未配置 Oracle 或数据库连接失败时，后端提供本地演示账号用于前端联调。
+本地演示账号仅用于开发环境或显式开启配置时的前端联调。主配置默认关闭，避免数据库正常但查不到用户时误登录演示账号。
 
 | 账号 | 密码 | 角色 |
 | --- | --- | --- |

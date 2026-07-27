@@ -110,6 +110,21 @@ var jwtOptions = builder.Configuration
     .GetSection(JwtOptions.SectionName)
     .Get<JwtOptions>() ?? new JwtOptions();
 
+const string DefaultDevelopmentSigningKey = "dev-only-training-management-signing-key-change-me";
+
+if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey)
+    || (!builder.Environment.IsDevelopment()
+        && string.Equals(jwtOptions.SigningKey, DefaultDevelopmentSigningKey, StringComparison.Ordinal)))
+{
+    throw new InvalidOperationException(
+        "Jwt:SigningKey must be provided by environment variables or appsettings.Local.json. Non-development environments cannot use an empty or default signing key.");
+}
+
+if (Encoding.UTF8.GetByteCount(jwtOptions.SigningKey) < 32)
+{
+    throw new InvalidOperationException("Jwt:SigningKey must be at least 32 bytes.");
+}
+
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
 
 builder.Services

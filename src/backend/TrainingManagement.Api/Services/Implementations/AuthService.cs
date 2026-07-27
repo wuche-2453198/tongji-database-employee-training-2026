@@ -84,10 +84,13 @@ public sealed class AuthService : IAuthService
                 empId.Value);
         }
 
-        var localUser = _authOptions.LocalDemoUsers.FirstOrDefault(item => item.EmpId == empId.Value);
-        if (localUser is not null)
+        if (_authOptions.EnableLocalDemoUsers)
         {
-            return BuildLocalDemoUser(localUser);
+            var localUser = _authOptions.LocalDemoUsers.FirstOrDefault(item => item.EmpId == empId.Value);
+            if (localUser is not null)
+            {
+                return BuildLocalDemoUser(localUser);
+            }
         }
 
         return BuildUserFromClaims(principal, empId.Value);
