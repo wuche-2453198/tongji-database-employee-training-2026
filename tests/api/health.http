@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:5156
+
+### Backend health
+GET {{baseUrl}}/api/health
+
+### Oracle health
+GET {{baseUrl}}/api/health/db
