@@ -1,3 +1,4 @@
+﻿using TrainingManagement.Api.Dtos.Trainer;
 using TrainingManagement.Api.Entities;
 
 namespace TrainingManagement.Api.Repositories.Interfaces;
@@ -5,6 +6,7 @@ namespace TrainingManagement.Api.Repositories.Interfaces;
 public interface ITrainerRepository
 {
     Task<IReadOnlyList<Trainer>> GetAllAsync(
+        TrainerQuery query,
         CancellationToken cancellationToken);
 
     Task<Trainer?> GetByIdAsync(

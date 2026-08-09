@@ -1,5 +1,6 @@
-using System.Data;
+﻿using System.Data;
 using Dapper;
+using TrainingManagement.Api.Dtos.Course;
 using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
 
@@ -14,15 +15,59 @@ public sealed class OracleCourseRepository : ICourseRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IReadOnlyList<TrainingCourse>> GetAllAsync(
+    public async Task<(IReadOnlyList<TrainingCourse> Items, long Total)> GetAllAsync(
+        CourseQuery query,
         CancellationToken cancellationToken)
     {
         if (!_connectionFactory.IsConfigured)
         {
-            return Array.Empty<TrainingCourse>();
+            return (Array.Empty<TrainingCourse>(), 0);
         }
 
-        const string sql = """
+        var conditions = new List<string>();
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(query.CourseName))
+        {
+            conditions.Add("c.COURSE_NAME LIKE :CourseName");
+            parameters.Add("CourseName", $"%{query.CourseName}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.CourseType))
+        {
+            conditions.Add("c.COURSE_TYPE = :CourseType");
+            parameters.Add("CourseType", query.CourseType);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.CourseStatus))
+        {
+            conditions.Add("c.COURSE_STATUS = :CourseStatus");
+            parameters.Add("CourseStatus", query.CourseStatus);
+        }
+
+        if (query.StartAtFrom.HasValue)
+        {
+            conditions.Add("c.START_AT >= :StartAtFrom");
+            parameters.Add("StartAtFrom", query.StartAtFrom.Value);
+        }
+
+        if (query.StartAtTo.HasValue)
+        {
+            conditions.Add("c.START_AT <= :StartAtTo");
+            parameters.Add("StartAtTo", query.StartAtTo.Value);
+        }
+
+        var whereSql = conditions.Count == 0
+            ? string.Empty
+            : "WHERE " + string.Join(" AND ", conditions);
+
+        var countSql = $"""
+            SELECT COUNT(1)
+            FROM TRAINING_COURSES c
+            {whereSql}
+            """;
+
+        var querySql = $"""
             SELECT
                 c.COURSE_ID AS "CourseId",
                 c.COURSE_NAME AS "CourseName",
@@ -44,16 +89,41 @@ public sealed class OracleCourseRepository : ICourseRepository
                 c.CREATED_AT AS "CreatedAt",
                 c.UPDATED_AT AS "UpdatedAt"
             FROM TRAINING_COURSES c
-            LEFT JOIN TRAINERS t ON c.TRAINER_ID = t.TRAINER_ID
-            LEFT JOIN DEPARTMENTS_TRAINING d ON c.DEPT_ID = d.DEPT_ID
+            LEFT JOIN TRAINERS t
+                ON c.TRAINER_ID = t.TRAINER_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d
+                ON c.DEPT_ID = d.DEPT_ID
+            {whereSql}
             ORDER BY c.COURSE_ID DESC
+            OFFSET :Offset ROWS
+            FETCH NEXT :PageSize ROWS ONLY
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
-        var courses = await connection.QueryAsync<TrainingCourse>(
-            new CommandDefinition(sql, cancellationToken: cancellationToken));
+        await using var connection =
+            await _connectionFactory.CreateOpenConnectionAsync(
+                cancellationToken);
 
-        return courses.ToArray();
+        var total = await connection.ExecuteScalarAsync<long>(
+            new CommandDefinition(
+                countSql,
+                parameters,
+                cancellationToken: cancellationToken));
+
+        parameters.Add(
+            "Offset",
+            (query.Page - 1) * query.PageSize);
+
+        parameters.Add(
+            "PageSize",
+            query.PageSize);
+
+        var courses = await connection.QueryAsync<TrainingCourse>(
+            new CommandDefinition(
+                querySql,
+                parameters,
+                cancellationToken: cancellationToken));
+
+        return (courses.ToArray(), total);
     }
 
     public async Task<TrainingCourse?> GetByIdAsync(
@@ -87,12 +157,17 @@ public sealed class OracleCourseRepository : ICourseRepository
                 c.CREATED_AT AS "CreatedAt",
                 c.UPDATED_AT AS "UpdatedAt"
             FROM TRAINING_COURSES c
-            LEFT JOIN TRAINERS t ON c.TRAINER_ID = t.TRAINER_ID
-            LEFT JOIN DEPARTMENTS_TRAINING d ON c.DEPT_ID = d.DEPT_ID
+            LEFT JOIN TRAINERS t
+                ON c.TRAINER_ID = t.TRAINER_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d
+                ON c.DEPT_ID = d.DEPT_ID
             WHERE c.COURSE_ID = :CourseId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        await using var connection =
+            await _connectionFactory.CreateOpenConnectionAsync(
+                cancellationToken);
+
         return await connection.QuerySingleOrDefaultAsync<TrainingCourse>(
             new CommandDefinition(
                 sql,
@@ -159,11 +234,21 @@ public sealed class OracleCourseRepository : ICourseRepository
         parameters.Add("PreTestUrl", course.PreTestUrl);
         parameters.Add("PostTestUrl", course.PostTestUrl);
         parameters.Add("MaterialUrl", course.MaterialUrl);
-        parameters.Add("NewCourseId", dbType: DbType.Int64, direction: ParameterDirection.Output);
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        parameters.Add(
+            "NewCourseId",
+            dbType: DbType.Int64,
+            direction: ParameterDirection.Output);
+
+        await using var connection =
+            await _connectionFactory.CreateOpenConnectionAsync(
+                cancellationToken);
+
         await connection.ExecuteAsync(
-            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+            new CommandDefinition(
+                sql,
+                parameters,
+                cancellationToken: cancellationToken));
 
         return parameters.Get<long>("NewCourseId");
     }
@@ -192,7 +277,10 @@ public sealed class OracleCourseRepository : ICourseRepository
             WHERE COURSE_ID = :CourseId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        await using var connection =
+            await _connectionFactory.CreateOpenConnectionAsync(
+                cancellationToken);
+
         var affectedRows = await connection.ExecuteAsync(
             new CommandDefinition(
                 sql,
@@ -231,7 +319,10 @@ public sealed class OracleCourseRepository : ICourseRepository
             WHERE COURSE_ID = :CourseId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        await using var connection =
+            await _connectionFactory.CreateOpenConnectionAsync(
+                cancellationToken);
+
         var affectedRows = await connection.ExecuteAsync(
             new CommandDefinition(
                 sql,

@@ -1,10 +1,12 @@
+﻿using TrainingManagement.Api.Dtos.Course;
 using TrainingManagement.Api.Entities;
 
 namespace TrainingManagement.Api.Repositories.Interfaces;
 
 public interface ICourseRepository
 {
-    Task<IReadOnlyList<TrainingCourse>> GetAllAsync(
+    Task<(IReadOnlyList<TrainingCourse> Items, long Total)> GetAllAsync(
+        CourseQuery query,
         CancellationToken cancellationToken);
 
     Task<TrainingCourse?> GetByIdAsync(

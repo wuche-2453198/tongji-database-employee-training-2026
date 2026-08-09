@@ -1,4 +1,5 @@
-using TrainingManagement.Api.Common.Exceptions;
+﻿using TrainingManagement.Api.Common.Exceptions;
+using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Course;
 using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
@@ -31,26 +32,64 @@ public sealed class CourseService : ICourseService
         _trainerRepository = trainerRepository;
     }
 
-    public async Task<IReadOnlyCollection<CourseResponse>> GetAllAsync(
+    public async Task<PagedResult<CourseResponse>> GetAllAsync(
+        CourseQuery query,
         CancellationToken cancellationToken)
     {
-        var courses = await _courseRepository.GetAllAsync(cancellationToken);
-        return courses.Select(ToResponse).ToArray();
+        if (query.StartAtFrom.HasValue
+            && query.StartAtTo.HasValue
+            && query.StartAtFrom > query.StartAtTo)
+        {
+            throw new BusinessException(
+                "查询开始时间不能晚于查询结束时间。");
+        }
+
+        var normalizedQuery = new CourseQuery
+        {
+            CourseName = TrimToNull(query.CourseName),
+            CourseType = TrimToNull(query.CourseType),
+            CourseStatus = TrimToNull(query.CourseStatus)?.ToUpperInvariant(),
+            StartAtFrom = query.StartAtFrom,
+            StartAtTo = query.StartAtTo,
+            Page = query.Page,
+            PageSize = query.PageSize
+        };
+
+        var result = await _courseRepository.GetAllAsync(
+            normalizedQuery,
+            cancellationToken);
+
+        var items = result.Items
+            .Select(ToResponse)
+            .ToArray();
+
+        return new PagedResult<CourseResponse>(
+            items,
+            normalizedQuery.Page,
+            normalizedQuery.PageSize,
+            result.Total);
     }
 
     public async Task<CourseResponse?> GetByIdAsync(
         long courseId,
         CancellationToken cancellationToken)
     {
-        var course = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
-        return course is null ? null : ToResponse(course);
+        var course = await _courseRepository.GetByIdAsync(
+            courseId,
+            cancellationToken);
+
+        return course is null
+            ? null
+            : ToResponse(course);
     }
 
     public async Task<CourseResponse> CreateAsync(
         CreateCourseRequest request,
         CancellationToken cancellationToken)
     {
-        await CheckCreateRequestAsync(request, cancellationToken);
+        await CheckCreateRequestAsync(
+            request,
+            cancellationToken);
 
         var course = new TrainingCourse
         {
@@ -70,12 +109,18 @@ public sealed class CourseService : ICourseService
             MaterialUrl = TrimToNull(request.MaterialUrl)
         };
 
-        var newId = await _courseRepository.CreateAsync(course, cancellationToken);
-        var created = await _courseRepository.GetByIdAsync(newId, cancellationToken);
+        var newId = await _courseRepository.CreateAsync(
+            course,
+            cancellationToken);
+
+        var created = await _courseRepository.GetByIdAsync(
+            newId,
+            cancellationToken);
 
         if (created is null)
         {
-            throw new BusinessException("课程创建失败。");
+            throw new BusinessException(
+                "课程创建失败。");
         }
 
         return ToResponse(created);
@@ -86,14 +131,23 @@ public sealed class CourseService : ICourseService
         UpdateCourseRequest request,
         CancellationToken cancellationToken)
     {
-        var oldCourse = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
+        var oldCourse = await _courseRepository.GetByIdAsync(
+            courseId,
+            cancellationToken);
+
         if (oldCourse is null)
         {
-            throw new NotFoundApiException("课程不存在。");
+            throw new NotFoundApiException(
+                "课程不存在。");
         }
 
-        CheckCourseCanBeUpdated(oldCourse, request);
-        await CheckUpdateRequestAsync(request, cancellationToken);
+        CheckCourseCanBeUpdated(
+            oldCourse,
+            request);
+
+        await CheckUpdateRequestAsync(
+            request,
+            cancellationToken);
 
         var newCourse = new TrainingCourse
         {
@@ -113,16 +167,24 @@ public sealed class CourseService : ICourseService
             MaterialUrl = TrimToNull(request.MaterialUrl)
         };
 
-        var success = await _courseRepository.UpdateAsync(newCourse, cancellationToken);
+        var success = await _courseRepository.UpdateAsync(
+            newCourse,
+            cancellationToken);
+
         if (!success)
         {
-            throw new NotFoundApiException("课程不存在或已被删除。");
+            throw new NotFoundApiException(
+                "课程不存在或已被删除。");
         }
 
-        var updated = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
+        var updated = await _courseRepository.GetByIdAsync(
+            courseId,
+            cancellationToken);
+
         if (updated is null)
         {
-            throw new NotFoundApiException("课程不存在。");
+            throw new NotFoundApiException(
+                "课程不存在。");
         }
 
         return ToResponse(updated);
@@ -132,35 +194,46 @@ public sealed class CourseService : ICourseService
         long courseId,
         CancellationToken cancellationToken)
     {
-        var course = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
+        var course = await _courseRepository.GetByIdAsync(
+            courseId,
+            cancellationToken);
+
         if (course is null)
         {
-            throw new NotFoundApiException("课程不存在。");
+            throw new NotFoundApiException(
+                "课程不存在。");
         }
 
         if (!IsStatus(course, DraftStatus))
         {
-            throw new BusinessException("只有草稿课程可以发布。");
+            throw new BusinessException(
+                "只有草稿课程可以发布。");
         }
 
         CheckPublishRequiredFields(course);
 
-        throw new ConflictApiException("课程发布需要和部门预算占用放在同一个事务中，当前等待组织模块提供预算占用方法。");
+        throw new ConflictApiException(
+            "课程发布需要和部门预算占用放在同一个事务中，当前等待组织模块提供预算占用方法。");
     }
 
     public async Task CloseAsync(
         long courseId,
         CancellationToken cancellationToken)
     {
-        var course = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
+        var course = await _courseRepository.GetByIdAsync(
+            courseId,
+            cancellationToken);
+
         if (course is null)
         {
-            throw new NotFoundApiException("课程不存在。");
+            throw new NotFoundApiException(
+                "课程不存在。");
         }
 
         if (!IsStatus(course, PublishedStatus))
         {
-            throw new BusinessException("只有已发布课程可以关闭。");
+            throw new BusinessException(
+                "只有已发布课程可以关闭。");
         }
 
         var success = await _courseRepository.UpdateStatusAsync(
@@ -170,7 +243,8 @@ public sealed class CourseService : ICourseService
 
         if (!success)
         {
-            throw new NotFoundApiException("课程不存在或已被删除。");
+            throw new NotFoundApiException(
+                "课程不存在或已被删除。");
         }
     }
 
@@ -189,7 +263,9 @@ public sealed class CourseService : ICourseService
             request.TrainerId,
             request.DeptId);
 
-        await CheckTrainerExistsAsync(request.TrainerId, cancellationToken);
+        await CheckTrainerExistsAsync(
+            request.TrainerId,
+            cancellationToken);
     }
 
     private async Task CheckUpdateRequestAsync(
@@ -207,7 +283,9 @@ public sealed class CourseService : ICourseService
             request.TrainerId,
             request.DeptId);
 
-        await CheckTrainerExistsAsync(request.TrainerId, cancellationToken);
+        await CheckTrainerExistsAsync(
+            request.TrainerId,
+            cancellationToken);
     }
 
     private static void CheckBasicFields(
@@ -223,42 +301,50 @@ public sealed class CourseService : ICourseService
     {
         if (string.IsNullOrWhiteSpace(courseName))
         {
-            throw new BusinessException("课程名称不能为空。");
+            throw new BusinessException(
+                "课程名称不能为空。");
         }
 
         if (!CourseTypes.Contains(courseType.Trim()))
         {
-            throw new BusinessException("课程类型只能是技术培训、管理培训、产品培训、营销培训。");
+            throw new BusinessException(
+                "课程类型只能是技术培训、管理培训、产品培训、营销培训。");
         }
 
         if (durationHours <= 0)
         {
-            throw new BusinessException("学时必须大于0。");
+            throw new BusinessException(
+                "学时必须大于0。");
         }
 
         if (maxStudents <= 0)
         {
-            throw new BusinessException("最大人数必须大于0。");
+            throw new BusinessException(
+                "最大人数必须大于0。");
         }
 
         if (startAt >= endAt)
         {
-            throw new BusinessException("课程开始时间必须早于结束时间。");
+            throw new BusinessException(
+                "课程开始时间必须早于结束时间。");
         }
 
         if (budgetAmount < 0)
         {
-            throw new BusinessException("预算金额不能为负数。");
+            throw new BusinessException(
+                "预算金额不能为负数。");
         }
 
         if (trainerId <= 0)
         {
-            throw new BusinessException("必须绑定讲师。");
+            throw new BusinessException(
+                "必须绑定讲师。");
         }
 
         if (deptId <= 0)
         {
-            throw new BusinessException("必须绑定主办部门。");
+            throw new BusinessException(
+                "必须绑定主办部门。");
         }
     }
 
@@ -266,10 +352,14 @@ public sealed class CourseService : ICourseService
         long trainerId,
         CancellationToken cancellationToken)
     {
-        var exists = await _trainerRepository.ExistsAsync(trainerId, cancellationToken);
+        var exists = await _trainerRepository.ExistsAsync(
+            trainerId,
+            cancellationToken);
+
         if (!exists)
         {
-            throw new BusinessException("绑定的讲师不存在。");
+            throw new BusinessException(
+                "绑定的讲师不存在。");
         }
     }
 
@@ -279,7 +369,8 @@ public sealed class CourseService : ICourseService
     {
         if (IsStatus(oldCourse, ClosedStatus))
         {
-            throw new BusinessException("课程已关闭，不能再修改。");
+            throw new BusinessException(
+                "课程已关闭，不能再修改。");
         }
 
         if (IsStatus(oldCourse, DraftStatus))
@@ -289,19 +380,27 @@ public sealed class CourseService : ICourseService
 
         if (IsStatus(oldCourse, PublishedStatus))
         {
-            CheckPublishedCourseUpdate(oldCourse, request);
+            CheckPublishedCourseUpdate(
+                oldCourse,
+                request);
+
             return;
         }
 
-        throw new BusinessException("课程状态不合法，不能修改。");
+        throw new BusinessException(
+            "课程状态不合法，不能修改。");
     }
 
     private static void CheckPublishedCourseUpdate(
         TrainingCourse oldCourse,
         UpdateCourseRequest request)
     {
-        if (!EqualsIgnoreTrim(oldCourse.CourseName, request.CourseName)
-            || !EqualsIgnoreTrim(oldCourse.CourseType, request.CourseType)
+        if (!EqualsIgnoreTrim(
+                oldCourse.CourseName,
+                request.CourseName)
+            || !EqualsIgnoreTrim(
+                oldCourse.CourseType,
+                request.CourseType)
             || oldCourse.TrainerId != request.TrainerId
             || oldCourse.DeptId != request.DeptId
             || oldCourse.StartAt != request.StartAt
@@ -310,17 +409,22 @@ public sealed class CourseService : ICourseService
             || oldCourse.DurationHours != request.DurationHours
             || oldCourse.BudgetAmount != request.BudgetAmount)
         {
-            throw new BusinessException("课程发布后不能修改名称、类型、讲师、部门、时间、容量、学时和预算。");
+            throw new BusinessException(
+                "课程发布后不能修改名称、类型、讲师、部门、时间、容量、学时和预算。");
         }
 
         if (oldCourse.StartAt <= DateTime.Now
-            && !EqualsIgnoreTrim(oldCourse.Location, request.Location))
+            && !EqualsIgnoreTrim(
+                oldCourse.Location,
+                request.Location))
         {
-            throw new BusinessException("课程开始后不能修改地点。");
+            throw new BusinessException(
+                "课程开始后不能修改地点。");
         }
     }
 
-    private static void CheckPublishRequiredFields(TrainingCourse course)
+    private static void CheckPublishRequiredFields(
+        TrainingCourse course)
     {
         if (string.IsNullOrWhiteSpace(course.CourseName)
             || string.IsNullOrWhiteSpace(course.CourseType)
@@ -333,16 +437,20 @@ public sealed class CourseService : ICourseService
             || course.DeptId is null or <= 0
             || course.BudgetAmount < 0)
         {
-            throw new BusinessException("课程信息不完整，不能发布。");
+            throw new BusinessException(
+                "课程信息不完整，不能发布。");
         }
 
-        if (!CourseTypes.Contains(course.CourseType.Trim()))
+        if (!CourseTypes.Contains(
+                course.CourseType.Trim()))
         {
-            throw new BusinessException("课程类型不合法，不能发布。");
+            throw new BusinessException(
+                "课程类型不合法，不能发布。");
         }
     }
 
-    private static CourseResponse ToResponse(TrainingCourse course)
+    private static CourseResponse ToResponse(
+        TrainingCourse course)
     {
         return new CourseResponse
         {
@@ -368,7 +476,9 @@ public sealed class CourseService : ICourseService
         };
     }
 
-    private static bool IsStatus(TrainingCourse course, string status)
+    private static bool IsStatus(
+        TrainingCourse course,
+        string status)
     {
         return string.Equals(
             course.CourseStatus,
@@ -376,7 +486,9 @@ public sealed class CourseService : ICourseService
             StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool EqualsIgnoreTrim(string? left, string? right)
+    private static bool EqualsIgnoreTrim(
+        string? left,
+        string? right)
     {
         return string.Equals(
             left?.Trim(),
@@ -384,7 +496,8 @@ public sealed class CourseService : ICourseService
             StringComparison.Ordinal);
     }
 
-    private static string? TrimToNull(string? value)
+    private static string? TrimToNull(
+        string? value)
     {
         return string.IsNullOrWhiteSpace(value)
             ? null

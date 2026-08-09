@@ -1,10 +1,12 @@
+﻿using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Course;
 
 namespace TrainingManagement.Api.Services.Interfaces;
 
 public interface ICourseService
 {
-    Task<IReadOnlyCollection<CourseResponse>> GetAllAsync(
+    Task<PagedResult<CourseResponse>> GetAllAsync(
+        CourseQuery query,
         CancellationToken cancellationToken);
 
     Task<CourseResponse?> GetByIdAsync(

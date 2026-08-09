@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TrainingManagement.Api.Dtos.Trainer;
 
@@ -21,9 +21,9 @@ public sealed class CreateTrainerRequest
     [EmailAddress]
     public string? Email { get; set; }
 
-    [Range(typeof(decimal), "1.0", "5.0", ErrorMessage = "讲师星级范围是1.0到5.0")]
-    public decimal StarLevel { get; set; }
+    [Range(typeof(decimal), "1.0", "5.0", ErrorMessage = "璁插笀鏄熺骇鑼冨洿鏄?.0鍒?.0")]
+    public decimal StarLevel { get; set; } = 3.0m;
 
-    [RegularExpression("^[YN]$", ErrorMessage = "是否内部讲师只能是Y或N")]
+    [RegularExpression("^[YN]$", ErrorMessage = "鏄惁鍐呴儴璁插笀鍙兘鏄痀鎴朜")]
     public string IsInternal { get; set; } = "Y";
 }

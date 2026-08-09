@@ -1,4 +1,4 @@
-using TrainingManagement.Api.Common.Exceptions;
+﻿using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Dtos.Trainer;
 using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
@@ -16,25 +16,46 @@ public sealed class TrainerService : ITrainerService
     }
 
     public async Task<IReadOnlyCollection<TrainerResponse>> GetAllAsync(
+        TrainerQuery query,
         CancellationToken cancellationToken)
     {
-        var trainers = await _trainerRepository.GetAllAsync(cancellationToken);
-        return trainers.Select(ToResponse).ToArray();
+        var normalizedQuery = new TrainerQuery
+        {
+            TrainerName = TrimToNull(query.TrainerName),
+            Company = TrimToNull(query.Company),
+            IsInternal = TrimToNull(query.IsInternal)?.ToUpperInvariant()
+        };
+
+        var trainers = await _trainerRepository.GetAllAsync(
+            normalizedQuery,
+            cancellationToken);
+
+        return trainers
+            .Select(ToResponse)
+            .ToArray();
     }
 
     public async Task<TrainerResponse?> GetByIdAsync(
         long trainerId,
         CancellationToken cancellationToken)
     {
-        var trainer = await _trainerRepository.GetByIdAsync(trainerId, cancellationToken);
-        return trainer is null ? null : ToResponse(trainer);
+        var trainer = await _trainerRepository.GetByIdAsync(
+            trainerId,
+            cancellationToken);
+
+        return trainer is null
+            ? null
+            : ToResponse(trainer);
     }
 
     public async Task<TrainerResponse> CreateAsync(
         CreateTrainerRequest request,
         CancellationToken cancellationToken)
     {
-        CheckTrainerRequest(request.TrainerName, request.StarLevel, request.IsInternal);
+        CheckRequest(
+            request.TrainerName,
+            request.StarLevel,
+            request.IsInternal);
 
         var trainer = new Trainer
         {
@@ -47,12 +68,18 @@ public sealed class TrainerService : ITrainerService
             IsInternal = request.IsInternal.Trim().ToUpperInvariant()
         };
 
-        var newId = await _trainerRepository.CreateAsync(trainer, cancellationToken);
-        var created = await _trainerRepository.GetByIdAsync(newId, cancellationToken);
+        var newId = await _trainerRepository.CreateAsync(
+            trainer,
+            cancellationToken);
+
+        var created = await _trainerRepository.GetByIdAsync(
+            newId,
+            cancellationToken);
 
         if (created is null)
         {
-            throw new BusinessException("讲师创建失败。");
+            throw new BusinessException(
+                "讲师创建失败。");
         }
 
         return ToResponse(created);
@@ -63,13 +90,20 @@ public sealed class TrainerService : ITrainerService
         UpdateTrainerRequest request,
         CancellationToken cancellationToken)
     {
-        CheckTrainerRequest(request.TrainerName, request.StarLevel, request.IsInternal);
+        var oldTrainer = await _trainerRepository.GetByIdAsync(
+            trainerId,
+            cancellationToken);
 
-        var exists = await _trainerRepository.ExistsAsync(trainerId, cancellationToken);
-        if (!exists)
+        if (oldTrainer is null)
         {
-            throw new NotFoundApiException("讲师不存在。");
+            throw new NotFoundApiException(
+                "讲师不存在。");
         }
+
+        CheckRequest(
+            request.TrainerName,
+            request.StarLevel,
+            request.IsInternal);
 
         var trainer = new Trainer
         {
@@ -83,49 +117,57 @@ public sealed class TrainerService : ITrainerService
             IsInternal = request.IsInternal.Trim().ToUpperInvariant()
         };
 
-        var success = await _trainerRepository.UpdateAsync(trainer, cancellationToken);
+        var success = await _trainerRepository.UpdateAsync(
+            trainer,
+            cancellationToken);
+
         if (!success)
         {
-            throw new NotFoundApiException("讲师不存在或已被删除。");
+            throw new NotFoundApiException(
+                "讲师不存在或已被删除。");
         }
 
-        var updated = await _trainerRepository.GetByIdAsync(trainerId, cancellationToken);
+        var updated = await _trainerRepository.GetByIdAsync(
+            trainerId,
+            cancellationToken);
+
         if (updated is null)
         {
-            throw new NotFoundApiException("讲师不存在。");
+            throw new NotFoundApiException(
+                "讲师不存在。");
         }
 
         return ToResponse(updated);
     }
 
-    private static void CheckTrainerRequest(
+    private static void CheckRequest(
         string trainerName,
         decimal starLevel,
         string isInternal)
     {
         if (string.IsNullOrWhiteSpace(trainerName))
         {
-            throw new BusinessException("讲师姓名不能为空。");
+            throw new BusinessException(
+                "讲师姓名不能为空。");
         }
 
         if (starLevel < 1.0m || starLevel > 5.0m)
         {
-            throw new BusinessException("讲师星级必须在1.0到5.0之间。");
+            throw new BusinessException(
+                "讲师星级范围是1.0到5.0。");
         }
 
-        if (decimal.Round(starLevel, 1) != starLevel)
-        {
-            throw new BusinessException("讲师星级最多保留一位小数。");
-        }
+        var internalValue = isInternal.Trim().ToUpperInvariant();
 
-        var internalFlag = isInternal.Trim().ToUpperInvariant();
-        if (internalFlag is not ("Y" or "N"))
+        if (internalValue != "Y" && internalValue != "N")
         {
-            throw new BusinessException("是否内部讲师只能填写Y或N。");
+            throw new BusinessException(
+                "是否内部讲师只能是Y或N。");
         }
     }
 
-    private static TrainerResponse ToResponse(Trainer trainer)
+    private static TrainerResponse ToResponse(
+        Trainer trainer)
     {
         return new TrainerResponse
         {
@@ -142,7 +184,8 @@ public sealed class TrainerService : ITrainerService
         };
     }
 
-    private static string? TrimToNull(string? value)
+    private static string? TrimToNull(
+        string? value)
     {
         return string.IsNullOrWhiteSpace(value)
             ? null
