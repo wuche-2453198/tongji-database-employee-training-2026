@@ -1,0 +1,97 @@
+{
+  "runId": "step11-2026-08-12",
+  "phase": "phase5",
+  "step": "P5.a-interface-requirements-draft-awaiting-review",
+  "document": {
+    "path": "document/frontend-design/10-接口需求与待确认事项.md",
+    "version": "V0.1",
+    "status": "DRAFT-REVIEW"
+  },
+  "scope": {
+    "priority": "P0",
+    "screenCount": 17,
+    "screenCodes": [
+      "HF-P0-01",
+      "HF-P0-02",
+      "HF-P0-03",
+      "HF-P0-04",
+      "HF-P0-05",
+      "HF-P0-06",
+      "HF-P0-07",
+      "HF-P0-08",
+      "HF-P0-09",
+      "HF-P0-10",
+      "HF-P0-11",
+      "HF-P0-12",
+      "HF-P0-13",
+      "HF-P0-14",
+      "HF-P0-15",
+      "HF-P0-16",
+      "HF-P0-17"
+    ],
+    "deliverables": [
+      "page-api dependency matrix",
+      "frontend field requirements",
+      "interface open questions"
+    ]
+  },
+  "sourceAudit": {
+    "backendSourcePresent": false,
+    "openApiPresent": false,
+    "apiTestCollectionPresent": false,
+    "basis": [
+      "document/项目开发规范.md",
+      "document/项目分工计划.md",
+      "document/frontend-design/01-前端需求清单.md",
+      "document/frontend-design/02-角色权限矩阵.md",
+      "document/frontend-design/04-页面与路由规划.md",
+      "document/frontend-design/05-核心业务流程.md",
+      "document/frontend-design/07-页面状态规范.md",
+      "document/frontend-design/08-Mock数据字典.md",
+      "document/frontend-design/09-P0高保真与交互原型.md"
+    ],
+    "contractStatus": "DESIGN-REQUIREMENT-NOT-FROZEN"
+  },
+  "coverage": {
+    "pageDependencyCoverage": "17/17",
+    "noBusinessApiPages": ["HF-P0-16", "HF-P0-17"],
+    "freezeBlockerQuestionCount": 22,
+    "preIntegrationQuestionCount": 10,
+    "commonContractSections": [
+      "response",
+      "pagination",
+      "search",
+      "sorting",
+      "authentication",
+      "authorization",
+      "time",
+      "nullability",
+      "errors",
+      "idempotency"
+    ]
+  },
+  "proposedContracts": [
+    "GET /api/dashboard/summary",
+    "GET /api/courses/{id}/eligibility",
+    "GET /api/certificates/my",
+    "GET /api/certificates/candidates",
+    "GET /api/certificates/{id}/download"
+  ],
+  "reviewOrder": [
+    "backend foundation and authentication",
+    "trainer and course",
+    "training request approval",
+    "registration and attendance",
+    "results and certificates",
+    "project owner"
+  ],
+  "validation": {
+    "status": "PASS",
+    "validatedAt": "2026-08-12",
+    "p0ScreenCoverageCount": 17,
+    "duplicateQuestionIdCount": 0,
+    "markdownDiffCheck": "PASS"
+  },
+  "blockedBy": "Interface review and backend contract confirmation",
+  "nextAction": "Review the Step 11 draft, then assign API-Q items to backend owners"
+}
