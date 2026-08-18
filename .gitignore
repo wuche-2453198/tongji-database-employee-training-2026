@@ -43,6 +43,7 @@ coverage/
 .env.*
 !.env.example
 !.env.*.example
+!src/frontend/training-management-web/.env.mock
 
 # Logs
 logs/
