@@ -71,3 +71,4 @@ temp/
 # Local tool files
 .history/
 .ionide/
+"appsettings.json" 
