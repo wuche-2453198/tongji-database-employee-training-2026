@@ -19,10 +19,16 @@ public interface ICourseRepository
 
     Task<bool> UpdateAsync(
         TrainingCourse course,
+        string expectedStatus,
+        CancellationToken cancellationToken);
+
+    Task<(int MaxStudents, int ValidRegistrationCount)?> GetCapacityAsync(
+        long courseId,
         CancellationToken cancellationToken);
 
     Task<bool> UpdateStatusAsync(
         long courseId,
-        string status,
+        string expectedStatus,
+        string newStatus,
         CancellationToken cancellationToken);
 }

@@ -104,6 +104,9 @@ public sealed class CoursesController : ApiControllerBase
         StatusCodes.Status404NotFound)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
+        StatusCodes.Status409Conflict)]
+    [ProducesResponseType(
+        typeof(ApiResponse<object>),
         StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
@@ -164,6 +167,9 @@ public sealed class CoursesController : ApiControllerBase
     [ProducesResponseType(
         typeof(ApiResponse<object>),
         StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ApiResponse<object>),
+        StatusCodes.Status409Conflict)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
         StatusCodes.Status401Unauthorized)]

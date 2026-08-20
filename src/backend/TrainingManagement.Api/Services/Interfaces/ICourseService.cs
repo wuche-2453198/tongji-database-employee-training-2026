@@ -22,6 +22,10 @@ public interface ICourseService
         UpdateCourseRequest request,
         CancellationToken cancellationToken);
 
+    Task<(int MaxStudents, int ValidRegistrationCount, int RemainingSeats)?> GetCapacityAsync(
+        long courseId,
+        CancellationToken cancellationToken);
+
     Task PublishAsync(
         long courseId,
         CancellationToken cancellationToken);

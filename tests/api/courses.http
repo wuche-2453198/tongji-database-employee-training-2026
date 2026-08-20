@@ -1,0 +1,47 @@
+@baseUrl = http://localhost:5156
+@token = replace-with-hr-or-admin-token
+@draftCourseId = replace-with-dedicated-draft-course-id
+@publishedCourseId = replace-with-dedicated-published-course-id
+@trainerId = 1
+@deptId = 1
+
+### List courses
+GET {{baseUrl}}/api/courses?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### Update a draft course
+# Expected 200 while the database row remains DRAFT.
+PUT {{baseUrl}}/api/courses/{{draftCourseId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "courseName": "数据库并发控制",
+  "courseType": "技术培训",
+  "durationHours": 4.0,
+  "trainerId": {{trainerId}},
+  "maxStudents": 30,
+  "startAt": "2026-09-01T09:00:00",
+  "endAt": "2026-09-01T13:00:00",
+  "location": "培训室 A",
+  "budgetAmount": 3000.00,
+  "deptId": {{deptId}},
+  "preTestUrl": null,
+  "postTestUrl": null,
+  "materialUrl": null
+}
+
+### Publish a draft course while budget integration is unavailable
+# Expected 409 and no change to course status or department used budget.
+PATCH {{baseUrl}}/api/courses/{{draftCourseId}}/publish
+Authorization: Bearer {{token}}
+
+### Close a published course
+# Expected 200 for the first PUBLISHED -> CLOSED transition.
+PATCH {{baseUrl}}/api/courses/{{publishedCourseId}}/close
+Authorization: Bearer {{token}}
+
+### Close the same course again
+# Expected 400 because CLOSED is terminal.
+PATCH {{baseUrl}}/api/courses/{{publishedCourseId}}/close
+Authorization: Bearer {{token}}

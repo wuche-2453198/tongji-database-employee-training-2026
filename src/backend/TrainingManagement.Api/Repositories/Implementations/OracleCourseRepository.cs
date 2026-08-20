@@ -30,31 +30,41 @@ public sealed class OracleCourseRepository : ICourseRepository
         if (!string.IsNullOrWhiteSpace(query.CourseName))
         {
             conditions.Add("c.COURSE_NAME LIKE :CourseName");
-            parameters.Add("CourseName", $"%{query.CourseName}%");
+            parameters.Add(
+                "CourseName",
+                $"%{query.CourseName}%");
         }
 
         if (!string.IsNullOrWhiteSpace(query.CourseType))
         {
             conditions.Add("c.COURSE_TYPE = :CourseType");
-            parameters.Add("CourseType", query.CourseType);
+            parameters.Add(
+                "CourseType",
+                query.CourseType);
         }
 
         if (!string.IsNullOrWhiteSpace(query.CourseStatus))
         {
             conditions.Add("c.COURSE_STATUS = :CourseStatus");
-            parameters.Add("CourseStatus", query.CourseStatus);
+            parameters.Add(
+                "CourseStatus",
+                query.CourseStatus);
         }
 
         if (query.StartAtFrom.HasValue)
         {
             conditions.Add("c.START_AT >= :StartAtFrom");
-            parameters.Add("StartAtFrom", query.StartAtFrom.Value);
+            parameters.Add(
+                "StartAtFrom",
+                query.StartAtFrom.Value);
         }
 
         if (query.StartAtTo.HasValue)
         {
             conditions.Add("c.START_AT <= :StartAtTo");
-            parameters.Add("StartAtTo", query.StartAtTo.Value);
+            parameters.Add(
+                "StartAtTo",
+                query.StartAtTo.Value);
         }
 
         var whereSql = conditions.Count == 0
@@ -171,7 +181,10 @@ public sealed class OracleCourseRepository : ICourseRepository
         return await connection.QuerySingleOrDefaultAsync<TrainingCourse>(
             new CommandDefinition(
                 sql,
-                new { CourseId = courseId },
+                new
+                {
+                    CourseId = courseId
+                },
                 cancellationToken: cancellationToken));
     }
 
@@ -220,20 +233,62 @@ public sealed class OracleCourseRepository : ICourseRepository
             """;
 
         var parameters = new DynamicParameters();
-        parameters.Add("CourseName", course.CourseName);
-        parameters.Add("CourseType", course.CourseType);
-        parameters.Add("DurationHours", course.DurationHours);
-        parameters.Add("TrainerId", course.TrainerId);
-        parameters.Add("MaxStudents", course.MaxStudents);
-        parameters.Add("StartAt", course.StartAt);
-        parameters.Add("EndAt", course.EndAt);
-        parameters.Add("Location", course.Location);
-        parameters.Add("CourseStatus", course.CourseStatus);
-        parameters.Add("BudgetAmount", course.BudgetAmount);
-        parameters.Add("DeptId", course.DeptId);
-        parameters.Add("PreTestUrl", course.PreTestUrl);
-        parameters.Add("PostTestUrl", course.PostTestUrl);
-        parameters.Add("MaterialUrl", course.MaterialUrl);
+
+        parameters.Add(
+            "CourseName",
+            course.CourseName);
+
+        parameters.Add(
+            "CourseType",
+            course.CourseType);
+
+        parameters.Add(
+            "DurationHours",
+            course.DurationHours);
+
+        parameters.Add(
+            "TrainerId",
+            course.TrainerId);
+
+        parameters.Add(
+            "MaxStudents",
+            course.MaxStudents);
+
+        parameters.Add(
+            "StartAt",
+            course.StartAt);
+
+        parameters.Add(
+            "EndAt",
+            course.EndAt);
+
+        parameters.Add(
+            "Location",
+            course.Location);
+
+        parameters.Add(
+            "CourseStatus",
+            course.CourseStatus);
+
+        parameters.Add(
+            "BudgetAmount",
+            course.BudgetAmount);
+
+        parameters.Add(
+            "DeptId",
+            course.DeptId);
+
+        parameters.Add(
+            "PreTestUrl",
+            course.PreTestUrl);
+
+        parameters.Add(
+            "PostTestUrl",
+            course.PostTestUrl);
+
+        parameters.Add(
+            "MaterialUrl",
+            course.MaterialUrl);
 
         parameters.Add(
             "NewCourseId",
@@ -250,11 +305,13 @@ public sealed class OracleCourseRepository : ICourseRepository
                 parameters,
                 cancellationToken: cancellationToken));
 
-        return parameters.Get<long>("NewCourseId");
+        return parameters.Get<long>(
+            "NewCourseId");
     }
 
     public async Task<bool> UpdateAsync(
         TrainingCourse course,
+        string expectedStatus,
         CancellationToken cancellationToken)
     {
         const string sql = """
@@ -275,6 +332,7 @@ public sealed class OracleCourseRepository : ICourseRepository
                 MATERIAL_URL = :MaterialUrl,
                 UPDATED_AT = SYSTIMESTAMP
             WHERE COURSE_ID = :CourseId
+              AND COURSE_STATUS = :ExpectedStatus
             """;
 
         await using var connection =
@@ -287,6 +345,7 @@ public sealed class OracleCourseRepository : ICourseRepository
                 new
                 {
                     course.CourseId,
+                    ExpectedStatus = expectedStatus,
                     course.CourseName,
                     course.CourseType,
                     course.DurationHours,
@@ -306,17 +365,63 @@ public sealed class OracleCourseRepository : ICourseRepository
         return affectedRows > 0;
     }
 
+    public async Task<(int MaxStudents, int ValidRegistrationCount)?> GetCapacityAsync(
+        long courseId,
+        CancellationToken cancellationToken)
+    {
+        if (!_connectionFactory.IsConfigured)
+        {
+            return null;
+        }
+
+        const string sql = """
+            SELECT
+                c.MAX_STUDENTS AS "MaxStudents",
+                (
+                    SELECT COUNT(1)
+                    FROM TRAINING_REGISTRATIONS r
+                    WHERE r.COURSE_ID = c.COURSE_ID
+                      AND r.STATUS IN (
+                          'REGISTERED',
+                          'SIGNED_IN',
+                          'COMPLETED',
+                          'ABSENT')
+                ) AS "ValidRegistrationCount"
+            FROM TRAINING_COURSES c
+            WHERE c.COURSE_ID = :CourseId
+            """;
+
+        await using var connection =
+            await _connectionFactory.CreateOpenConnectionAsync(
+                cancellationToken);
+
+        var capacity = await connection.QuerySingleOrDefaultAsync<CourseCapacityRecord>(
+            new CommandDefinition(
+                sql,
+                new
+                {
+                    CourseId = courseId
+                },
+                cancellationToken: cancellationToken));
+
+        return capacity is null
+            ? null
+            : (capacity.MaxStudents, capacity.ValidRegistrationCount);
+    }
+
     public async Task<bool> UpdateStatusAsync(
         long courseId,
-        string status,
+        string expectedStatus,
+        string newStatus,
         CancellationToken cancellationToken)
     {
         const string sql = """
             UPDATE TRAINING_COURSES
             SET
-                COURSE_STATUS = :Status,
+                COURSE_STATUS = :NewStatus,
                 UPDATED_AT = SYSTIMESTAMP
             WHERE COURSE_ID = :CourseId
+              AND COURSE_STATUS = :ExpectedStatus
             """;
 
         await using var connection =
@@ -329,10 +434,18 @@ public sealed class OracleCourseRepository : ICourseRepository
                 new
                 {
                     CourseId = courseId,
-                    Status = status
+                    ExpectedStatus = expectedStatus,
+                    NewStatus = newStatus
                 },
                 cancellationToken: cancellationToken));
 
         return affectedRows > 0;
+    }
+
+    private sealed class CourseCapacityRecord
+    {
+        public int MaxStudents { get; init; }
+
+        public int ValidRegistrationCount { get; init; }
     }
 }

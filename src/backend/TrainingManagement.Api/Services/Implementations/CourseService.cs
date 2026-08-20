@@ -169,12 +169,13 @@ public sealed class CourseService : ICourseService
 
         var success = await _courseRepository.UpdateAsync(
             newCourse,
+            oldCourse.CourseStatus,
             cancellationToken);
 
         if (!success)
         {
-            throw new NotFoundApiException(
-                "课程不存在或已被删除。");
+            throw new ConflictApiException(
+                "课程状态已发生变化，请刷新后重试。");
         }
 
         var updated = await _courseRepository.GetByIdAsync(
@@ -188,6 +189,27 @@ public sealed class CourseService : ICourseService
         }
 
         return ToResponse(updated);
+    }
+
+    public async Task<(int MaxStudents, int ValidRegistrationCount, int RemainingSeats)?> GetCapacityAsync(
+        long courseId,
+        CancellationToken cancellationToken)
+    {
+        var capacity = await _courseRepository.GetCapacityAsync(
+            courseId,
+            cancellationToken);
+
+        if (capacity is null)
+        {
+            return null;
+        }
+
+        return (
+            capacity.Value.MaxStudents,
+            capacity.Value.ValidRegistrationCount,
+            Math.Max(
+                0,
+                capacity.Value.MaxStudents - capacity.Value.ValidRegistrationCount));
     }
 
     public async Task PublishAsync(
@@ -238,13 +260,14 @@ public sealed class CourseService : ICourseService
 
         var success = await _courseRepository.UpdateStatusAsync(
             courseId,
+            PublishedStatus,
             ClosedStatus,
             cancellationToken);
 
         if (!success)
         {
-            throw new NotFoundApiException(
-                "课程不存在或已被删除。");
+            throw new ConflictApiException(
+                "课程状态已发生变化，请刷新后重试。");
         }
     }
 
@@ -433,6 +456,7 @@ public sealed class CourseService : ICourseService
             || course.StartAt is null
             || course.EndAt is null
             || course.StartAt >= course.EndAt
+            || string.IsNullOrWhiteSpace(course.Location)
             || course.TrainerId is null or <= 0
             || course.DeptId is null or <= 0
             || course.BudgetAmount < 0)
