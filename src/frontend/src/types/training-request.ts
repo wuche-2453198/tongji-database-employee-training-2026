@@ -54,3 +54,29 @@ export interface CourseRequestStatus {
   requestId: number | null
   status: TrainingRequestStatus | null
 }
+
+/** 审批/备案列表项（面向 DEPT_MANAGER 与 HR） */
+export interface TrainingRequestApprovalItem {
+  requestId: number
+  employeeId: number
+  employeeName: string
+  deptName: string | null
+  courseId: number
+  courseName: string
+  courseType: string | null
+  reason: string
+  status: TrainingRequestStatus
+  createdAt: string
+  budgetAmount: number | null
+  maxStudents: number | null
+  deptApproveComment: string | null
+  deptApproveTime: string | null
+  hrFileTime: string | null
+}
+
+/** 审批/备案列表查询参数 */
+export interface TrainingRequestApprovalQuery {
+  status?: TrainingRequestStatus
+  page?: number
+  pageSize?: number
+}

@@ -2,14 +2,14 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { getCourseDetailApi } from '@/api/course'
+import { getCourseDetailApi, publishCourseApi, closeCourseApi } from '@/api/course'
 import { createTrainingRequestApi, getMyCourseRequestStatusApi } from '@/api/training-request'
 import type { CourseDetail } from '@/types/course'
 import { COURSE_STATUS_LABELS } from '@/types/enums'
 import { formatDateTime, formatDate, formatCurrency, formatDuration } from '@/utils/format'
 import StatusTag from '@/components/common/StatusTag.vue'
 import CourseCover from '@/components/common/CourseCover.vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,6 +22,11 @@ const isEmployee = computed(() => auth.hasRole(['EMPLOYEE']) && !auth.hasRole(['
 const forbidden = computed(
   () => isEmployee.value && course.value !== null && course.value.courseStatus !== 'PUBLISHED',
 )
+
+// 课程发布/关闭仅 HR/Admin 可操作（对应后端 AuthorizationPolicies.HrOrAdmin）
+const canManageCourse = computed(() => auth.hasRole(['HR', 'ADMIN']))
+const publishLoading = ref(false)
+const closeLoading = ref(false)
 
 const course = ref<CourseDetail | null>(null)
 const loading = ref(true)
@@ -46,14 +51,43 @@ const applyRules: FormRules = {
   ],
 }
 
-function remainingSlots(): number {
-  if (!course.value) return 0
+function remainingSlots(): number | null {
+  if (!course.value) return null
+  if (course.value.enrolledCount === undefined || course.value.enrolledCount === null) return null
   return course.value.maxStudents - course.value.enrolledCount
 }
 
 function canApply(): boolean {
   if (!course.value) return false
-  return course.value.courseStatus === 'PUBLISHED' && remainingSlots() > 0 && !hasApplied.value
+  if (course.value.courseStatus !== 'PUBLISHED') return false
+  // 名额数据未知时不阻止申请（以后端最终校验为准），仅明确满员时禁止
+  if (remainingSlots() !== null && remainingSlots()! <= 0) return false
+  return !hasApplied.value
+}
+
+async function handlePublish() {
+  publishLoading.value = true
+  const res = await publishCourseApi(courseId)
+  publishLoading.value = false
+  if (res.success) {
+    ElMessage.success('课程已发布')
+    await fetchDetail()
+  } else {
+    // 后端 PublishAsync 当前可能固定返回 409，需如实展示后端原因，不得提示“发布成功”
+    ElMessage.error(res.message || '发布失败')
+  }
+}
+
+async function handleClose() {
+  closeLoading.value = true
+  const res = await closeCourseApi(courseId)
+  closeLoading.value = false
+  if (res.success) {
+    ElMessage.success('课程已关闭')
+    await fetchDetail()
+  } else {
+    ElMessage.error(res.message || '关闭失败')
+  }
 }
 
 async function fetchDetail() {
@@ -205,9 +239,14 @@ onMounted(() => {
             <div class="summary-stats">
               <div class="stat-item">
                 <div class="stat-label">剩余名额</div>
-                <div class="stat-value" :class="{ 'text-warning': remainingSlots() <= 3 && remainingSlots() > 0, 'text-danger': remainingSlots() <= 0 }">
+                <div
+                  v-if="remainingSlots() !== null"
+                  class="stat-value"
+                  :class="{ 'text-warning': remainingSlots()! <= 3 && remainingSlots()! > 0, 'text-danger': remainingSlots()! <= 0 }"
+                >
                   {{ remainingSlots() }} / {{ course.maxStudents }}
                 </div>
+                <div v-else class="stat-value stat-value--muted">名额数据暂不可用</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">培训费用</div>
@@ -224,31 +263,60 @@ onMounted(() => {
             </div>
 
             <div class="summary-action">
-              <el-button
-                v-if="canApply()"
-                type="primary"
-                size="large"
-                @click="openApplyDialog"
-              >
-                申请培训
-              </el-button>
-              <el-button
-                v-else-if="hasApplied"
-                type="primary"
-                size="large"
-                @click="openApplyDialog"
-              >
-                查看申请进度
-              </el-button>
-              <el-tag v-else-if="course.courseStatus === 'DRAFT'" type="info" size="large">
-                课程未发布
-              </el-tag>
-              <el-tag v-else-if="course.courseStatus === 'CLOSED'" type="info" size="large">
-                课程已关闭
-              </el-tag>
-              <el-tag v-else-if="remainingSlots() <= 0" type="warning" size="large">
-                名额已满
-              </el-tag>
+              <!-- 课程管理（仅 HR/Admin） -->
+              <template v-if="canManageCourse">
+                <el-button
+                  v-if="course.courseStatus === 'DRAFT'"
+                  type="primary"
+                  size="large"
+                  :loading="publishLoading"
+                  @click="handlePublish"
+                >
+                  发布课程
+                </el-button>
+                <el-popconfirm
+                  v-else-if="course.courseStatus === 'PUBLISHED'"
+                  title="确定关闭该课程吗？关闭后员工将无法申请"
+                  confirm-button-text="关闭"
+                  cancel-button-text="取消"
+                  confirm-button-type="danger"
+                  @confirm="handleClose"
+                >
+                  <template #reference>
+                    <el-button type="danger" size="large" :loading="closeLoading">关闭课程</el-button>
+                  </template>
+                </el-popconfirm>
+                <el-tag v-else type="info" size="large">已关闭</el-tag>
+              </template>
+
+              <!-- 申请相关操作 -->
+              <template v-if="!canManageCourse || course.courseStatus === 'PUBLISHED'">
+                <el-button
+                  v-if="canApply()"
+                  type="primary"
+                  size="large"
+                  @click="openApplyDialog"
+                >
+                  申请培训
+                </el-button>
+                <el-button
+                  v-else-if="hasApplied"
+                  type="primary"
+                  size="large"
+                  @click="openApplyDialog"
+                >
+                  查看申请进度
+                </el-button>
+                <el-tag v-else-if="course.courseStatus === 'DRAFT'" type="info" size="large">
+                  课程未发布
+                </el-tag>
+                <el-tag v-else-if="course.courseStatus === 'CLOSED'" type="info" size="large">
+                  课程已关闭
+                </el-tag>
+                <el-tag v-else-if="remainingSlots() !== null && remainingSlots()! <= 0" type="warning" size="large">
+                  名额已满
+                </el-tag>
+              </template>
             </div>
           </div>
         </div>
@@ -466,6 +534,12 @@ onMounted(() => {
 
     &.text-danger {
       color: var(--color-danger);
+    }
+
+    &--muted {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--color-text-placeholder);
     }
   }
 }

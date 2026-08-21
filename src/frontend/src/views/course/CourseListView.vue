@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted, computed, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { getCourseListApi, getTrainerListApi } from '@/api/course'
-import type { CourseListItem, CourseQuery, Trainer } from '@/types/course'
+import { getCourseListApi } from '@/api/course'
+import type { CourseListItem, CourseQuery } from '@/types/course'
 import type { CourseStatus } from '@/types/enums'
 import { COURSE_STATUS_LABELS } from '@/types/enums'
 import { formatDateTime, formatCurrency, formatDuration } from '@/utils/format'
@@ -14,6 +14,7 @@ import AsyncState from '@/components/common/AsyncState.vue'
 import CourseCover from '@/components/common/CourseCover.vue'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 
 // 普通员工：只看到已发布课程；其余角色（主管/HR/管理员）可查看全部状态
@@ -24,7 +25,6 @@ const query = reactive<CourseQuery>({
   keyword: '',
   courseType: undefined,
   status: undefined,
-  trainerId: undefined,
   startDate: undefined,
   endDate: undefined,
   page: 1,
@@ -32,7 +32,6 @@ const query = reactive<CourseQuery>({
 })
 
 const dateRange = ref<[string, string] | null>(null)
-const trainers = ref<Trainer[]>([])
 
 const courseList = ref<CourseListItem[]>([])
 const total = ref(0)
@@ -54,12 +53,7 @@ const courseTypeOptions = [
 ]
 
 // 展开区域中已生效的筛选条件数量（用于折叠时提示）
-const activeFilterCount = computed(() => {
-  let n = 0
-  if (query.trainerId) n += 1
-  if (dateRange.value && dateRange.value.length === 2) n += 1
-  return n
-})
+const activeFilterCount = computed(() => (dateRange.value && dateRange.value.length === 2 ? 1 : 0))
 
 function buildQuery(): CourseQuery {
   return {
@@ -67,7 +61,6 @@ function buildQuery(): CourseQuery {
     courseType: query.courseType,
     // 普通员工强制只看已发布（前端防御，最终以后端权限校验为准）
     status: isEmployee.value ? 'PUBLISHED' : query.status,
-    trainerId: query.trainerId,
     startDate: dateRange.value?.[0],
     endDate: dateRange.value?.[1],
     page: query.page,
@@ -75,11 +68,17 @@ function buildQuery(): CourseQuery {
   }
 }
 
+// 请求序号：防止快速筛选时旧请求覆盖新结果
+let requestSeq = 0
+
 async function fetchCourses() {
+  const seq = ++requestSeq
   loading.value = true
   error.value = false
 
   const res = await getCourseListApi(buildQuery())
+  if (seq !== requestSeq) return
+
   loading.value = false
 
   if (res.success && res.data) {
@@ -91,30 +90,52 @@ async function fetchCourses() {
   }
 }
 
-async function fetchTrainers() {
-  const res = await getTrainerListApi()
-  if (res.success && res.data) {
-    trainers.value = res.data
-  }
+// 关键词输入 300ms 防抖
+let keywordTimer: number | undefined
+
+function onKeywordInput() {
+  if (keywordTimer) window.clearTimeout(keywordTimer)
+  keywordTimer = window.setTimeout(() => handleSearch(), 300)
+}
+
+function syncUrl() {
+  const params: Record<string, string> = {}
+  if (query.keyword) params.keyword = query.keyword
+  if (query.courseType) params.courseType = query.courseType
+  if (canManageStatus.value && query.status) params.status = query.status
+  if (dateRange.value?.[0]) params.startDate = dateRange.value[0]
+  if (dateRange.value?.[1]) params.endDate = dateRange.value[1]
+  if (query.page && query.page !== 1) params.page = String(query.page)
+  router.replace({ query: params })
 }
 
 function handleSearch() {
+  if (keywordTimer) {
+    window.clearTimeout(keywordTimer)
+    keywordTimer = undefined
+  }
   query.page = 1
+  syncUrl()
   fetchCourses()
 }
 
 function handleReset() {
+  if (keywordTimer) {
+    window.clearTimeout(keywordTimer)
+    keywordTimer = undefined
+  }
   query.keyword = ''
   query.courseType = undefined
   query.status = undefined
-  query.trainerId = undefined
   dateRange.value = null
   query.page = 1
+  syncUrl()
   fetchCourses()
 }
 
 function handlePageChange(page: number) {
   query.page = page
+  syncUrl()
   fetchCourses()
 }
 
@@ -122,13 +143,33 @@ function goToDetail(courseId: number) {
   router.push(`/courses/${courseId}`)
 }
 
-function remainingSlots(course: CourseListItem): number {
+/** 后端暂未返回 enrolledCount，缺失时返回 null，前端不伪造为 0 */
+function remainingSlots(course: CourseListItem): number | null {
+  if (course.enrolledCount === undefined || course.enrolledCount === null) return null
   return course.maxStudents - course.enrolledCount
 }
 
+/** 从 URL 恢复筛选状态（刷新页面后保留） */
+function readInitialQuery() {
+  const q = route.query
+  query.keyword = typeof q.keyword === 'string' ? q.keyword : ''
+  query.courseType = typeof q.courseType === 'string' ? q.courseType : undefined
+  if (typeof q.status === 'string') {
+    query.status = q.status as CourseStatus
+  }
+  query.page = q.page ? Math.max(1, Number(q.page) || 1) : 1
+  if (typeof q.startDate === 'string' && typeof q.endDate === 'string') {
+    dateRange.value = [q.startDate, q.endDate]
+  }
+}
+
 onMounted(() => {
+  readInitialQuery()
   fetchCourses()
-  fetchTrainers()
+})
+
+onBeforeUnmount(() => {
+  if (keywordTimer) window.clearTimeout(keywordTimer)
 })
 </script>
 
@@ -144,6 +185,7 @@ onMounted(() => {
           placeholder="搜索课程或讲师"
           clearable
           style="width: 260px"
+          @input="onKeywordInput"
           @keyup.enter="handleSearch"
         />
       </el-form-item>
@@ -153,6 +195,7 @@ onMounted(() => {
           placeholder="全部"
           clearable
           style="width: 140px"
+          @change="handleSearch"
         >
           <el-option
             v-for="opt in courseTypeOptions"
@@ -168,6 +211,7 @@ onMounted(() => {
           placeholder="全部"
           clearable
           style="width: 140px"
+          @change="handleSearch"
         >
           <el-option
             v-for="opt in statusOptions"
@@ -180,21 +224,6 @@ onMounted(() => {
 
       <template #extra>
         <el-form inline>
-          <el-form-item label="讲师">
-            <el-select
-              v-model="query.trainerId"
-              placeholder="全部"
-              clearable
-              style="width: 160px"
-            >
-              <el-option
-                v-for="t in trainers"
-                :key="t.trainerId"
-                :label="t.trainerName"
-                :value="t.trainerId"
-              />
-            </el-select>
-          </el-form-item>
           <el-form-item label="开课日期">
             <el-date-picker
               v-model="dateRange"
@@ -204,6 +233,7 @@ onMounted(() => {
               end-placeholder="结束日期"
               value-format="YYYY-MM-DD"
               style="width: 260px"
+              @change="handleSearch"
             />
           </el-form-item>
         </el-form>
@@ -240,16 +270,16 @@ onMounted(() => {
             <div class="card-top">
               <StatusTag :type="course.courseStatus" :label-map="COURSE_STATUS_LABELS" />
               <span class="course-type">{{ course.courseType }}</span>
-              <!-- 剩余名额提示 -->
+              <!-- 剩余名额提示（仅当后端返回已报名人数时展示） -->
               <span
-                v-if="course.courseStatus === 'PUBLISHED'"
+                v-if="course.courseStatus === 'PUBLISHED' && remainingSlots(course) !== null"
                 class="slots-badge"
                 :class="{
-                  'slots-warning': remainingSlots(course) > 0 && remainingSlots(course) <= 3,
-                  'slots-full': remainingSlots(course) <= 0,
+                  'slots-warning': remainingSlots(course)! > 0 && remainingSlots(course)! <= 3,
+                  'slots-full': remainingSlots(course)! <= 0,
                 }"
               >
-                {{ remainingSlots(course) <= 0 ? '名额已满' : `剩余 ${remainingSlots(course)} 人` }}
+                {{ remainingSlots(course)! <= 0 ? '名额已满' : `剩余 ${remainingSlots(course)} 人` }}
               </span>
             </div>
 
@@ -291,12 +321,15 @@ onMounted(() => {
             <!-- 底部 -->
             <div class="card-footer">
               <div class="capacity-info">
-                <span>
+                <template v-if="course.enrolledCount !== undefined && course.enrolledCount !== null">
                   已报名 {{ course.enrolledCount }} / {{ course.maxStudents }}
-                </span>
+                </template>
+                <template v-else>
+                  名额上限 {{ course.maxStudents }} 人
+                </template>
               </div>
               <el-button
-                v-if="course.courseStatus === 'PUBLISHED' && remainingSlots(course) > 0"
+                v-if="course.courseStatus === 'PUBLISHED' && (remainingSlots(course) === null || remainingSlots(course)! > 0)"
                 type="primary"
                 size="small"
                 @click.stop="goToDetail(course.courseId)"
@@ -304,7 +337,7 @@ onMounted(() => {
                 查看详情
               </el-button>
               <el-button
-                v-else-if="course.courseStatus === 'PUBLISHED' && remainingSlots(course) <= 0"
+                v-else-if="course.courseStatus === 'PUBLISHED' && remainingSlots(course)! <= 0"
                 size="small"
                 disabled
               >

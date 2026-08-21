@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import { useMock } from '@/config/mock'
 
 export interface DashboardStats {
   /** 卡片统计项 */
@@ -25,5 +26,7 @@ export interface DashboardShortcut {
 
 /** 获取当前角色的 Dashboard 统计数据 */
 export function getDashboardStatsApi() {
-  return apiRequest<DashboardStats>('GET', '/api/dashboard/stats')
+  return apiRequest<DashboardStats>('GET', '/api/dashboard/stats', undefined, {
+    mock: useMock('dashboard'),
+  })
 }

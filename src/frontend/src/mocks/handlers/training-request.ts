@@ -2,6 +2,8 @@ import type { PagedResult } from '@/types/api'
 import type {
   CourseRequestStatus,
   CreateTrainingRequest,
+  TrainingRequestApprovalItem,
+  TrainingRequestApprovalQuery,
   TrainingRequestDetail,
   TrainingRequestItem,
   TrainingRequestQuery,
@@ -10,21 +12,43 @@ import type {
 import { mockCourses } from '../data/courses'
 import {
   addMockRequest,
+  approveMockRequest,
+  fileMockRequest,
   findMockRequest,
   findMockRequestById,
+  mockEmployeeDirectory,
   mockTrainingRequests,
+  rejectMockRequest,
   removeMockRequest,
   type MockTrainingRequest,
 } from '../data/training-requests'
 
 function getEmpIdFromToken(token?: string): number | null {
-  if (!token || !token.startsWith('mock-jwt-')) return null
+  if (token && token.startsWith('mock-jwt-')) {
+    try {
+      const payload = JSON.parse(atob(token.replace('mock-jwt-', '')))
+      const sub = payload.sub as number | undefined
+      if (sub) return sub
+    } catch {
+      // 解析失败则回退到 user_info
+    }
+  }
+  // 真实 JWT 无法被 Mock 解析时，回退到登录时缓存到 localStorage 的用户信息
   try {
-    const payload = JSON.parse(atob(token.replace('mock-jwt-', '')))
-    return (payload.sub as number) ?? null
+    const info = JSON.parse(localStorage.getItem('user_info') || 'null')
+    return (info?.empId as number) ?? null
   } catch {
     return null
   }
+}
+
+function getApproverName(token?: string): string {
+  const empId = getEmpIdFromToken(token)
+  if (empId) {
+    const dir = mockEmployeeDirectory[empId]
+    if (dir) return dir.name
+  }
+  return '审批人'
 }
 
 function getCourse(courseId: number) {
@@ -197,5 +221,93 @@ export function handleMockWithdrawRequest(requestId: number, token?: string): { 
   }
 
   removeMockRequest(requestId)
+  return { requestId }
+}
+
+function toApprovalItem(req: MockTrainingRequest): TrainingRequestApprovalItem {
+  const course = getCourse(req.courseId)
+  const emp = mockEmployeeDirectory[req.empId]
+  return {
+    requestId: req.requestId,
+    employeeId: req.empId,
+    employeeName: emp?.name ?? `员工 #${req.empId}`,
+    deptName: emp?.deptName ?? null,
+    courseId: req.courseId,
+    courseName: course?.courseName ?? `课程 #${req.courseId}`,
+    courseType: course?.courseType ?? null,
+    reason: req.reason,
+    status: req.status,
+    createdAt: req.createdAt,
+    budgetAmount: course?.budgetAmount ?? null,
+    maxStudents: course?.maxStudents ?? null,
+    deptApproveComment: req.reviewComment,
+    deptApproveTime: req.reviewedAt,
+    hrFileTime: req.filedAt,
+  }
+}
+
+export function handleMockGetAllRequests(
+  query: TrainingRequestApprovalQuery,
+  token?: string,
+): PagedResult<TrainingRequestApprovalItem> {
+  if (!getEmpIdFromToken(token)) {
+    throw { status: 401, message: '未登录' }
+  }
+
+  let list = [...mockTrainingRequests]
+  if (query.status) {
+    list = list.filter((r) => r.status === query.status)
+  }
+  list = list.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+
+  const page = query.page ?? 1
+  const pageSize = query.pageSize ?? 10
+  const total = list.length
+  const start = (page - 1) * pageSize
+  const items = list.slice(start, start + pageSize).map(toApprovalItem)
+  return { items, page, pageSize, total }
+}
+
+export function handleMockDeptApprove(
+  requestId: number,
+  comment: string | null,
+  token?: string,
+): { requestId: number } {
+  if (!getEmpIdFromToken(token)) {
+    throw { status: 401, message: '未登录' }
+  }
+  const ok = approveMockRequest(requestId, getApproverName(token), comment)
+  if (!ok) {
+    throw { status: 409, message: '只有待审批的申请可以审批' }
+  }
+  return { requestId }
+}
+
+export function handleMockDeptReject(
+  requestId: number,
+  comment: string,
+  token?: string,
+): { requestId: number } {
+  if (!getEmpIdFromToken(token)) {
+    throw { status: 401, message: '未登录' }
+  }
+  if (!comment || !comment.trim()) {
+    throw { status: 400, message: '驳回时必须填写理由' }
+  }
+  const ok = rejectMockRequest(requestId, getApproverName(token), comment)
+  if (!ok) {
+    throw { status: 409, message: '只有待审批的申请可以驳回' }
+  }
+  return { requestId }
+}
+
+export function handleMockHrFile(requestId: number, token?: string): { requestId: number } {
+  if (!getEmpIdFromToken(token)) {
+    throw { status: 401, message: '未登录' }
+  }
+  const ok = fileMockRequest(requestId, getApproverName(token))
+  if (!ok) {
+    throw { status: 409, message: '只有主管已通过的申请可以备案' }
+  }
   return { requestId }
 }

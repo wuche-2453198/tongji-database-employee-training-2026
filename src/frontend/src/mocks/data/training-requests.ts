@@ -83,9 +83,50 @@ export const mockTrainingRequests: MockTrainingRequest[] = [
     filedByName: '李HR',
     filingComment: '已登记培训档案，可正常参训',
   },
+  {
+    requestId: 5,
+    empId: 5,
+    courseId: 5,
+    reason: '提升 B2B 销售技巧，冲刺下半年业绩',
+    expectedGain: '掌握大客户销售方法论',
+    status: 'PENDING',
+    createdAt: '2026-08-05T09:30:00',
+    updatedAt: '2026-08-05T09:30:00',
+    reviewedAt: null,
+    reviewerName: null,
+    reviewComment: null,
+    filedAt: null,
+    filedByName: null,
+    filingComment: null,
+  },
+  {
+    requestId: 6,
+    empId: 6,
+    courseId: 4,
+    reason: '学习产品设计方法，优化用户体验',
+    expectedGain: null,
+    status: 'DEPT_APPROVED',
+    createdAt: '2026-08-03T14:00:00',
+    updatedAt: '2026-08-06T10:00:00',
+    reviewedAt: '2026-08-06T10:00:00',
+    reviewerName: '王主管',
+    reviewComment: '产品线需要，同意',
+    filedAt: null,
+    filedByName: null,
+    filingComment: null,
+  },
 ]
 
-let nextId = 5
+/** 员工目录（Mock 联查，真实后端应从 EMPLOYEE 表关联查询） */
+export const mockEmployeeDirectory: Record<number, { name: string; deptName: string }> = {
+  2: { name: '测试普通员工', deptName: '研发部' },
+  3: { name: '测试部门主管', deptName: '研发部' },
+  4: { name: '测试HR专员', deptName: '人力资源部' },
+  5: { name: '张三', deptName: '研发部' },
+  6: { name: '李四', deptName: '产品部' },
+}
+
+let nextId = 7
 
 export function addMockRequest(
   empId: number,
@@ -126,5 +167,53 @@ export function removeMockRequest(requestId: number): boolean {
   const idx = mockTrainingRequests.findIndex((r) => r.requestId === requestId)
   if (idx === -1) return false
   mockTrainingRequests.splice(idx, 1)
+  return true
+}
+
+function touch(req: MockTrainingRequest): void {
+  const now = new Date().toISOString()
+  req.updatedAt = now
+}
+
+/** 主管审批通过 */
+export function approveMockRequest(
+  requestId: number,
+  approverName: string,
+  comment: string | null,
+): boolean {
+  const req = findMockRequestById(requestId)
+  if (!req || req.status !== 'PENDING') return false
+  req.status = 'DEPT_APPROVED'
+  req.reviewedAt = new Date().toISOString()
+  req.reviewerName = approverName
+  req.reviewComment = comment || null
+  touch(req)
+  return true
+}
+
+/** 主管驳回 */
+export function rejectMockRequest(
+  requestId: number,
+  approverName: string,
+  comment: string,
+): boolean {
+  const req = findMockRequestById(requestId)
+  if (!req || req.status !== 'PENDING') return false
+  req.status = 'DEPT_REJECTED'
+  req.reviewedAt = new Date().toISOString()
+  req.reviewerName = approverName
+  req.reviewComment = comment || null
+  touch(req)
+  return true
+}
+
+/** HR 备案 */
+export function fileMockRequest(requestId: number, hrName: string): boolean {
+  const req = findMockRequestById(requestId)
+  if (!req || req.status !== 'DEPT_APPROVED') return false
+  req.status = 'HR_FILED'
+  req.filedAt = new Date().toISOString()
+  req.filedByName = hrName
+  touch(req)
   return true
 }

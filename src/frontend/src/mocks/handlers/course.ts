@@ -22,10 +22,6 @@ export function handleMockGetCourseList(query: CourseQuery): PagedResult<CourseL
     list = list.filter((c) => c.courseStatus === query.status)
   }
 
-  if (query.trainerId) {
-    list = list.filter((c) => c.trainerId === query.trainerId)
-  }
-
   if (query.startDate) {
     list = list.filter((c) => c.startAt && c.startAt.slice(0, 10) >= query.startDate!)
   }
@@ -52,4 +48,28 @@ export function handleMockGetCourseDetail(id: number): CourseDetail {
     throw { status: 404, message: '课程不存在' }
   }
   return detail
+}
+
+/** 同步更新列表与详情两份 Mock 数据，保证发布/关闭后两处状态一致 */
+function syncMockCourseStatus(id: number, status: CourseListItem['courseStatus']): void {
+  const course = mockCourses.find((c) => c.courseId === id)
+  if (course) course.courseStatus = status
+  const detail = mockCourseDetails[id]
+  if (detail) detail.courseStatus = status
+}
+
+export function handleMockPublishCourse(id: number): { published: boolean } {
+  const course = mockCourses.find((c) => c.courseId === id)
+  if (!course) throw { status: 404, message: '课程不存在' }
+  if (course.courseStatus === 'PUBLISHED') throw { status: 409, message: '课程已发布，不能重复发布' }
+  syncMockCourseStatus(id, 'PUBLISHED')
+  return { published: true }
+}
+
+export function handleMockCloseCourse(id: number): { closed: boolean } {
+  const course = mockCourses.find((c) => c.courseId === id)
+  if (!course) throw { status: 404, message: '课程不存在' }
+  if (course.courseStatus !== 'PUBLISHED') throw { status: 409, message: '只有已发布的课程可以关闭' }
+  syncMockCourseStatus(id, 'CLOSED')
+  return { closed: true }
 }

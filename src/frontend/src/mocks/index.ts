@@ -1,16 +1,30 @@
 import type { ApiResponse } from '@/types/api'
 import type { LoginRequest } from '@/types/auth'
 import type { CourseQuery } from '@/types/course'
-import type { CreateTrainingRequest, TrainingRequestQuery } from '@/types/training-request'
+import type {
+  CreateTrainingRequest,
+  TrainingRequestApprovalQuery,
+  TrainingRequestQuery,
+} from '@/types/training-request'
 import { handleMockLogin, handleMockGetMe } from './handlers/auth'
-import { handleMockGetCourseList, handleMockGetCourseDetail, handleMockGetTrainerList } from './handlers/course'
+import {
+  handleMockGetCourseList,
+  handleMockGetCourseDetail,
+  handleMockGetTrainerList,
+  handleMockPublishCourse,
+  handleMockCloseCourse,
+} from './handlers/course'
 import { handleMockGetDashboard } from './handlers/dashboard'
 import {
   handleMockCreateRequest,
+  handleMockGetAllRequests,
   handleMockGetMyCourseRequestStatus,
   handleMockGetMyRequests,
   handleMockGetRequestDetail,
   handleMockWithdrawRequest,
+  handleMockDeptApprove,
+  handleMockDeptReject,
+  handleMockHrFile,
 } from './handlers/training-request'
 
 /**
@@ -47,6 +61,22 @@ const routes: Record<string, MockHandler> = {
     } catch (e: unknown) {
       const err = e as { message: string }
       return { success: false, message: err.message, data: null, traceId: 'mock-trace-004' }
+    }
+  },
+  'PATCH /api/courses/:id/publish': (id) => {
+    try {
+      return { success: true, message: 'ok', data: handleMockPublishCourse(id as number), traceId: 'mock-trace-012' }
+    } catch (e: unknown) {
+      const err = e as { message: string }
+      return { success: false, message: err.message, data: null, traceId: 'mock-trace-012' }
+    }
+  },
+  'PATCH /api/courses/:id/close': (id) => {
+    try {
+      return { success: true, message: 'ok', data: handleMockCloseCourse(id as number), traceId: 'mock-trace-013' }
+    } catch (e: unknown) {
+      const err = e as { message: string }
+      return { success: false, message: err.message, data: null, traceId: 'mock-trace-013' }
     }
   },
   'GET /api/trainers': () => {
@@ -93,6 +123,40 @@ const routes: Record<string, MockHandler> = {
     } catch (e: unknown) {
       const err = e as { message: string }
       return { success: false, message: err.message, data: null, traceId: 'mock-trace-011' }
+    }
+  },
+  'GET /api/training-requests': (query, token) => {
+    try {
+      return { success: true, message: 'ok', data: handleMockGetAllRequests(query as TrainingRequestApprovalQuery, token as string | undefined), traceId: 'mock-trace-014' }
+    } catch (e: unknown) {
+      const err = e as { message: string }
+      return { success: false, message: err.message, data: null, traceId: 'mock-trace-014' }
+    }
+  },
+  'PATCH /api/training-requests/:id/dept-approve': (id, data, token) => {
+    try {
+      const body = data as { comment?: string | null }
+      return { success: true, message: '审批通过', data: handleMockDeptApprove(id as number, body?.comment ?? null, token as string | undefined), traceId: 'mock-trace-015' }
+    } catch (e: unknown) {
+      const err = e as { message: string }
+      return { success: false, message: err.message, data: null, traceId: 'mock-trace-015' }
+    }
+  },
+  'PATCH /api/training-requests/:id/dept-reject': (id, data, token) => {
+    try {
+      const body = data as { comment?: string }
+      return { success: true, message: '已驳回', data: handleMockDeptReject(id as number, body?.comment ?? '', token as string | undefined), traceId: 'mock-trace-016' }
+    } catch (e: unknown) {
+      const err = e as { message: string }
+      return { success: false, message: err.message, data: null, traceId: 'mock-trace-016' }
+    }
+  },
+  'PATCH /api/training-requests/:id/hr-file': (id, _data, token) => {
+    try {
+      return { success: true, message: '备案完成', data: handleMockHrFile(id as number, token as string | undefined), traceId: 'mock-trace-017' }
+    } catch (e: unknown) {
+      const err = e as { message: string }
+      return { success: false, message: err.message, data: null, traceId: 'mock-trace-017' }
     }
   },
 }

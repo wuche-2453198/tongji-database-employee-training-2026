@@ -9,7 +9,8 @@ export interface CourseListItem {
   trainerId: number | null
   trainerName: string | null
   maxStudents: number
-  enrolledCount: number
+  /** 已报名人数；后端 CourseResponse 暂未返回该字段，缺失时前端显示「名额数据暂不可用」 */
+  enrolledCount?: number
   startAt: string | null
   endAt: string | null
   location: string | null
@@ -38,7 +39,6 @@ export interface CourseQuery {
   keyword?: string
   courseType?: string
   status?: CourseStatus
-  trainerId?: number
   startDate?: string
   endDate?: string
   page?: number
