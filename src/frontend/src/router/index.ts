@@ -57,13 +57,13 @@ const routes: RouteRecordRaw[] = [
         path: 'dept-approval',
         name: 'DeptApproval',
         meta: { title: '主管审批', icon: 'Select', roles: ['DEPT_MANAGER', 'ADMIN'] },
-        component: () => import('@/views/common/PlaceholderView.vue'),
+        component: () => import('@/views/request/DeptApprovalView.vue'),
       },
       {
         path: 'hr-filing',
         name: 'HrFiling',
         meta: { title: 'HR 备案', icon: 'Stamp', roles: ['HR', 'ADMIN'] },
-        component: () => import('@/views/common/PlaceholderView.vue'),
+        component: () => import('@/views/request/HrFilingView.vue'),
       },
       // 培训运营
       {

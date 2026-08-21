@@ -5,6 +5,7 @@ import {
   getMyTrainingRequestsApi,
   getTrainingRequestDetailApi,
   withdrawTrainingRequestApi,
+  isWithdrawSupported,
 } from '@/api/training-request'
 import type {
   TrainingRequestItem,
@@ -127,6 +128,7 @@ async function openDetail(item: TrainingRequestItem) {
 }
 
 // 撤回申请
+const withdrawSupported = isWithdrawSupported()
 const withdrawingId = ref<number | null>(null)
 
 async function handleWithdraw(item: TrainingRequestItem) {
@@ -221,7 +223,7 @@ onMounted(fetchList)
           <template #default="{ row }">
             <el-button text type="primary" size="small" @click="openDetail(row)">查看进度</el-button>
             <el-popconfirm
-              v-if="row.status === 'PENDING'"
+              v-if="row.status === 'PENDING' && withdrawSupported"
               title="确定撤回该申请吗？"
               confirm-button-text="撤回"
               cancel-button-text="取消"
@@ -231,6 +233,15 @@ onMounted(fetchList)
                 <el-button text type="danger" size="small" :disabled="withdrawingId !== null">撤回</el-button>
               </template>
             </el-popconfirm>
+            <el-tooltip
+              v-else-if="row.status === 'PENDING'"
+              content="撤回接口尚未提供"
+              placement="top"
+            >
+              <span>
+                <el-button text type="danger" size="small" disabled>撤回</el-button>
+              </span>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
