@@ -8,6 +8,7 @@ import DataTable from '@/components/common/DataTable.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import PageState from '@/components/common/PageState.vue'
 import { getCourseService } from '@/services/course'
+import { getRegistrationService } from '@/services/registration'
 import { isServiceError, type UiError } from '@/types/api'
 import type { CourseSummary } from '@/types/course'
 import type { TableColumn } from '@/types/ui'
@@ -93,11 +94,11 @@ async function register(): Promise<void> {
   actionMessage.value = ''
 
   try {
-    const service = await getCourseService()
+    const service = await getRegistrationService()
     const receipt = await submissions.run('course-registration', () =>
-      service.registerForCourse(rows.value[0]?.id || 'COURSE-2026-001'),
+      service.create({ courseId: rows.value[0]?.id || '4001' }),
     )
-    actionMessage.value = `报名成功：${receipt.registrationId}`
+    actionMessage.value = `报名成功：${receipt.id}`
   } catch (caught) {
     error.value = isServiceError(caught)
       ? caught.ui

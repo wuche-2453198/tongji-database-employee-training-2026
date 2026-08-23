@@ -1,13 +1,6 @@
-import type { PageResult, ServiceRequestOptions } from '@/types/api'
-import type { CourseListQuery, CourseSummary, RegistrationReceipt } from '@/types/course'
+import type { CourseService } from '@/domains/course'
 
-export interface CourseService {
-  listCourses(
-    query: CourseListQuery,
-    options?: ServiceRequestOptions,
-  ): Promise<PageResult<CourseSummary>>
-  registerForCourse(courseId: string, options?: ServiceRequestOptions): Promise<RegistrationReceipt>
-}
+export type { CourseService } from '@/domains/course'
 
 let servicePromise: Promise<CourseService> | undefined
 

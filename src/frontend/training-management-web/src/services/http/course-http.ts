@@ -1,11 +1,6 @@
 import { requestApi } from '@/api/client'
-import { mapCoursePage, mapRegistrationReceipt } from '@/api/mappers/course'
-import type {
-  ApiEnvelopeDto,
-  CourseSummaryDto,
-  PageDto,
-  RegistrationReceiptDto,
-} from '@/api/transport'
+import { mapCourseDetail, mapCoursePage } from '@/api/mappers/course'
+import type { ApiEnvelopeDto, CourseSummaryDto, PageDto } from '@/api/transport'
 import type { CourseService } from '@/services/course'
 
 export const httpCourseService: CourseService = {
@@ -15,8 +10,14 @@ export const httpCourseService: CourseService = {
       url: '/api/courses',
       params: {
         courseName: query.keyword || undefined,
+        courseType: query.type || undefined,
+        status: query.status || undefined,
+        startDateFrom: query.startDateFrom || undefined,
+        startDateTo: query.startDateTo || undefined,
         page: query.page,
         pageSize: query.pageSize,
+        sortBy: query.sortBy || 'startTime',
+        sortDirection: query.sortDirection || 'desc',
       },
       signal: options?.signal,
       operation: 'query',
@@ -24,16 +25,19 @@ export const httpCourseService: CourseService = {
     return mapCoursePage(response)
   },
 
-  async registerForCourse(courseId, options) {
-    const response = await requestApi<ApiEnvelopeDto<RegistrationReceiptDto>, { courseId: string }>(
-      {
-        method: 'POST',
-        url: '/api/registrations',
-        data: { courseId },
-        signal: options?.signal,
-        operation: 'write',
-      },
-    )
-    return mapRegistrationReceipt(response)
+  async getCourse(courseId, options) {
+    // TODO(API-Q-009): 最终详情路径、资格字段和 DTO 包裹结构待 OpenAPI 冻结。
+    const response = await requestApi<ApiEnvelopeDto<import('@/api/transport').CourseDetailDto>>({
+      method: 'GET',
+      url: `/api/courses/${encodeURIComponent(courseId)}`,
+      signal: options?.signal,
+      operation: 'query',
+    })
+    return mapCourseDetail(response)
+  },
+
+  async getActionEligibility(courseId, options) {
+    // TODO(API-Q-009): 若资格独立接口冻结，应在此适配；当前先从详情响应承接。
+    return (await this.getCourse(courseId, options)).eligibility
   },
 }

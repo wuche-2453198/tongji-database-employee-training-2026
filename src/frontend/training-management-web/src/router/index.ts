@@ -25,7 +25,34 @@ const protectedPage = (
 ): RouteRecordRaw => ({
   path,
   name,
-  component: () => import('@/views/placeholders/BusinessPlaceholderView.vue'),
+  component:
+    name === 'course-list'
+      ? () => import('@/views/courses/CourseListView.vue')
+      : name === 'course-detail'
+        ? () => import('@/views/courses/CourseDetailView.vue')
+        : name === 'request-create'
+          ? () => import('@/views/requests/RequestCreateView.vue')
+          : name === 'my-request-list'
+            ? () => import('@/views/requests/MyRequestListView.vue')
+            : name === 'request-detail'
+              ? () => import('@/views/requests/RequestDetailView.vue')
+              : name === 'department-approval'
+                ? () => import('@/views/approvals/DepartmentApprovalView.vue')
+                : name === 'hr-filing'
+                  ? () => import('@/views/filings/HrFilingView.vue')
+                  : name === 'my-registration-list'
+                    ? () => import('@/views/registrations/MyRegistrationListView.vue')
+                    : name === 'registration-detail'
+                      ? () => import('@/views/registrations/RegistrationDetailView.vue')
+                      : name === 'attendance-management'
+                        ? () => import('@/views/attendance/AttendanceManagementView.vue')
+                        : name === 'my-certificate-list'
+                          ? () => import('@/views/certificates/MyCertificateListView.vue')
+                          : name === 'certificate-management'
+                            ? () => import('@/views/certificates/CertificateManagementView.vue')
+                            : name === 'certificate-detail'
+                              ? () => import('@/views/certificates/CertificateDetailView.vue')
+                              : () => import('@/views/errors/NotFoundView.vue'),
   meta: {
     title,
     requiresAuth: true,

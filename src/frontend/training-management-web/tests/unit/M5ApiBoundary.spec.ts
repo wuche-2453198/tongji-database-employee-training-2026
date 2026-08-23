@@ -1,5 +1,5 @@
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { toUiError } from '@/api/error'
 import { requestApi } from '@/api/client'
@@ -7,6 +7,8 @@ import { mapCoursePage } from '@/api/mappers/course'
 import { LatestRequestController, SingleFlightController } from '@/api/request-control'
 import type { ApiEnvelopeDto, CourseSummaryDto, PageDto } from '@/api/transport'
 import { createMockCourseService, type CourseMockScenario } from '@/mocks/course'
+import { createMockRegistrationService } from '@/mocks/registration'
+import { resetMockBusinessSnapshot } from '@/mocks/repositories/business-repository'
 import { isServiceError } from '@/types/api'
 
 const query = { page: 1, pageSize: 20 }
@@ -22,6 +24,14 @@ function axiosResponse(status: number, data: unknown): AxiosResponse {
 }
 
 describe('M5 API 与 Mock 边界', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.sessionStorage.setItem(
+      'training-management.mock-auth-session',
+      JSON.stringify({ account: 'employee.demo' }),
+    )
+  })
+
   it('传输 DTO 映射为领域模型并对未知枚举兜底', () => {
     const dto: CourseSummaryDto = {
       courseId: 'C-1',
@@ -78,9 +88,14 @@ describe('M5 API 与 Mock 边界', () => {
     ['conflict', 'conflict', false],
     ['result-unknown', 'result-unknown', true],
   ] as const)('Mock 写场景 %s 映射为 %s', async (scenario, kind, resultUnknown) => {
-    const service = createMockCourseService(() => scenario as CourseMockScenario)
+    window.sessionStorage.setItem(
+      'training-management.mock-auth-session',
+      JSON.stringify({ account: 'employee.demo' }),
+    )
+    if (scenario === 'result-unknown') resetMockBusinessSnapshot('FLOW-SNAPSHOT-04')
+    const service = createMockRegistrationService(() => scenario as CourseMockScenario)
     try {
-      await service.registerForCourse('COURSE-2026-001')
+      await service.create({ courseId: '4001' })
       throw new Error('预期操作失败')
     } catch (error) {
       expect(isServiceError(error)).toBe(true)
