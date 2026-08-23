@@ -1,12 +1,20 @@
 import { fromEnvelopeFailure } from '@/api/error'
 import type {
   ApiEnvelopeDto,
+  CourseDetailDto,
   CourseSummaryDto,
   PageDto,
   RegistrationReceiptDto,
 } from '@/api/transport'
 import type { PageResult } from '@/types/api'
-import type { CourseStatus, CourseSummary, CourseType, RegistrationReceipt } from '@/types/course'
+import type {
+  CourseActionEligibility,
+  CourseDetail,
+  CourseStatus,
+  CourseSummary,
+  CourseType,
+  RegistrationReceipt,
+} from '@/types/course'
 
 const courseTypeLabels: Record<CourseType, string> = {
   SKILL: '技能培训',
@@ -49,6 +57,45 @@ export function mapCourseSummary(dto: CourseSummaryDto): CourseSummary {
     maxStudents: dto.maxStudents,
     registeredCount: dto.registeredCount,
     remainingSeats: dto.remainingSeats,
+  }
+}
+
+export function mapCourseDetail(envelope: ApiEnvelopeDto<CourseDetailDto>): CourseDetail {
+  if (!envelope.success || !envelope.data) throw fromEnvelopeFailure(envelope)
+  const summary = mapCourseSummary(envelope.data)
+  const eligibility: CourseActionEligibility = {
+    apply: {
+      allowed: envelope.data.eligibility?.apply?.allowed === true,
+      reasonCode: envelope.data.eligibility?.apply?.reasonCode,
+      reason: envelope.data.eligibility?.apply?.reason,
+    },
+    register: {
+      allowed: envelope.data.eligibility?.register?.allowed === true,
+      reasonCode: envelope.data.eligibility?.register?.reasonCode,
+      reason: envelope.data.eligibility?.register?.reason,
+    },
+  }
+  return {
+    ...summary,
+    description: envelope.data.description || '暂无课程介绍。',
+    objectives: envelope.data.objectives || [],
+    hours: envelope.data.hours ?? null,
+    organizer: envelope.data.organizer || '—',
+    trainer: {
+      id: envelope.data.trainer?.id || 'UNKNOWN',
+      name: envelope.data.trainer?.name || summary.trainerName,
+      title: envelope.data.trainer?.title || '—',
+      department: envelope.data.trainer?.department || '—',
+      expertise: envelope.data.trainer?.expertise || '—',
+      rating: envelope.data.trainer?.rating,
+    },
+    materials: (envelope.data.materials || []).map((material, index) => ({
+      id: material.id || `material-${index}`,
+      name: material.name || '未命名资料',
+      kind: material.kind === 'DOCUMENT' || material.kind === 'LINK' ? material.kind : 'UNKNOWN',
+      available: material.available === true,
+    })),
+    eligibility,
   }
 }
 

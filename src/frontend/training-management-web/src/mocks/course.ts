@@ -1,171 +1,143 @@
-import { mapCoursePage, mapRegistrationReceipt } from '@/api/mappers/course'
 import type {
-  ApiEnvelopeDto,
-  CourseSummaryDto,
-  PageDto,
-  RegistrationReceiptDto,
-} from '@/api/transport'
-import { ServiceError, type UiError, type UiErrorKind } from '@/types/api'
-import type { CourseService } from '@/services/course'
+  CourseActionEligibility,
+  CourseDetail,
+  CourseQuery,
+  CourseService,
+  CourseSummary,
+} from '@/domains/course'
+import type { DomainPage } from '@/domains/shared'
+import { domainError } from '@/domains/errors'
+import { mockBusinessRepository, getMockActor } from '@/mocks/repositories/business-repository'
+import { createMockError, currentMockScenario, mockWait } from '@/mocks/scenarios'
+import type { MockScenario } from '@/mocks/scenarios'
 
-export type CourseMockScenario =
-  'normal' | 'empty' | 'failure' | 'forbidden' | 'not-found' | 'conflict' | 'result-unknown'
+export type CourseMockScenario = MockScenario
 
-const courses: CourseSummaryDto[] = [
-  {
-    courseId: 'COURSE-2026-001',
-    courseName: '数据库性能优化实战',
-    courseType: 'SKILL',
-    trainerName: '陈老师',
-    startTime: '2026-09-02T09:00:00+08:00',
-    endTime: '2026-09-02T17:00:00+08:00',
-    location: '培训中心 A201',
-    status: 'PUBLISHED',
-    maxStudents: 30,
-    registeredCount: 18,
-    remainingSeats: 12,
-  },
-  {
-    courseId: 'COURSE-2026-002',
-    courseName: '新任主管沟通与反馈',
-    courseType: 'MANAGEMENT',
-    trainerName: '周老师',
-    startTime: '2026-09-08T13:30:00+08:00',
-    endTime: '2026-09-08T17:30:00+08:00',
-    location: '行政楼 3F 多功能厅',
-    status: 'PUBLISHED',
-    maxStudents: 24,
-    registeredCount: 24,
-    remainingSeats: 0,
-  },
-]
+const normalize = (value: string | undefined) => value?.trim().toLowerCase() ?? ''
 
-const messages: Record<CourseMockScenario, string> = {
-  normal: '请求成功',
-  empty: '请求成功',
-  failure: '服务暂时不可用，请稍后重试。',
-  forbidden: '当前账号无权查看该课程范围。',
-  'not-found': '课程不存在或已被移除。',
-  conflict: '课程名额已满，请刷新课程状态。',
-  'result-unknown': '报名结果未知，请先查询我的报名。',
-}
-
-const scenarioKind: Partial<Record<CourseMockScenario, UiErrorKind>> = {
-  failure: 'server',
-  forbidden: 'forbidden',
-  'not-found': 'not-found',
-  conflict: 'conflict',
-  'result-unknown': 'result-unknown',
-}
-
-function currentScenario(): CourseMockScenario {
-  if (typeof window === 'undefined') return 'normal'
-  const value = new URLSearchParams(window.location.search).get('scenario')
-  const scenarios: CourseMockScenario[] = [
-    'normal',
-    'empty',
-    'failure',
-    'forbidden',
-    'not-found',
-    'conflict',
-    'result-unknown',
-  ]
-  return scenarios.includes(value as CourseMockScenario) ? (value as CourseMockScenario) : 'normal'
-}
-
-function mockError(scenario: CourseMockScenario): ServiceError {
-  const kind = scenarioKind[scenario] || 'unknown'
-  const error: UiError = {
-    kind,
-    code: `MOCK_${scenario.toUpperCase().replace('-', '_')}`,
-    message: messages[scenario],
-    traceId: `trace-mock-${scenario}`,
-    fieldErrors:
-      scenario === 'conflict'
-        ? [{ field: 'courseId', message: '该课程当前没有剩余名额', code: 'COURSE_FULL' }]
-        : [],
-    retryable: scenario === 'failure',
-    resultUnknown: scenario === 'result-unknown',
-  }
-  return new ServiceError(error)
-}
-
-const wait = (signal?: AbortSignal): Promise<void> =>
-  new Promise((resolve, reject) => {
-    const canceled = () =>
-      new ServiceError({
-        kind: 'canceled',
-        code: 'REQUEST_CANCELED',
-        message: '请求已取消。',
-        fieldErrors: [],
-        retryable: false,
-        resultUnknown: false,
-      })
-
-    if (signal?.aborted) {
-      reject(canceled())
-      return
-    }
-
-    const timer = window.setTimeout(resolve, 180)
-    signal?.addEventListener(
-      'abort',
-      () => {
-        window.clearTimeout(timer)
-        reject(canceled())
+function actorEligibility(course: CourseDetail): CourseActionEligibility {
+  const actor = getMockActor()
+  if (actor.role !== 'EMPLOYEE') {
+    return {
+      apply: { allowed: false, reasonCode: 'ROLE_NOT_ALLOWED', reason: '当前角色仅支持浏览课程。' },
+      register: {
+        allowed: false,
+        reasonCode: 'ROLE_NOT_ALLOWED',
+        reason: '当前角色仅支持浏览课程。',
       },
-      { once: true },
-    )
-  })
+    }
+  }
+
+  const state = mockBusinessRepository.getState()
+  const request = state.requests.find(
+    (item) => item.courseId === course.id && item.employeeId === actor.employeeId,
+  )
+  const registration = state.registrations.find(
+    (item) => item.courseId === course.id && item.employeeId === actor.employeeId,
+  )
+  if (registration && registration.status !== 'CANCELED') {
+    return {
+      apply: { allowed: false, reasonCode: 'REGISTRATION_EXISTS', reason: '你已经报名该课程。' },
+      register: { allowed: false, reasonCode: 'REGISTRATION_EXISTS', reason: '你已经报名该课程。' },
+    }
+  }
+  if (course.status !== 'PUBLISHED') {
+    return {
+      apply: { allowed: false, reasonCode: 'COURSE_CLOSED', reason: '课程已关闭，暂时不能申请。' },
+      register: {
+        allowed: false,
+        reasonCode: 'COURSE_CLOSED',
+        reason: '课程已关闭，暂时不能报名。',
+      },
+    }
+  }
+  if (request?.status === 'HR_FILED') {
+    return {
+      apply: { allowed: false, reasonCode: 'REQUEST_FILED', reason: '该课程申请已备案。' },
+      register:
+        course.remainingSeats > 0
+          ? { allowed: true }
+          : { allowed: false, reasonCode: 'COURSE_FULL', reason: '课程暂无剩余名额。' },
+    }
+  }
+  if (request) {
+    return {
+      apply: { allowed: false, reasonCode: 'REQUEST_EXISTS', reason: '你已经有该课程的申请记录。' },
+      register: {
+        allowed: false,
+        reasonCode: 'REQUEST_NOT_FILED',
+        reason: '申请尚未完成 HR 备案。',
+      },
+    }
+  }
+  return {
+    apply: { allowed: true },
+    register: {
+      allowed: false,
+      reasonCode: 'REQUEST_NOT_FILED',
+      reason: '请先提交培训申请并完成 HR 备案。',
+    },
+  }
+}
+
+const pageOf = (items: CourseSummary[], query: CourseQuery): DomainPage<CourseSummary> => {
+  const start = (query.page - 1) * query.pageSize
+  return {
+    items: items.slice(start, start + query.pageSize),
+    page: query.page,
+    pageSize: query.pageSize,
+    total: items.length,
+  }
+}
 
 export function createMockCourseService(
-  getScenario: () => CourseMockScenario = currentScenario,
+  getScenario: () => CourseMockScenario = currentMockScenario,
 ): CourseService {
   return {
     async listCourses(query, options) {
-      await wait(options?.signal)
+      await mockWait(options?.signal)
       const scenario = getScenario()
-      if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw mockError(scenario)
-
+      if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw createMockError(scenario)
+      const state = mockBusinessRepository.getState()
+      const keyword = normalize(query.keyword)
       const matching =
         scenario === 'empty'
           ? []
-          : courses.filter((course) =>
-              course.courseName.toLowerCase().includes((query.keyword || '').toLowerCase()),
-            )
-      const envelope: ApiEnvelopeDto<PageDto<CourseSummaryDto>> = {
-        success: true,
-        message: messages[scenario],
-        data: {
-          items: matching,
-          page: query.page,
-          pageSize: query.pageSize,
-          total: matching.length,
-        },
-        errors: [],
-        traceId: `trace-mock-${scenario}`,
-      }
-      return mapCoursePage(envelope)
+          : state.courses
+              .filter((course) => {
+                if (keyword && !course.name.toLowerCase().includes(keyword)) return false
+                if (query.type && query.type !== 'UNKNOWN' && course.type !== query.type)
+                  return false
+                if (query.status && query.status !== 'UNKNOWN' && course.status !== query.status)
+                  return false
+                if (query.startDateFrom && course.startTime.slice(0, 10) < query.startDateFrom)
+                  return false
+                if (query.startDateTo && course.startTime.slice(0, 10) > query.startDateTo)
+                  return false
+                return true
+              })
+              .sort((a, b) => {
+                const direction = query.sortDirection === 'asc' ? 1 : -1
+                return a.startTime.localeCompare(b.startTime) * direction
+              })
+      return pageOf(matching, query)
     },
 
-    async registerForCourse(courseId, options) {
-      await wait(options?.signal)
+    async getCourse(courseId, options) {
+      await mockWait(options?.signal)
       const scenario = getScenario()
-      if (scenario === 'conflict' || scenario === 'result-unknown') throw mockError(scenario)
+      if (scenario === 'failure' || scenario === 'forbidden' || scenario === 'not-found')
+        throw createMockError(scenario)
+      const course = mockBusinessRepository.getState().courses.find((item) => item.id === courseId)
+      if (!course) throw domainError('COURSE_NOT_FOUND')
+      return { ...course, eligibility: actorEligibility(course) }
+    },
 
-      const envelope: ApiEnvelopeDto<RegistrationReceiptDto> = {
-        success: true,
-        message: '报名成功',
-        data: {
-          regId: 'REG-MOCK-001',
-          courseId,
-          status: 'REGISTERED',
-          regDate: '2026-08-17T10:00:00+08:00',
-        },
-        errors: [],
-        traceId: 'trace-mock-register-success',
-      }
-      return mapRegistrationReceipt(envelope)
+    async getActionEligibility(courseId, options) {
+      await mockWait(options?.signal)
+      const course = mockBusinessRepository.getState().courses.find((item) => item.id === courseId)
+      if (!course) throw domainError('COURSE_NOT_FOUND')
+      return actorEligibility(course)
     },
   }
 }

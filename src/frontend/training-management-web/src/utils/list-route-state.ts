@@ -1,9 +1,9 @@
 import type { LocationQueryRaw, LocationQueryValue } from 'vue-router'
 
-type QueryValue = LocationQueryValue | LocationQueryValue[]
+type QueryValue = LocationQueryValue | LocationQueryValue[] | undefined
 
 const firstValue = (value: QueryValue): LocationQueryValue =>
-  Array.isArray(value) ? (value[0] ?? null) : value
+  Array.isArray(value) ? (value[0] ?? null) : (value ?? null)
 
 export function readQueryString(value: QueryValue, fallback = ''): string {
   const resolved = firstValue(value)

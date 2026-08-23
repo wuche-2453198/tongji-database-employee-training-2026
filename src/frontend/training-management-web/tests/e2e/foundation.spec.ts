@@ -209,7 +209,7 @@ test('M5 API 边界覆盖列表、空态、403、409与结果未知', async ({ p
   await page.screenshot({ path: 'test-results/m5-api-boundary-1024.png', fullPage: true })
 })
 
-test('M6 部门主管入口明确区分基础就绪与业务未实现', async ({ page }) => {
+test('M6 部门主管入口进入已实现的业务页面', async ({ page }) => {
   const clientProblems: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
@@ -227,8 +227,7 @@ test('M6 部门主管入口明确区分基础就绪与业务未实现', async ({
 
   await page.goto('/approvals/department')
   await expect(page.getByRole('heading', { name: '主管审批', exact: true })).toBeVisible()
-  await expect(page.getByText('主管审批尚未实现业务功能')).toBeVisible()
-  await expect(page.getByText('/approvals/department', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '暂无待处理申请' })).toBeVisible()
   await page.screenshot({ path: 'test-results/m6-manager-approval-1440.png', fullPage: true })
 
   expect(clientProblems).toEqual([])
