@@ -1,52 +1,106 @@
 <script setup lang="ts">
-defineProps<{
-  title: string
-  description?: string
+import AppButton from './AppButton.vue'
+
+withDefaults(
+  defineProps<{
+    title: string
+    description?: string
+    context?: 'list' | 'detail'
+    breadcrumbs?: string[]
+    actionLabel?: string
+  }>(),
+  {
+    description: '',
+    context: 'list',
+    breadcrumbs: () => [],
+    actionLabel: '',
+  },
+)
+
+const emit = defineEmits<{
+  back: []
+  action: []
 }>()
 </script>
 
 <template>
-  <div class="page-header">
-    <div class="page-header__text">
-      <h2>{{ title }}</h2>
-      <p v-if="description" class="page-header__desc">{{ description }}</p>
+  <header class="page-header">
+    <nav v-if="breadcrumbs.length" aria-label="面包屑" class="page-header__breadcrumbs">
+      <ol>
+        <li v-for="item in breadcrumbs" :key="item">{{ item }}</li>
+      </ol>
+    </nav>
+
+    <div class="page-header__body">
+      <div class="page-header__copy">
+        <AppButton
+          v-if="context === 'detail'"
+          label="返回列表"
+          variant="text"
+          @click="emit('back')"
+        />
+        <h1>{{ title }}</h1>
+        <p v-if="description">{{ description }}</p>
+      </div>
+
+      <div v-if="$slots.action || actionLabel" class="page-header__action">
+        <slot name="action">
+          <AppButton :label="actionLabel" variant="primary" @click="emit('action')" />
+        </slot>
+      </div>
     </div>
-    <div v-if="$slots.actions" class="page-header__actions">
-      <slot name="actions" />
-    </div>
-  </div>
+  </header>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .page-header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.page-header__breadcrumbs ol {
   display: flex;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-helper);
+  list-style: none;
+}
+
+.page-header__breadcrumbs li:not(:last-child)::after {
+  margin-left: var(--space-2);
+  color: var(--text-disabled);
+  content: '/';
+}
+
+.page-header__body {
+  display: flex;
+  min-height: 64px;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: var(--space-lg);
-  gap: var(--space-md);
+  gap: var(--space-6);
+}
 
-  &__text {
-    min-width: 0;
-  }
+.page-header__copy {
+  min-width: 0;
+}
 
-  h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    line-height: 1.4;
-  }
+.page-header h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-title-page);
+  font-weight: 600;
+  line-height: var(--line-height-title-page);
+}
 
-  &__desc {
-    margin-top: var(--space-xs);
-    font-size: 13px;
-    color: var(--color-text-secondary);
-  }
+.page-header p {
+  margin: var(--space-2) 0 0;
+  color: var(--text-secondary);
+  line-height: var(--line-height-body);
+}
 
-  &__actions {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-  }
+.page-header__action {
+  flex: 0 0 auto;
 }
 </style>

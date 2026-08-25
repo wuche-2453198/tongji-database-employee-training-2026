@@ -1,54 +1,80 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps<{
-  type: string
-  labelMap?: Record<string, string>
-}>()
+type StatusSemantic = 'success' | 'warning' | 'error' | 'info' | 'neutral'
 
-const label = computed(() => {
-  if (props.labelMap && props.type in props.labelMap) {
-    return props.labelMap[props.type]
-  }
-  return props.type
-})
+const props = withDefaults(
+  defineProps<{
+    label?: string
+    semantic?: StatusSemantic
+    showDot?: boolean
+  }>(),
+  {
+    label: '未知状态',
+    semantic: 'neutral',
+    showDot: true,
+  },
+)
 
-const tagType = computed(() => {
-  const t = props.type.toUpperCase()
-  switch (t) {
-    // 成功态 — 绿色
-    case 'PUBLISHED':
-    case 'COMPLETED':
-    case 'SIGNED_IN':
-    case 'ACTIVE':
-      return 'success'
-    // 待处理 — 橙色
-    case 'PENDING':
-    case 'REGISTERED':
-      return 'warning'
-    // 进行中 — 蓝色
-    case 'DEPT_APPROVED':
-    case 'HR_FILED':
-      return 'primary'
-    // 驳回/失败 — 红色
-    case 'DEPT_REJECTED':
-    case 'ABSENT':
-      return 'danger'
-    // 关闭/取消/离职/解除/草稿 — 灰色
-    case 'DRAFT':
-    case 'CLOSED':
-    case 'CANCELED':
-    case 'RESIGNED':
-    case 'RELEASED':
-      return 'info'
-    default:
-      return 'info'
-  }
-})
+const accessibleLabel = computed(() => `状态：${props.label || '未知状态'}`)
 </script>
 
 <template>
-  <el-tag :type="tagType" size="small" effect="light">
-    {{ label }}
-  </el-tag>
+  <span
+    class="status-tag"
+    :class="`status-tag--${semantic}`"
+    role="status"
+    :aria-label="accessibleLabel"
+  >
+    <span v-if="showDot" class="status-tag__dot" aria-hidden="true" />
+    <span>{{ label || '未知状态' }}</span>
+  </span>
 </template>
+
+<style scoped>
+.status-tag {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border: 1px solid currentcolor;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-caption);
+  font-weight: 500;
+  line-height: var(--line-height-caption);
+  white-space: nowrap;
+}
+
+.status-tag__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.status-tag--success {
+  color: var(--color-success-text);
+  background: var(--color-success-soft);
+}
+
+.status-tag--warning {
+  color: var(--color-warning-text);
+  background: var(--color-warning-soft);
+}
+
+.status-tag--error {
+  color: var(--color-error-text);
+  background: var(--color-error-soft);
+}
+
+.status-tag--info {
+  color: var(--color-info-text);
+  background: var(--color-info-soft);
+}
+
+.status-tag--neutral {
+  color: var(--color-neutral-text);
+  background: var(--color-neutral-soft);
+}
+</style>

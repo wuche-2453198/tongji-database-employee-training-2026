@@ -1,85 +1,103 @@
+import { computed, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type { AuthUser, LoginRequest } from '@/types/auth'
-import type { RoleCode } from '@/types/enums'
-import { loginApi, getCurrentUserApi } from '@/api/auth'
+
+import { hasPermission } from '@/config/permissions'
+import { getAuthService } from '@/services/auth'
+import type { AppPermission, AppUser, AuthErrorCode, LoginCredentials } from '@/types/auth'
+import { isAuthServiceError } from '@/types/auth'
+
+type AuthStatus = 'idle' | 'initializing' | 'authenticating' | 'authenticated' | 'anonymous'
+type SessionEvent = 'expired' | null
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string | null>(localStorage.getItem('access_token'))
-  const user = ref<AuthUser | null>(null)
+  const currentUser = shallowRef<AppUser | null>(null)
+  const status = shallowRef<AuthStatus>('idle')
+  const initialized = shallowRef(false)
+  const lastErrorCode = shallowRef<AuthErrorCode | null>(null)
+  const lastSessionEvent = shallowRef<SessionEvent>(null)
 
-  /** 是否已尝试过恢复会话（路由守卫依赖此值，避免重复调用 /api/auth/me） */
-  const initialized = ref(false)
+  const isAuthenticated = computed(() => currentUser.value !== null)
+  const roles = computed(() => currentUser.value?.roles ?? [])
 
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
-
-  const roles = computed<RoleCode[]>(() => {
-    if (!user.value) return []
-    return user.value.roles.map((r) => r.roleCode as RoleCode)
-  })
-
-  const permissions = computed<string[]>(() => {
-    if (!user.value) return []
-    return user.value.permissions
-  })
-
-  /** 检查是否拥有指定角色 */
-  function hasRole(roleList: RoleCode[]): boolean {
-    if (roleList.length === 0) return true
-    return roles.value.some((r) => roleList.includes(r))
+  const clearLocalState = () => {
+    currentUser.value = null
+    status.value = 'anonymous'
   }
 
-  /** 检查是否拥有指定权限 */
-  function hasPermission(code: string): boolean {
-    return permissions.value.includes(code)
-  }
+  const initialize = async (force = false) => {
+    if (initialized.value && !force) return currentUser.value
 
-  /** 登录 */
-  async function login(data: LoginRequest): Promise<{ success: boolean; message: string }> {
-    const res = await loginApi(data)
-    if (!res.success || !res.data) {
-      return { success: false, message: res.message || '登录失败' }
+    status.value = 'initializing'
+    lastErrorCode.value = null
+    try {
+      const service = await getAuthService()
+      currentUser.value = await service.getCurrentUser()
+      status.value = currentUser.value ? 'authenticated' : 'anonymous'
+    } catch (error) {
+      clearLocalState()
+      if (isAuthServiceError(error)) {
+        lastErrorCode.value = error.code
+        if (error.code === 'SESSION_EXPIRED') lastSessionEvent.value = 'expired'
+      } else {
+        lastErrorCode.value = 'SERVICE_UNAVAILABLE'
+      }
+    } finally {
+      initialized.value = true
     }
-    token.value = res.data.accessToken
-    user.value = res.data.user
-    localStorage.setItem('access_token', res.data.accessToken)
-    localStorage.setItem('user_info', JSON.stringify(res.data.user))
-    return { success: true, message: 'ok' }
+
+    return currentUser.value
   }
 
-  /** 从本地 Token 恢复登录状态（幂等，多次调用只发起一次 /api/auth/me） */
-  let restorePromise: Promise<boolean> | null = null
-
-  function restoreSession(): Promise<boolean> {
-    if (!restorePromise) {
-      restorePromise = doRestoreSession().finally(() => {
-        initialized.value = true
-      })
+  const login = async (credentials: LoginCredentials) => {
+    status.value = 'authenticating'
+    lastErrorCode.value = null
+    try {
+      const service = await getAuthService()
+      currentUser.value = await service.login(credentials)
+      status.value = 'authenticated'
+      initialized.value = true
+      lastSessionEvent.value = null
+      return currentUser.value
+    } catch (error) {
+      clearLocalState()
+      lastErrorCode.value = isAuthServiceError(error) ? error.code : 'SERVICE_UNAVAILABLE'
+      throw error
     }
-    return restorePromise
   }
 
-  async function doRestoreSession(): Promise<boolean> {
-    const savedToken = localStorage.getItem('access_token')
-    if (!savedToken) return false
-    token.value = savedToken
-
-    const res = await getCurrentUserApi()
-    if (!res.success || !res.data) {
-      logout()
-      return false
+  const logout = async () => {
+    try {
+      const service = await getAuthService()
+      await service.logout()
+    } finally {
+      clearLocalState()
+      initialized.value = true
+      lastErrorCode.value = null
+      lastSessionEvent.value = null
     }
-    user.value = res.data
-    return true
   }
 
-  /** 退出登录 */
-  function logout(): void {
-    token.value = null
-    user.value = null
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('user_info')
+  const expireSession = () => {
+    clearLocalState()
+    initialized.value = true
+    lastErrorCode.value = 'SESSION_EXPIRED'
+    lastSessionEvent.value = 'expired'
   }
 
-  return { token, user, initialized, isAuthenticated, roles, permissions, hasRole, hasPermission, login, restoreSession, logout }
+  const can = (permission: AppPermission) => hasPermission(currentUser.value, permission)
+
+  return {
+    currentUser,
+    status,
+    initialized,
+    lastErrorCode,
+    lastSessionEvent,
+    isAuthenticated,
+    roles,
+    initialize,
+    login,
+    logout,
+    expireSession,
+    can,
+  }
 })

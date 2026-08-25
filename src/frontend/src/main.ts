@@ -1,30 +1,26 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+
 import App from './App.vue'
+import { setUnauthorizedHandler } from './api/auth-session'
 import router from './router'
-import { registerIcons } from './plugins/icons'
-import { setUnauthorizedListener } from '@/api/unauthorized'
-import { useAuthStore } from '@/stores/auth'
-import './styles/global.scss'
+import { pinia } from './stores'
+import { useAuthStore } from './stores/auth'
+import './styles/index.css'
 
 const app = createApp(App)
-const pinia = createPinia()
-
-registerIcons(app)
 
 app.use(pinia)
 app.use(router)
-app.use(ElementPlus, { size: 'default' })
 
-// 401 统一处理：清理认证状态并跳转登录页，保留原始目标地址
-setUnauthorizedListener(() => {
-  const auth = useAuthStore(pinia)
-  auth.logout()
+setUnauthorizedHandler(() => {
+  const authStore = useAuthStore(pinia)
+  authStore.expireSession()
   const current = router.currentRoute.value
-  if (current.name !== 'Login') {
-    router.replace({ path: '/login', query: { redirect: current.fullPath } })
+  if (current.name !== 'login') {
+    void router.replace({
+      name: 'login',
+      query: { redirect: current.fullPath, reason: 'session-expired' },
+    })
   }
 })
 

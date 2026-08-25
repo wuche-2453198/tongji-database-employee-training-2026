@@ -1,44 +1,61 @@
-import type { RoleCode } from './enums'
+export type AppRole = 'EMPLOYEE' | 'DEPT_MANAGER' | 'HR' | 'ADMIN'
 
-/** 登录请求 */
-export interface LoginRequest {
-  identifier: string
+export type AppPermission =
+  | 'auth.me'
+  | 'role.read'
+  | 'employee.read'
+  | 'employee.write'
+  | 'department.read'
+  | 'department.write'
+  | 'blacklist.read'
+  | 'blacklist.write'
+  | 'course.read'
+  | 'course.write'
+  | 'request.create'
+  | 'request.approve'
+  | 'request.file'
+  | 'registration.create'
+  | 'attendance.write'
+  | 'rating.create'
+  | 'rating.verify'
+  | 'test.write'
+  | 'certificate.read'
+  | 'certificate.write'
+
+export interface AppUser {
+  account: string
+  displayName: string
+  employeeId: number
+  departmentId: number | null
+  departmentName: string | null
+  position: string | null
+  status: 'ACTIVE' | 'RESIGNED'
+  roles: AppRole[]
+  primaryRole: AppRole
+  permissions: AppPermission[]
+}
+
+export interface LoginCredentials {
+  account: string
   password: string
 }
 
-/** 登录响应 */
-export interface LoginResponse {
-  accessToken: string
-  tokenType: string
-  expiresAt: string
-  user: AuthUser
+export type AuthErrorCode =
+  | 'INVALID_CREDENTIALS'
+  | 'ACCOUNT_DISABLED'
+  | 'SERVICE_UNAVAILABLE'
+  | 'SESSION_EXPIRED'
+  | 'AUTH_NOT_CONFIGURED'
+
+export class AuthServiceError extends Error {
+  constructor(
+    public readonly code: AuthErrorCode,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'AuthServiceError'
+  }
 }
 
-/** 角色信息 */
-export interface AuthRole {
-  roleId: number
-  roleCode: string
-  roleName: string
-  permissions: string[]
-}
-
-/** 当前用户信息 */
-export interface AuthUser {
-  empId: number
-  empName: string
-  deptName: string | null
-  position: string | null
-  email: string | null
-  phone: string | null
-  status: string
-  roles: AuthRole[]
-  permissions: string[]
-}
-
-/** 认证 Store 状态 */
-export interface AuthState {
-  token: string | null
-  user: AuthUser | null
-  isAuthenticated: boolean
-  roles: RoleCode[]
-}
+export const isAuthServiceError = (value: unknown): value is AuthServiceError =>
+  value instanceof AuthServiceError

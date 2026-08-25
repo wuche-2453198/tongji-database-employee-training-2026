@@ -1,0 +1,155 @@
+{
+  "runId": "step12-2026-08-13",
+  "phase": "phase5",
+  "step": "P5.b-design-review-and-delivery",
+  "reviewedAt": "2026-08-13",
+  "timezone": "Asia/Shanghai",
+  "scope": {
+    "priority": "P0",
+    "screenCount": 17,
+    "componentFamilyCount": 16,
+    "roleCount": 4,
+    "roles": ["EMPLOYEE", "DEPT_MANAGER", "HR", "ADMIN"],
+    "figmaFileKey": "XOucFGmZ8uFrthZ5ZLzCuj",
+    "figmaUrl": "https://www.figma.com/design/XOucFGmZ8uFrthZ5ZLzCuj"
+  },
+  "conclusion": {
+    "status": "CONDITIONAL_PASS",
+    "label": "有条件通过",
+    "statement": "前端设计有条件通过，可以使用Mock进入前端基础工程开发；接口契约和真实联调仍等待后端补充评审。",
+    "mockDevelopmentAllowed": true,
+    "realIntegrationAllowed": false,
+    "figmaMutationPerformed": false,
+    "frontendOrBackendBusinessCodeCreated": false
+  },
+  "sourceAudit": {
+    "repositoryDocumentsReviewed": 15,
+    "backendReviewPresent": false,
+    "backendSourcePresent": false,
+    "openApiPresent": false,
+    "apiTestCollectionPresent": false,
+    "interfaceContractStatus": "DESIGN-REQUIREMENT-NOT-FROZEN",
+    "existingUncommittedStep10AndStep11ChangesPreserved": true
+  },
+  "coverage": {
+    "screenCoverage": "17/17",
+    "routeCoverage": "17/17",
+    "interfaceDependencyCoverage": "17/17",
+    "noNewBusinessApiScreens": ["HF-P0-16", "HF-P0-17"],
+    "formalTopLevelScreenFrameCount": 21,
+    "formalScreenComponentInstanceCount": 391,
+    "prototype": {
+      "pageId": "372:2",
+      "pageName": "18 Prototype Flows",
+      "formalScreenCount": 25,
+      "overlayCount": 5,
+      "flowStartingPointCount": 6,
+      "reactionCount": 118,
+      "nodeNavigationCount": 95,
+      "backActionCount": 9,
+      "closeActionCount": 14,
+      "brokenDestinationCount": 0,
+      "allTriggers": "ON_CLICK",
+      "flowStartingPoints": [
+        {"name": "员工端主流程", "nodeId": "372:3"},
+        {"name": "主管审批流程", "nodeId": "372:245"},
+        {"name": "HR 管理流程", "nodeId": "372:319"},
+        {"name": "管理员签到流程", "nodeId": "372:473"},
+        {"name": "403 权限边界", "nodeId": "372:548"},
+        {"name": "404 恢复路径", "nodeId": "372:558"}
+      ]
+    }
+  },
+  "businessFlow": {
+    "designClosure": "PASS",
+    "sequence": [
+      "登录",
+      "课程",
+      "申请",
+      "主管审批",
+      "HR备案",
+      "报名",
+      "签到",
+      "完成培训",
+      "生成证书",
+      "查看证书"
+    ],
+    "roleSwitchingPresentation": true,
+    "unresolvedRules": [
+      "HR备案是否为报名前置",
+      "备案后员工手动报名还是自动生成报名",
+      "完成培训的人工或自动口径及学时门槛",
+      "证书是否要求POST测试及格以及及格线",
+      "证书候选、有效期和展示状态计算口径"
+    ]
+  },
+  "issueSummary": {
+    "total": 14,
+    "blocking": 1,
+    "important": 8,
+    "normal": 4,
+    "suggestion": 1,
+    "mockDevelopmentBlockerCount": 0,
+    "realIntegrationBlockerCount": 9,
+    "items": [
+      {"id": "DR-001", "severity": "阻塞", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-002", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-003", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-004", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-005", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-006", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-007", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-008", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-009", "severity": "重要", "mockBlocked": false, "integrationBlocked": true},
+      {"id": "DR-010", "severity": "一般", "mockBlocked": false, "integrationBlocked": false},
+      {"id": "DR-011", "severity": "一般", "mockBlocked": false, "integrationBlocked": false},
+      {"id": "DR-012", "severity": "一般", "mockBlocked": false, "integrationBlocked": false},
+      {"id": "DR-013", "severity": "一般", "mockBlocked": false, "integrationBlocked": false},
+      {"id": "DR-014", "severity": "建议", "mockBlocked": false, "integrationBlocked": false}
+    ]
+  },
+  "interfaceReview": {
+    "status": "DRAFT_REVIEW_ONLY",
+    "pageDependencyCoverage": "17/17",
+    "freezeBlockerQuestionCount": 22,
+    "preIntegrationQuestionCount": 10,
+    "mockDevelopmentBlocked": false,
+    "realIntegrationBlocked": true,
+    "requiredBeforeIntegration": [
+      "Swagger/OpenAPI覆盖P0查询和写操作",
+      "认证、凭证刷新和退出策略",
+      "统一响应、字段错误和稳定业务错误码",
+      "分页、搜索、排序和日期参数",
+      "枚举、状态流转、角色权限和数据范围",
+      "资格、余量、学时和证书计算责任",
+      "幂等、并发冲突和未知结果恢复"
+    ]
+  },
+  "feBaseReview": {
+    "FE-BASE-01": {"mockReady": true, "backendRequired": false, "decisionGap": ["依赖版本", "包管理器", "测试工具"]},
+    "FE-BASE-02": {"mockReady": true, "backendRequired": true, "decisionGap": []},
+    "FE-BASE-03": {"mockReady": true, "backendRequired": true, "decisionGap": []},
+    "FE-BASE-04": {"mockReady": true, "backendRequired": true, "decisionGap": ["随认证方案确定持久化策略"]},
+    "FE-BASE-05": {"mockReady": true, "backendRequired": false, "decisionGap": []},
+    "FE-BASE-06": {"mockReady": true, "backendRequired": true, "decisionGap": []},
+    "FE-BASE-07": {"mockReady": "PARTIAL", "backendRequired": true, "decisionGap": ["HTTP客户端", "超时与重试", "测试策略"]},
+    "FE-BASE-08": {"mockReady": true, "backendRequired": true, "decisionGap": ["Element Plus版本"]},
+    "FE-BASE-09": {"mockReady": true, "backendRequired": true, "decisionGap": []},
+    "FE-BASE-10": {"mockReady": "PARTIAL", "backendRequired": true, "decisionGap": ["环境变量命名", "优先级", "配置校验", "Mock切换"]}
+  },
+  "deliverables": [
+    "document/frontend-design/11-前端设计评审记录.md",
+    "document/frontend-design/12-问题与修改清单.md",
+    "document/frontend-design/13-前端设计交付索引.md",
+    "document/frontend-design/assets/design-review-step12.json"
+  ],
+  "validation": {
+    "status": "PASS",
+    "validatedAt": "2026-08-13",
+    "jsonSyntax": "PASS",
+    "markdownRequiredSections": "PASS",
+    "issueCountConsistency": "PASS",
+    "gitScopeCheck": "PASS",
+    "gitDiffCheck": "PASS"
+  }
+}
