@@ -1,14 +1,12 @@
 /// <reference types="vite/client" />
 
-declare module '*.vue' {
-  import type { DefineComponent } from 'vue'
-  const component: DefineComponent<object, object, unknown>
-  export default component
-}
+type AppEnvironment = 'mock' | 'local' | 'integration'
 
 interface ImportMetaEnv {
+  readonly VITE_APP_ENV: AppEnvironment
   readonly VITE_API_BASE_URL: string
   readonly VITE_USE_MOCK: string
+  readonly VITE_REQUEST_TIMEOUT_MS: string
 }
 
 interface ImportMeta {

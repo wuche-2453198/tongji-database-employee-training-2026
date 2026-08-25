@@ -55,6 +55,18 @@ dotnet run
 - 存活检查：`GET http://localhost:5156/api/health`
 - 数据库检查：`GET http://localhost:5156/api/health/db`
 
+## 前端快速启动
+
+仓库只保留一套前端应用，根目录为 `src/frontend/`，使用 Node.js 24.10、pnpm 11、Vue 3、TypeScript、Vite、Pinia、Element Plus、Vitest 和 Playwright。
+
+```powershell
+cd src/frontend
+corepack pnpm install --frozen-lockfile
+corepack pnpm dev
+```
+
+默认启动 Mock 模式，可验收全部17个P0页面。连接本地后端时，复制 `.env.local.example` 为未跟踪的 `.env.local`，再执行 `corepack pnpm dev:local`。
+
 如果 `dotnet --version` 找不到 .NET 8 SDK，请先安装 .NET 8 SDK，或按本机实际 SDK 路径执行 `dotnet.exe`。
 
 ## Oracle 连接说明

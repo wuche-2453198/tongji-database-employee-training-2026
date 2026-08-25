@@ -1,0 +1,3300 @@
+{
+  "runId": "step10-2026-08-07",
+  "phase": "phase4",
+  "step": "P4.dc-complete",
+  "lastRetryDate": "2026-08-09",
+  "retryResult": "Figma MCP access restored; library discovery completed",
+  "figma": {
+    "fileKey": "XOucFGmZ8uFrthZ5ZLzCuj",
+    "fileUrl": "https://www.figma.com/design/XOucFGmZ8uFrthZ5ZLzCuj",
+    "editorType": "figma"
+  },
+  "entities": {
+    "pages": {
+      "Cover": "0:1",
+      "Getting Started": "16:2",
+      "Foundations": "16:3",
+      "--- COMPONENTS ---": "16:4",
+      "Components": "16:5",
+      "--- UTILITIES ---": "16:6",
+      "Utilities": "16:7",
+      "Button": "51:2",
+      "Input & FormField": "62:2",
+      "Select": "71:2",
+      "StatusTag": "85:2",
+      "AppShell & SidebarNav": "96:2",
+      "PageHeader": "114:2",
+      "SearchPanel": "131:2",
+      "DataTable": "143:2",
+      "Pagination": "162:2",
+      "Descriptions": "184:2",
+      "Timeline": "189:2",
+      "Dialog": "197:2",
+      "PageState": "204:2",
+      "StatCard": "216:3",
+      "CourseSummary": "223:2",
+      "Link & FileEntry": "231:2",
+      "--- SCREENS ---": "243:5",
+      "01 Login": "243:6",
+      "02 Dashboard": "259:14",
+      "03 CourseList": "268:12",
+      "04 CourseDetail": "275:106",
+      "05 RequestCreate": "286:407",
+      "06 MyRequests": "292:2",
+      "07 RequestDetail": "303:2",
+      "08 DepartmentApproval": "308:2",
+      "09 HrFiling": "312:2",
+      "10 MyRegistrations": "317:438",
+      "11 RegistrationDetail": "327:101",
+      "12 AttendanceManagement": "332:431",
+      "13 MyCertificates": "341:2",
+      "14 CertificateManagement": "357:2",
+      "15 CertificateDetail": "361:2",
+      "16 Forbidden": "367:2",
+      "17 NotFound": "369:2",
+      "18 Prototype Flows": "372:2"
+    },
+    "collections": {
+      "Primitives": {
+        "id": "VariableCollectionId:2:2",
+        "modeId": "2:0",
+        "modeName": "Value"
+      },
+      "Color": {
+        "id": "VariableCollectionId:2:3",
+        "modeId": "2:1",
+        "modeName": "Light"
+      },
+      "Spacing": {
+        "id": "VariableCollectionId:2:4",
+        "modeId": "2:2",
+        "modeName": "Value"
+      },
+      "Radius": {
+        "id": "VariableCollectionId:2:5",
+        "modeId": "2:3",
+        "modeName": "Value"
+      },
+      "Layout": {
+        "id": "VariableCollectionId:2:6",
+        "modeId": "2:4",
+        "modeName": "Value"
+      }
+    },
+    "variables": {
+      "Primitives": {
+        "white/1000": "VariableID:3:2",
+        "blue/50": "VariableID:3:3",
+        "blue/600": "VariableID:3:4",
+        "blue/700": "VariableID:3:5",
+        "blue/800": "VariableID:3:6",
+        "slate/50": "VariableID:3:7",
+        "slate/100": "VariableID:3:8",
+        "slate/200": "VariableID:3:9",
+        "slate/300": "VariableID:3:10",
+        "slate/400": "VariableID:3:11",
+        "slate/500": "VariableID:3:12",
+        "slate/600": "VariableID:3:13",
+        "slate/900": "VariableID:3:14",
+        "green/50": "VariableID:3:15",
+        "green/700": "VariableID:3:16",
+        "green/800": "VariableID:3:17",
+        "amber/50": "VariableID:3:18",
+        "amber/700": "VariableID:3:19",
+        "amber/800": "VariableID:3:20",
+        "red/50": "VariableID:3:21",
+        "red/700": "VariableID:3:22",
+        "red/800": "VariableID:3:23"
+      },
+      "Color": {
+        "color/action/primary": "VariableID:5:2",
+        "color/action/primary-hover": "VariableID:5:3",
+        "color/action/primary-active": "VariableID:5:4",
+        "color/action/primary-soft": "VariableID:5:5",
+        "color/background/page": "VariableID:5:6",
+        "color/background/surface": "VariableID:5:7",
+        "color/background/surface-subtle": "VariableID:5:8",
+        "color/border/default": "VariableID:5:9",
+        "color/border/strong": "VariableID:5:10",
+        "color/focus/default": "VariableID:5:11",
+        "color/text/primary": "VariableID:5:12",
+        "color/text/secondary": "VariableID:5:13",
+        "color/text/placeholder": "VariableID:5:14",
+        "color/text/disabled": "VariableID:5:15",
+        "color/text/on-primary": "VariableID:5:16",
+        "color/text/link": "VariableID:5:17",
+        "color/status/success/default": "VariableID:5:18",
+        "color/status/success/background": "VariableID:5:19",
+        "color/status/success/text": "VariableID:5:20",
+        "color/status/warning/default": "VariableID:5:21",
+        "color/status/warning/background": "VariableID:5:22",
+        "color/status/warning/text": "VariableID:5:23",
+        "color/status/error/default": "VariableID:5:24",
+        "color/status/error/background": "VariableID:5:25",
+        "color/status/error/text": "VariableID:5:26",
+        "color/status/info/default": "VariableID:5:27",
+        "color/status/info/background": "VariableID:5:28",
+        "color/status/info/text": "VariableID:5:29",
+        "color/status/neutral/default": "VariableID:5:30",
+        "color/status/neutral/background": "VariableID:5:31",
+        "color/status/neutral/text": "VariableID:5:32"
+      },
+      "Spacing": {
+        "spacing/1": "VariableID:6:2",
+        "spacing/2": "VariableID:6:3",
+        "spacing/3": "VariableID:6:4",
+        "spacing/4": "VariableID:6:5",
+        "spacing/5": "VariableID:6:6",
+        "spacing/6": "VariableID:6:7",
+        "spacing/8": "VariableID:6:8",
+        "spacing/10": "VariableID:6:9",
+        "spacing/12": "VariableID:6:10"
+      },
+      "Radius": {
+        "radius/sm": "VariableID:6:11",
+        "radius/md": "VariableID:6:12",
+        "radius/lg": "VariableID:6:13",
+        "radius/xl": "VariableID:6:14"
+      },
+      "Layout": {
+        "layout/topbar/height": "VariableID:6:15",
+        "layout/sidebar/width": "VariableID:6:16",
+        "layout/sidebar/collapsed-width": "VariableID:6:17",
+        "layout/page/padding": "VariableID:6:18",
+        "layout/page/padding-compact": "VariableID:6:19",
+        "layout/section/gap": "VariableID:6:20",
+        "layout/content/form-max-width": "VariableID:6:21",
+        "layout/content/detail-max-width": "VariableID:6:22",
+        "layout/viewport/min-width": "VariableID:6:23"
+      }
+    },
+    "styles": {
+      "Text": {
+        "Typography/Page Title": "S:835aeed117478670fe9658bd75404c069519108c,",
+        "Typography/Section Title": "S:0af47b292557930144d7808d194743e58c04b695,",
+        "Typography/Component Title": "S:068baa500e694f88516b90bd5efa5a781ee42704,",
+        "Typography/Body": "S:0986b272f8482e6d7d93ff1a85fb0cf1a64aad63,",
+        "Typography/Body Emphasis": "S:b7c7a2a1bf80f7c33757108c782d12de0aa349ba,",
+        "Typography/Auxiliary": "S:a3e3700e20dbf6c81e1beaf7b80ad26db0acb516,",
+        "Typography/Caption": "S:dda6d22fdccdb3f7c8a1719022b629f3c9a55e8f,"
+      },
+      "Effect": {
+        "Shadow/SM": "S:63d67b9036dd8da3543c97c62c5633d6bee7ef53,",
+        "Shadow/MD": "S:d63f93a863e3d87e2de1301889e6d7249a0e0ca7,"
+      }
+    },
+    "documentationFrames": {
+      "Cover": "17:2",
+      "Getting Started": "21:2",
+      "Components Index": "46:2",
+      "Utilities Index": "47:2",
+      "Foundations": "22:2",
+      "Foundations/Colors": "22:5",
+      "Foundations/Colors/Primitives": "23:5",
+      "Foundations/Colors/Semantic": "23:7",
+      "Foundations/Typography": "22:6",
+      "Foundations/Spacing": "22:7",
+      "Foundations/Spacing/List": "38:4",
+      "Foundations/Radius": "22:8",
+      "Foundations/Radius/Row": "41:4",
+      "Foundations/Shadows": "22:9",
+      "Foundations/Shadows/Row": "44:4",
+      "Button": "53:2",
+      "Input/FormField": "63:2",
+      "Select": "72:2",
+      "StatusTag": "86:2",
+      "StatusTag/Business Examples": "91:2",
+      "AppShell/SidebarNav": "97:2",
+      "PageHeader": "115:2",
+      "SearchPanel": "131:9",
+      "DataTable": "144:2",
+      "Pagination": "163:2",
+      "Descriptions": "184:3",
+      "Timeline": "189:3",
+      "Dialog": "197:3",
+      "PageState": "205:2",
+      "StatCard": "217:2",
+      "CourseSummary": "226:166",
+      "Link/FileEntry": "236:17"
+    },
+    "components": {
+      "__Icon/Plus": "53:20",
+      "Button/Base": "54:2",
+      "Button": "56:2",
+      "__Icon/Search": "63:20",
+      "Input/FormField/Base": "64:2",
+      "Input/FormField": "66:2",
+      "__Icon/ChevronDown": "72:20",
+      "Select/Base": "73:2",
+      "Select": "76:12",
+      "StatusTag/Base": "88:2",
+      "StatusTag": "90:2",
+      "__AppTopbar": "99:2",
+      "__SidebarNavItem": "101:2",
+      "AppShell/SidebarNav/Base": "103:2",
+      "AppShell/SidebarNav": "107:218",
+      "PageHeader/Base": "116:2",
+      "PageHeader": "120:8",
+      "SearchPanel": "136:132",
+      "__DataTable/HeaderRow": "145:2",
+      "__DataTable/DataRow": "146:2",
+      "__DataTable/SkeletonRow": "150:7",
+      "DataTable": "155:626",
+      "__Pagination/PageItem": "164:8",
+      "__Pagination/PageSizeSelect": "168:26",
+      "__Pagination/Controls.First.Default": "169:22",
+      "__Pagination/Controls.Middle.Default": "170:40",
+      "__Pagination/Controls.Last.Default": "171:58",
+      "__Pagination/Controls.First.Disabled": "172:76",
+      "__Pagination/Controls.Middle.Disabled": "173:94",
+      "__Pagination/Controls.Last.Disabled": "174:112",
+      "Pagination.First.Default": "177:130",
+      "Pagination.Middle.Default": "177:157",
+      "Pagination.Last.Default": "177:184",
+      "Pagination.First.Disabled": "178:202",
+      "Pagination.Middle.Disabled": "178:229",
+      "Pagination.Last.Disabled": "178:256",
+      "Pagination": "179:274",
+      "__Descriptions/Item": "184:8",
+      "Descriptions.One.Filled": "185:2",
+      "Descriptions.One.Empty": "185:39",
+      "Descriptions.Two.Filled": "185:76",
+      "Descriptions.Two.Empty": "185:110",
+      "Descriptions": "186:98",
+      "__Timeline/Item": "192:62",
+      "Timeline.Request.InProgress": "193:2",
+      "Timeline.Request.Completed": "193:39",
+      "Timeline.Request.Terminated": "193:76",
+      "Timeline.Registration.InProgress": "193:1017",
+      "Timeline.Registration.Completed": "193:1054",
+      "Timeline.Registration.Terminated": "193:1091",
+      "Timeline": "194:200",
+      "Dialog.Confirm.Default": "199:2",
+      "Dialog.Confirm.Loading": "199:30",
+      "Dialog.Danger.Default": "199:58",
+      "Dialog.Danger.Loading": "199:84",
+      "Dialog": "199:110",
+      "PageState.Skeleton": "206:2",
+      "PageState.Empty": "207:2",
+      "PageState.Alert": "208:5",
+      "PageState.403": "209:11",
+      "PageState.404": "210:17",
+      "PageState": "211:23",
+      "StatCard.Loading": "217:11",
+      "StatCard.Default": "217:15",
+      "StatCard.Empty": "217:19",
+      "StatCard.Link": "217:23",
+      "StatCard": "217:30",
+      "CourseSummary.Published": "225:2",
+      "CourseSummary.Closed": "225:1194",
+      "CourseSummary.Full": "225:1241",
+      "CourseSummary.Restricted": "225:1288",
+      "CourseSummary": "225:1333",
+      "__Icon/FileEntry.File": "232:5",
+      "__Icon/FileEntry.Clock": "232:9",
+      "__Icon/FileEntry.Lock": "232:13",
+      "Link/FileEntry.Available": "233:2",
+      "Link/FileEntry.Expired": "235:19",
+      "Link/FileEntry.Forbidden": "235:1329",
+      "Link/FileEntry": "235:1348"
+    },
+    "componentSets": {
+      "Button": "56:2",
+      "Input/FormField": "66:2",
+      "Select": "76:12",
+      "StatusTag": "90:2",
+      "__SidebarNavItem": "101:2",
+      "AppShell/SidebarNav": "107:218",
+      "PageHeader": "120:8",
+      "SearchPanel": "136:132",
+      "DataTable": "155:626",
+      "__Pagination/PageItem": "164:8",
+      "__Pagination/PageSizeSelect": "168:26",
+      "__Pagination/Controls": "175:130",
+      "Pagination": "179:274",
+      "Descriptions": "186:98",
+      "__Timeline/Item": "192:62",
+      "Timeline": "194:200",
+      "Dialog": "199:110",
+      "PageState": "211:23",
+      "StatCard": "217:30",
+      "CourseSummary": "225:1333",
+      "Link/FileEntry": "235:1348"
+    },
+    "componentProperties": {
+      "Button": {
+        "Label": "Label#56:0",
+        "Show Icon": "Show Icon#56:21",
+        "Icon": "Icon#56:42"
+      },
+      "Input/FormField": {
+        "Label": "Label#66:0",
+        "Required": "Required#66:21",
+        "Show Label": "Show Label#66:28",
+        "Show Helper": "Show Helper#66:35",
+        "Show Prefix Icon": "Show Prefix Icon#66:42",
+        "Prefix Icon": "Prefix Icon#66:49"
+      },
+      "Select": {
+        "Label": "Label#76:0",
+        "Required": "Required#76:6",
+        "Show Label": "Show Label#76:12",
+        "Show Helper": "Show Helper#76:18",
+        "Show Chevron": "Show Chevron#76:24",
+        "Chevron": "Chevron#76:30"
+      },
+      "StatusTag": {
+        "Label": "Label#90:0",
+        "Show Dot": "Show Dot#90:6"
+      },
+      "__AppTopbar": {
+        "Role": "Role#99:0",
+        "User": "User#99:1",
+        "Initials": "Initials#99:2"
+      },
+      "__SidebarNavItem": {
+        "Label": "Label#101:0",
+        "Abbr": "Abbr#101:5"
+      },
+      "AppShell/SidebarNav": {
+        "Show Breadcrumb": "Show Breadcrumb#107:0"
+      },
+      "PageHeader": {
+        "Title": "Title#121:0",
+        "Description": "Description#121:5",
+        "Breadcrumb Root": "Breadcrumb Root#121:10",
+        "Breadcrumb Middle": "Breadcrumb Middle#121:15",
+        "Breadcrumb Current": "Breadcrumb Current#121:20",
+        "Return Label": "Return Label#121:25",
+        "Show Description": "Show Description#121:30",
+        "Action Button": "Action Button#121:35"
+      },
+      "SearchPanel": {
+        "Panel Title": "Panel Title#136:0",
+        "Show Header": "Show Header#136:4",
+        "Show Expand Control": "Show Expand Control#136:8"
+      },
+      "__DataTable/HeaderRow": {
+        "Course Header": "Course Header#145:0",
+        "Type Header": "Type Header#145:1",
+        "Trainer Header": "Trainer Header#145:2",
+        "Start Header": "Start Header#145:3",
+        "Location Header": "Location Header#145:4",
+        "Duration Header": "Duration Header#145:5",
+        "Seats Header": "Seats Header#145:6",
+        "Status Header": "Status Header#145:7",
+        "Action Header": "Action Header#145:8"
+      },
+      "__DataTable/DataRow": {
+        "Course Name": "Course Name#149:0",
+        "Course Type": "Course Type#149:1",
+        "Trainer": "Trainer#149:2",
+        "Start Time": "Start Time#149:3",
+        "Location": "Location#149:4",
+        "Duration": "Duration#149:5",
+        "Seats": "Seats#149:6",
+        "Show Status": "Show Status#149:7",
+        "Show Action": "Show Action#149:8"
+      },
+      "DataTable": {
+        "Show Header": "Show Header#156:0",
+        "Empty Title": "Empty Title#156:5",
+        "Empty Description": "Empty Description#156:10",
+        "Error Title": "Error Title#156:15",
+        "Error Description": "Error Description#156:20",
+        "Trace ID": "Trace ID#156:25",
+        "Show Trace ID": "Show Trace ID#156:30"
+      },
+      "__Pagination/PageItem": {
+        "Label": "Label#165:0"
+      },
+      "Pagination": {
+        "Total Text": "Total Text#179:0",
+        "Show Total": "Show Total#179:7",
+        "Show Controls": "Show Controls#179:14"
+      },
+      "__Descriptions/Item": {
+        "Label": "Label#184:0",
+        "Value": "Value#184:1"
+      },
+      "Descriptions": {
+        "Show Last Row": "Show Last Row#186:0"
+      },
+      "__Timeline/Item": {
+        "Title": "Title#192:0",
+        "Meta": "Meta#192:13",
+        "Summary": "Summary#192:26",
+        "Show Summary": "Show Summary#192:39"
+      },
+      "Dialog": {
+        "Confirm Title": "Confirm Title#199:0",
+        "Danger Title": "Danger Title#199:5",
+        "Confirm Description": "Confirm Description#199:10",
+        "Danger Description": "Danger Description#199:15",
+        "Show Close": "Show Close#199:20"
+      },
+      "PageState": {
+        "Empty Title": "Empty Title#212:0",
+        "Empty Description": "Empty Description#212:6",
+        "Alert Title": "Alert Title#212:12",
+        "Alert Description": "Alert Description#212:18",
+        "Trace ID": "Trace ID#212:24",
+        "Show Trace ID": "Show Trace ID#212:30",
+        "403 Title": "403 Title#212:36",
+        "403 Description": "403 Description#212:42",
+        "Role Meta": "Role Meta#212:48",
+        "Show Role Meta": "Show Role Meta#212:54",
+        "404 Title": "404 Title#212:60",
+        "404 Description": "404 Description#212:66",
+        "Show Actions": "Show Actions#212:72"
+      },
+      "StatCard": {
+        "Metric Label": "Metric Label#218:0",
+        "Default Value": "Default Value#218:5",
+        "Default Helper": "Default Helper#218:10",
+        "Show Default Helper": "Show Default Helper#218:15",
+        "Empty Value": "Empty Value#218:20",
+        "Empty Helper": "Empty Helper#218:25",
+        "Show Empty Helper": "Show Empty Helper#218:30",
+        "Link Value": "Link Value#218:35",
+        "Link Helper": "Link Helper#218:40",
+        "Show Link Cue": "Show Link Cue#218:45"
+      },
+      "CourseSummary": {
+        "Section Title": "Section Title#226:0",
+        "Show Eligibility": "Show Eligibility#226:5",
+        "Published Hint": "Published Hint#226:10",
+        "Published Seats": "Published Seats#226:15",
+        "Closed Hint": "Closed Hint#226:20",
+        "Closed Seats": "Closed Seats#226:25",
+        "Full Hint": "Full Hint#226:30",
+        "Full Seats": "Full Seats#226:35",
+        "Restricted Hint": "Restricted Hint#226:40",
+        "Restricted Seats": "Restricted Seats#226:45"
+      },
+      "Link/FileEntry": {
+        "Available Title": "Available Title#235:0",
+        "Available Helper": "Available Helper#235:4",
+        "Expired Title": "Expired Title#235:8",
+        "Expired Helper": "Expired Helper#235:12",
+        "Forbidden Title": "Forbidden Title#235:16",
+        "Forbidden Helper": "Forbidden Helper#235:20",
+        "Show Action": "Show Action#235:24",
+        "Available Icon": "Available Icon#235:28",
+        "Expired Icon": "Expired Icon#235:32",
+        "Forbidden Icon": "Forbidden Icon#235:36"
+      }
+    },
+    "componentVariants": {
+      "Button": [
+        "54:2", "55:2", "55:6", "55:10", "55:14",
+        "55:18", "55:22", "55:26", "55:30", "55:34",
+        "55:38", "55:42", "55:46", "55:50", "55:54",
+        "55:58", "55:62", "55:66", "55:70", "55:74"
+      ],
+      "Input/FormField": ["64:2", "65:2", "65:10", "65:18", "65:26", "65:34"],
+      "Select": ["73:2", "74:4", "74:21", "74:38", "74:55"],
+      "StatusTag": ["88:2", "89:2", "89:5", "89:8", "89:11"],
+      "__SidebarNavItem": ["100:2", "100:7", "100:12", "100:17"],
+      "AppShell/SidebarNav": ["103:2", "104:33", "104:135", "104:227", "104:319", "104:421", "104:523", "104:615"],
+      "PageHeader": ["116:2", "119:2", "119:22", "119:39"],
+      "SearchPanel": ["132:2", "135:40", "135:94"],
+      "DataTable": ["151:7", "153:94", "154:139", "155:157"],
+      "__Pagination/PageItem": ["164:2", "164:4", "164:6"],
+      "__Pagination/PageSizeSelect": ["167:2", "168:12"],
+      "__Pagination/Controls": ["169:22", "170:40", "171:58", "172:76", "173:94", "174:112"],
+      "Pagination": ["177:130", "177:157", "177:184", "178:202", "178:229", "178:256"],
+      "Descriptions": ["185:2", "185:39", "185:76", "185:110"],
+      "__Timeline/Item": ["190:2", "191:2", "191:14", "191:26", "191:38", "191:50", "191:62", "192:2", "192:14", "192:26", "192:38", "192:50"],
+      "Timeline": ["193:2", "193:39", "193:76", "193:1017", "193:1054", "193:1091"],
+      "Dialog": ["199:2", "199:30", "199:58", "199:84"],
+      "PageState": ["206:2", "207:2", "208:5", "209:11", "210:17"],
+      "StatCard": ["217:11", "217:15", "217:19", "217:23"],
+      "CourseSummary": ["225:2", "225:1194", "225:1241", "225:1288"],
+      "Link/FileEntry": ["233:2", "235:19", "235:1329"]
+    },
+    "screens": {
+      "HF-P0-01 Login": "243:7",
+      "HF-P0-02 Dashboard.Employee": "259:15",
+      "HF-P0-02 Dashboard.Manager": "259:16",
+      "HF-P0-02 Dashboard.HR": "259:17",
+      "HF-P0-02 Dashboard.Admin": "259:18",
+      "HF-P0-03 CourseList.Employee.Default": "268:13",
+      "HF-P0-04 CourseDetail.Employee.Published": "275:107",
+      "HF-P0-05 RequestCreate.Employee.Default": "286:408",
+      "HF-P0-06 MyRequests.Employee.Default": "292:3",
+      "HF-P0-07 RequestDetail.Employee.Pending": "303:3",
+      "HF-P0-08 DepartmentApproval.Manager.Pending": "308:3",
+      "HF-P0-09 HrFiling.HR.DepartmentApproved": "312:3",
+      "HF-P0-10 MyRegistrations.Employee.Registered": "317:439",
+      "HF-P0-11 RegistrationDetail.Employee.SignedIn": "327:102",
+      "HF-P0-12 AttendanceManagement.HR.Registered": "332:432",
+      "HF-P0-13 MyCertificates.Employee.Valid": "341:3",
+      "HF-P0-14 CertificateManagement.HR.Candidate": "357:3",
+      "HF-P0-15 CertificateDetail.Employee.Valid": "361:3",
+      "HF-P0-15 CertificateDetail.HR.Valid": "361:18",
+      "HF-P0-16 Forbidden.Employee": "367:3",
+      "HF-P0-17 NotFound.Public": "369:3"
+    }
+  },
+  "pendingValidations": [],
+  "phase2Fixes": {
+    "CoverPhaseChip": {
+      "frameId": "17:6",
+      "textId": "17:7",
+      "fix": "surface background with link-colored text"
+    }
+  },
+  "phase3Batches": {
+    "P3.b-button-documentation-and-icon": [
+      "53:2", "53:3", "53:4", "53:5", "53:6", "53:7", "53:8",
+      "53:9", "53:10", "53:11", "53:12", "53:13", "53:14", "53:15",
+      "53:16", "53:17", "53:18", "53:19", "53:20", "53:21", "53:22"
+    ],
+    "P3.b-button-base": ["54:2", "54:3", "54:6", "54:7"],
+    "P3.c-button-variants": [
+      "55:2", "55:3", "55:4", "55:5", "55:6", "55:7", "55:8", "55:9",
+      "55:10", "55:11", "55:12", "55:13", "55:14", "55:15", "55:16", "55:17",
+      "55:18", "55:19", "55:20", "55:21", "55:22", "55:23", "55:24", "55:25",
+      "55:26", "55:27", "55:28", "55:29", "55:30", "55:31", "55:32", "55:33",
+      "55:34", "55:35", "55:36", "55:37", "55:38", "55:39", "55:40", "55:41",
+      "55:42", "55:43", "55:44", "55:45", "55:46", "55:47", "55:48", "55:49",
+      "55:50", "55:51", "55:52", "55:53", "55:54", "55:55", "55:56", "55:57",
+      "55:58", "55:59", "55:60", "55:61", "55:62", "55:63", "55:64", "55:65",
+      "55:66", "55:67", "55:68", "55:69", "55:70", "55:71", "55:72", "55:73",
+      "55:74", "55:75", "55:76", "55:77"
+    ],
+    "P3.d-button-component-set": {
+      "created": ["56:2", "56:3", "56:4", "56:5", "56:6", "56:7", "56:8", "56:9", "56:10", "56:11", "56:12"],
+      "mutated": [
+        "54:2", "54:7", "54:3", "55:2", "55:5", "55:3", "55:6", "55:9", "55:7",
+        "55:10", "55:13", "55:11", "55:14", "55:17", "55:15", "55:18", "55:21", "55:19",
+        "55:22", "55:25", "55:23", "55:26", "55:29", "55:27", "55:30", "55:33", "55:31",
+        "55:34", "55:37", "55:35", "55:38", "55:41", "55:39", "55:42", "55:45", "55:43",
+        "55:46", "55:49", "55:47", "55:50", "55:53", "55:51", "55:54", "55:57", "55:55",
+        "55:58", "55:61", "55:59", "55:62", "55:65", "55:63", "55:66", "55:69", "55:67",
+        "55:70", "55:73", "55:71", "55:74", "55:77", "55:75"
+      ]
+    },
+    "P3.f-button-internal-dependency-doc": {
+      "created": ["59:2", "59:3"],
+      "mutated": ["53:2", "53:20"]
+    },
+    "P3.i-input-formfield-documentation-and-icon": [
+      "63:2", "63:3", "63:4", "63:5", "63:6", "63:7", "63:8", "63:9",
+      "63:10", "63:11", "63:12", "63:13", "63:14", "63:15", "63:16", "63:17",
+      "63:18", "63:19", "63:20", "63:21", "63:22", "63:23", "63:24"
+    ],
+    "P3.j-input-formfield-base": ["64:2", "64:3", "64:4", "64:5", "64:6", "64:7", "64:10", "64:11"],
+    "P3.j-input-formfield-variants": [
+      "65:2", "65:3", "65:4", "65:5", "65:6", "65:7", "65:8", "65:9",
+      "65:10", "65:11", "65:12", "65:13", "65:14", "65:15", "65:16", "65:17",
+      "65:18", "65:19", "65:20", "65:21", "65:22", "65:23", "65:24", "65:25",
+      "65:26", "65:27", "65:28", "65:29", "65:30", "65:31", "65:32", "65:33",
+      "65:34", "65:35", "65:36", "65:37", "65:38", "65:39", "65:40", "65:41"
+    ],
+    "P3.k-input-formfield-component-set": {
+      "created": ["66:2", "66:3", "66:4", "66:5", "66:6", "66:7", "66:8", "66:9"],
+      "mutated": [
+        "64:2", "64:3", "64:4", "64:5", "64:10", "64:11", "64:7",
+        "65:2", "65:3", "65:4", "65:5", "65:8", "65:9", "65:7",
+        "65:10", "65:11", "65:12", "65:13", "65:16", "65:17", "65:15",
+        "65:18", "65:19", "65:20", "65:21", "65:24", "65:25", "65:23",
+        "65:26", "65:27", "65:28", "65:29", "65:32", "65:33", "65:31",
+        "65:34", "65:35", "65:36", "65:37", "65:40", "65:41", "65:39"
+      ]
+    },
+    "P3.o-select-documentation-and-icon": [
+      "72:2", "72:3", "72:4", "72:5", "72:6", "72:7", "72:8", "72:9",
+      "72:10", "72:11", "72:12", "72:13", "72:14", "72:15", "72:16", "72:17",
+      "72:18", "72:19", "72:20", "72:21", "72:22", "72:23", "72:24"
+    ],
+    "P3.p-select-base": [
+      "73:2", "73:3", "73:4", "73:5", "73:6", "73:7", "73:8", "73:11",
+      "73:12", "73:13", "73:14", "73:15", "73:16", "73:17", "73:18"
+    ],
+    "P3.p-select-variants": {
+      "created": [
+        "74:4", "74:5", "74:6", "74:7", "74:8", "74:9", "74:10", "74:11", "74:12", "74:13",
+        "74:14", "74:15", "74:16", "74:17", "74:18", "74:21", "74:22", "74:23", "74:24", "74:25",
+        "74:26", "74:27", "74:28", "74:29", "74:30", "74:31", "74:32", "74:33", "74:34", "74:35",
+        "74:38", "74:39", "74:40", "74:41", "74:42", "74:43", "74:44", "74:45", "74:46", "74:47",
+        "74:48", "74:49", "74:50", "74:51", "74:52", "74:55", "74:56", "74:57", "74:58", "74:59",
+        "74:60", "74:61", "74:62", "74:63", "74:64", "74:65", "74:66", "74:67", "74:68", "74:69"
+      ],
+      "mutated": [
+        "73:2", "73:3", "73:4", "73:5", "73:6", "73:7", "73:8", "I73:8;72:21", "I73:8;72:22",
+        "73:11", "73:12", "73:13", "73:14", "73:15", "73:16", "73:17", "73:18"
+      ]
+    },
+    "P3.q-select-component-set": {
+      "created": ["76:12", "76:13", "76:14", "76:15", "76:16", "76:17", "76:18"],
+      "mutated": [
+        "76:12", "73:2", "73:3", "73:4", "73:5", "73:18", "73:8",
+        "74:4", "74:5", "74:6", "74:7", "74:18", "74:10",
+        "74:21", "74:22", "74:23", "74:24", "74:35", "74:27",
+        "74:38", "74:39", "74:40", "74:41", "74:52", "74:44",
+        "74:55", "74:56", "74:57", "74:58", "74:69", "74:61"
+      ]
+    },
+    "P3.u-statustag-page": {
+      "created": ["85:2"],
+      "mutated": []
+    },
+    "P3.u-statustag-documentation-base": {
+      "created": ["86:2", "86:3", "86:4"],
+      "mutated": []
+    },
+    "P3.u-statustag-documentation-specs": {
+      "created": [
+        "87:2", "87:3", "87:4", "87:5", "87:6", "87:7", "87:8",
+        "87:9", "87:10", "87:11", "87:12", "87:13", "87:14"
+      ],
+      "mutated": ["86:2"]
+    },
+    "P3.u-statustag-documentation-notes": {
+      "created": ["87:15", "87:16", "87:17", "87:18", "87:19", "87:20"],
+      "mutated": ["86:2"]
+    },
+    "P3.v-statustag-base": {
+      "created": ["88:2", "88:3", "88:4"],
+      "mutated": []
+    },
+    "P3.v-statustag-variants": {
+      "created": [
+        "89:2", "89:3", "89:4", "89:5", "89:6", "89:7",
+        "89:8", "89:9", "89:10", "89:11", "89:12", "89:13"
+      ],
+      "mutated": []
+    },
+    "P3.w-statustag-component-set": {
+      "created": ["90:2", "90:3", "90:4", "90:5", "90:6", "90:7", "90:8"],
+      "mutated": [
+        "90:2", "88:2", "88:4", "88:3", "89:2", "89:4", "89:3",
+        "89:5", "89:7", "89:6", "89:8", "89:10", "89:9",
+        "89:11", "89:13", "89:12"
+      ]
+    },
+    "P3.w-statustag-business-examples": {
+      "created": [
+        "91:2", "91:3", "91:4", "91:5", "I91:5;88:3", "I91:5;88:4",
+        "91:8", "I91:8;89:3", "I91:8;89:4", "91:11", "I91:11;89:6", "I91:11;89:7",
+        "91:14", "I91:14;89:9", "I91:14;89:10", "91:17", "I91:17;89:12", "I91:17;89:13"
+      ],
+      "mutated": ["90:2", "88:4", "89:4", "89:7", "89:10", "89:13"]
+    },
+    "P3.aa-appshell-page": {
+      "created": ["96:2"],
+      "mutated": []
+    },
+    "P3.aa-appshell-documentation-base": {
+      "created": ["97:2", "97:3", "97:4"],
+      "mutated": []
+    },
+    "P3.aa-appshell-documentation-details": {
+      "created": [
+        "98:2", "98:3", "98:4", "98:5", "98:6", "98:7", "98:8", "98:9", "98:10",
+        "98:11", "98:12", "98:13", "98:14", "98:15", "98:16", "98:17", "98:18", "98:19", "98:20"
+      ],
+      "mutated": ["97:2"]
+    },
+    "P3.ab-app-topbar": {
+      "created": ["99:2", "99:3", "99:4", "99:5", "99:6", "99:7", "99:8", "99:9", "99:10", "99:11", "99:12", "99:13"],
+      "mutated": ["99:2", "99:10", "99:13", "99:12"]
+    },
+    "P3.ab-sidebar-nav-item-variants": {
+      "created": [
+        "100:2", "100:3", "100:4", "100:5", "100:6", "100:7", "100:8", "100:9", "100:10", "100:11",
+        "100:12", "100:13", "100:14", "100:15", "100:16", "100:17", "100:18", "100:19", "100:20", "100:21"
+      ],
+      "mutated": []
+    },
+    "P3.ab-sidebar-nav-item-component-set": {
+      "created": ["101:2"],
+      "mutated": [
+        "101:2", "100:2", "100:6", "100:5", "100:7", "100:11", "100:10",
+        "100:12", "100:16", "100:15", "100:17", "100:21", "100:20"
+      ]
+    },
+    "P3.ac-appshell-base": {
+      "created": [
+        "103:2", "103:3", "I103:3;99:3", "I103:3;99:4", "I103:3;99:5", "I103:3;99:6",
+        "I103:3;99:7", "I103:3;99:8", "I103:3;99:9", "I103:3;99:10", "I103:3;99:11",
+        "I103:3;99:12", "I103:3;99:13", "103:15", "103:16", "103:17", "103:18", "103:19",
+        "I103:19;100:3", "I103:19;100:4", "I103:19;100:5", "I103:19;100:6", "103:24",
+        "I103:24;100:3", "I103:24;100:4", "I103:24;100:5", "I103:24;100:6", "103:29",
+        "I103:29;100:8", "I103:29;100:9", "I103:29;100:10", "I103:29;100:11", "103:34",
+        "I103:34;100:3", "I103:34;100:4", "I103:34;100:5", "I103:34;100:6", "103:39",
+        "I103:39;100:3", "I103:39;100:4", "I103:39;100:5", "I103:39;100:6", "103:44", "103:45",
+        "103:46", "103:47", "103:48", "103:49", "103:50", "103:51", "103:52", "103:53",
+        "103:54", "103:55", "103:56", "103:57", "103:58", "103:59", "103:60", "103:61",
+        "103:62", "103:63", "103:64", "103:65", "103:66", "103:67", "103:68", "103:69",
+        "103:70", "103:71", "103:72", "103:73", "103:74", "103:75", "103:76", "103:77", "103:78"
+      ],
+      "mutated": []
+    },
+    "P3.ac-appshell-role-sidebar-variants": {
+      "created": [
+        "104:33", "104:34", "I104:34;99:3", "I104:34;99:4", "I104:34;99:5", "I104:34;99:6", "I104:34;99:7", "I104:34;99:8",
+        "I104:34;99:9", "I104:34;99:10", "I104:34;99:11", "I104:34;99:12", "I104:34;99:13", "104:35", "104:36", "104:37",
+        "104:38", "104:110", "I104:110;100:13", "I104:110;100:14", "I104:110;100:15", "104:115", "I104:115;100:13", "I104:115;100:14",
+        "I104:115;100:15", "104:120", "I104:120;100:18", "I104:120;100:19", "I104:120;100:20", "104:125", "I104:125;100:13", "I104:125;100:14",
+        "I104:125;100:15", "104:130", "I104:130;100:13", "I104:130;100:14", "I104:130;100:15", "104:44", "104:45", "104:46",
+        "104:47", "104:48", "104:49", "104:50", "104:51", "104:52", "104:53", "104:54",
+        "104:55", "104:56", "104:57", "104:58", "104:59", "104:60", "104:61", "104:62",
+        "104:63", "104:64", "104:65", "104:66", "104:67", "104:68", "104:69", "104:70",
+        "104:71", "104:72", "104:73", "104:74", "104:75", "104:76", "104:77", "104:78",
+        "104:135", "104:136", "I104:136;99:3", "I104:136;99:4", "I104:136;99:5", "I104:136;99:6", "I104:136;99:7", "I104:136;99:8",
+        "I104:136;99:9", "I104:136;99:10", "I104:136;99:11", "I104:136;99:12", "I104:136;99:13", "104:137", "104:138", "104:139",
+        "104:140", "104:212", "I104:212;100:3", "I104:212;100:4", "I104:212;100:5", "I104:212;100:6", "104:217", "I104:217;100:3",
+        "I104:217;100:4", "I104:217;100:5", "I104:217;100:6", "104:222", "I104:222;100:8", "I104:222;100:9", "I104:222;100:10", "I104:222;100:11",
+        "104:146", "104:147", "104:148", "104:149", "104:150", "104:151", "104:152", "104:153",
+        "104:154", "104:155", "104:156", "104:157", "104:158", "104:159", "104:160", "104:161",
+        "104:162", "104:163", "104:164", "104:165", "104:166", "104:167", "104:168", "104:169",
+        "104:170", "104:171", "104:172", "104:173", "104:174", "104:175", "104:176", "104:177",
+        "104:178", "104:179", "104:180", "104:227", "104:228", "I104:228;99:3", "I104:228;99:4", "I104:228;99:5",
+        "I104:228;99:6", "I104:228;99:7", "I104:228;99:8", "I104:228;99:9", "I104:228;99:10", "I104:228;99:11", "I104:228;99:12", "I104:228;99:13",
+        "104:229", "104:230", "104:231", "104:232", "104:304", "I104:304;100:13", "I104:304;100:14", "I104:304;100:15",
+        "104:309", "I104:309;100:13", "I104:309;100:14", "I104:309;100:15", "104:314", "I104:314;100:18", "I104:314;100:19", "I104:314;100:20",
+        "104:238", "104:239", "104:240", "104:241", "104:242", "104:243", "104:244", "104:245",
+        "104:246", "104:247", "104:248", "104:249", "104:250", "104:251", "104:252", "104:253",
+        "104:254", "104:255", "104:256", "104:257", "104:258", "104:259", "104:260", "104:261",
+        "104:262", "104:263", "104:264", "104:265", "104:266", "104:267", "104:268", "104:269",
+        "104:270", "104:271", "104:272", "104:319", "104:320", "I104:320;99:3", "I104:320;99:4", "I104:320;99:5",
+        "I104:320;99:6", "I104:320;99:7", "I104:320;99:8", "I104:320;99:9", "I104:320;99:10", "I104:320;99:11", "I104:320;99:12", "I104:320;99:13",
+        "104:321", "104:322", "104:323", "104:324", "104:396", "I104:396;100:3", "I104:396;100:4", "I104:396;100:5",
+        "I104:396;100:6", "104:401", "I104:401;100:3", "I104:401;100:4", "I104:401;100:5", "I104:401;100:6", "104:406", "I104:406;100:8",
+        "I104:406;100:9", "I104:406;100:10", "I104:406;100:11", "104:411", "I104:411;100:3", "I104:411;100:4", "I104:411;100:5", "I104:411;100:6",
+        "104:416", "I104:416;100:3", "I104:416;100:4", "I104:416;100:5", "I104:416;100:6", "104:330", "104:331", "104:332",
+        "104:333", "104:334", "104:335", "104:336", "104:337", "104:338", "104:339", "104:340",
+        "104:341", "104:342", "104:343", "104:344", "104:345", "104:346", "104:347", "104:348",
+        "104:349", "104:350", "104:351", "104:352", "104:353", "104:354", "104:355", "104:356",
+        "104:357", "104:358", "104:359", "104:360", "104:361", "104:362", "104:363", "104:364",
+        "104:421", "104:422", "I104:422;99:3", "I104:422;99:4", "I104:422;99:5", "I104:422;99:6", "I104:422;99:7", "I104:422;99:8",
+        "I104:422;99:9", "I104:422;99:10", "I104:422;99:11", "I104:422;99:12", "I104:422;99:13", "104:423", "104:424", "104:425",
+        "104:426", "104:498", "I104:498;100:13", "I104:498;100:14", "I104:498;100:15", "104:503", "I104:503;100:13", "I104:503;100:14",
+        "I104:503;100:15", "104:508", "I104:508;100:18", "I104:508;100:19", "I104:508;100:20", "104:513", "I104:513;100:13", "I104:513;100:14",
+        "I104:513;100:15", "104:518", "I104:518;100:13", "I104:518;100:14", "I104:518;100:15", "104:432", "104:433", "104:434",
+        "104:435", "104:436", "104:437", "104:438", "104:439", "104:440", "104:441", "104:442",
+        "104:443", "104:444", "104:445", "104:446", "104:447", "104:448", "104:449", "104:450",
+        "104:451", "104:452", "104:453", "104:454", "104:455", "104:456", "104:457", "104:458",
+        "104:459", "104:460", "104:461", "104:462", "104:463", "104:464", "104:465", "104:466",
+        "104:523", "104:524", "I104:524;99:3", "I104:524;99:4", "I104:524;99:5", "I104:524;99:6", "I104:524;99:7", "I104:524;99:8",
+        "I104:524;99:9", "I104:524;99:10", "I104:524;99:11", "I104:524;99:12", "I104:524;99:13", "104:525", "104:526", "104:527",
+        "104:528", "104:600", "I104:600;100:3", "I104:600;100:4", "I104:600;100:5", "I104:600;100:6", "104:605", "I104:605;100:3",
+        "I104:605;100:4", "I104:605;100:5", "I104:605;100:6", "104:610", "I104:610;100:8", "I104:610;100:9", "I104:610;100:10", "I104:610;100:11",
+        "104:534", "104:535", "104:536", "104:537", "104:538", "104:539", "104:540", "104:541",
+        "104:542", "104:543", "104:544", "104:545", "104:546", "104:547", "104:548", "104:549",
+        "104:550", "104:551", "104:552", "104:553", "104:554", "104:555", "104:556", "104:557",
+        "104:558", "104:559", "104:560", "104:561", "104:562", "104:563", "104:564", "104:565",
+        "104:566", "104:567", "104:568", "104:615", "104:616", "I104:616;99:3", "I104:616;99:4", "I104:616;99:5",
+        "I104:616;99:6", "I104:616;99:7", "I104:616;99:8", "I104:616;99:9", "I104:616;99:10", "I104:616;99:11", "I104:616;99:12", "I104:616;99:13",
+        "104:617", "104:618", "104:619", "104:620", "104:692", "I104:692;100:13", "I104:692;100:14", "I104:692;100:15",
+        "104:697", "I104:697;100:13", "I104:697;100:14", "I104:697;100:15", "104:702", "I104:702;100:18", "I104:702;100:19", "I104:702;100:20",
+        "104:626", "104:627", "104:628", "104:629", "104:630", "104:631", "104:632", "104:633",
+        "104:634", "104:635", "104:636", "104:637", "104:638", "104:639", "104:640", "104:641",
+        "104:642", "104:643", "104:644", "104:645", "104:646", "104:647", "104:648", "104:649",
+        "104:650", "104:651", "104:652", "104:653", "104:654", "104:655", "104:656", "104:657",
+        "104:658", "104:659", "104:660"
+      ],
+      "removed": [
+        "104:39", "I104:39;100:3", "I104:39;100:4", "I104:39;100:5", "I104:39;100:6", "104:40", "I104:40;100:3", "I104:40;100:4",
+        "I104:40;100:5", "I104:40;100:6", "104:41", "I104:41;100:8", "I104:41;100:9", "I104:41;100:10", "I104:41;100:11", "104:42",
+        "I104:42;100:3", "I104:42;100:4", "I104:42;100:5", "I104:42;100:6", "104:43", "I104:43;100:3", "I104:43;100:4", "I104:43;100:5",
+        "I104:43;100:6", "104:141", "I104:141;100:3", "I104:141;100:4", "I104:141;100:5", "I104:141;100:6", "104:142", "I104:142;100:3",
+        "I104:142;100:4", "I104:142;100:5", "I104:142;100:6", "104:143", "I104:143;100:8", "I104:143;100:9", "I104:143;100:10", "I104:143;100:11",
+        "104:144", "I104:144;100:3", "I104:144;100:4", "I104:144;100:5", "I104:144;100:6", "104:145", "I104:145;100:3", "I104:145;100:4",
+        "I104:145;100:5", "I104:145;100:6", "104:233", "I104:233;100:3", "I104:233;100:4", "I104:233;100:5", "I104:233;100:6", "104:234",
+        "I104:234;100:3", "I104:234;100:4", "I104:234;100:5", "I104:234;100:6", "104:235", "I104:235;100:8", "I104:235;100:9", "I104:235;100:10",
+        "I104:235;100:11", "104:236", "I104:236;100:3", "I104:236;100:4", "I104:236;100:5", "I104:236;100:6", "104:237", "I104:237;100:3",
+        "I104:237;100:4", "I104:237;100:5", "I104:237;100:6", "104:325", "I104:325;100:3", "I104:325;100:4", "I104:325;100:5", "I104:325;100:6",
+        "104:326", "I104:326;100:3", "I104:326;100:4", "I104:326;100:5", "I104:326;100:6", "104:327", "I104:327;100:8", "I104:327;100:9",
+        "I104:327;100:10", "I104:327;100:11", "104:328", "I104:328;100:3", "I104:328;100:4", "I104:328;100:5", "I104:328;100:6", "104:329",
+        "I104:329;100:3", "I104:329;100:4", "I104:329;100:5", "I104:329;100:6", "104:427", "I104:427;100:3", "I104:427;100:4", "I104:427;100:5",
+        "I104:427;100:6", "104:428", "I104:428;100:3", "I104:428;100:4", "I104:428;100:5", "I104:428;100:6", "104:429", "I104:429;100:8",
+        "I104:429;100:9", "I104:429;100:10", "I104:429;100:11", "104:430", "I104:430;100:3", "I104:430;100:4", "I104:430;100:5", "I104:430;100:6",
+        "104:431", "I104:431;100:3", "I104:431;100:4", "I104:431;100:5", "I104:431;100:6", "104:529", "I104:529;100:3", "I104:529;100:4",
+        "I104:529;100:5", "I104:529;100:6", "104:530", "I104:530;100:3", "I104:530;100:4", "I104:530;100:5", "I104:530;100:6", "104:531",
+        "I104:531;100:8", "I104:531;100:9", "I104:531;100:10", "I104:531;100:11", "104:532", "I104:532;100:3", "I104:532;100:4", "I104:532;100:5",
+        "I104:532;100:6", "104:533", "I104:533;100:3", "I104:533;100:4", "I104:533;100:5", "I104:533;100:6", "104:621", "I104:621;100:3",
+        "I104:621;100:4", "I104:621;100:5", "I104:621;100:6", "104:622", "I104:622;100:3", "I104:622;100:4", "I104:622;100:5", "I104:622;100:6",
+        "104:623", "I104:623;100:8", "I104:623;100:9", "I104:623;100:10", "I104:623;100:11", "104:624", "I104:624;100:3", "I104:624;100:4",
+        "I104:624;100:5", "I104:624;100:6", "104:625", "I104:625;100:3", "I104:625;100:4", "I104:625;100:5", "I104:625;100:6"
+      ],
+      "mutated": []
+    },
+    "P3.ad-appshell-component-set": {
+      "created": ["107:218", "107:219", "107:220"],
+      "mutated": [
+        "107:218", "103:3", "103:2", "103:48", "104:34", "104:33", "104:48",
+        "104:136", "104:135", "104:150", "104:228", "104:227", "104:242",
+        "104:320", "104:319", "104:334", "104:422", "104:421", "104:436",
+        "104:524", "104:523", "104:538", "104:616", "104:615", "104:630"
+      ]
+    },
+    "P3.ah-pageheader-page": {
+      "created": ["114:2"],
+      "mutated": []
+    },
+    "P3.ah-pageheader-documentation-base": {
+      "created": ["115:2", "115:3", "115:4"],
+      "mutated": []
+    },
+    "P3.ah-pageheader-documentation-details": {
+      "created": ["115:5", "115:6", "115:7"],
+      "mutated": ["115:2"]
+    },
+    "P3.ai-pageheader-base-skeleton": {
+      "created": ["116:2", "116:3", "116:4", "116:5", "116:6"],
+      "mutated": []
+    },
+    "P3.ai-pageheader-navigation": {
+      "created": ["117:2", "117:3", "117:4", "117:5", "117:6", "117:7", "117:8", "117:9", "117:10"],
+      "mutated": ["116:3"]
+    },
+    "P3.ai-pageheader-title-action": {
+      "created": ["118:2", "118:3", "118:4"],
+      "mutated": ["116:5", "116:6"]
+    },
+    "P3.ai-pageheader-variants": {
+      "created": [
+        "119:2", "119:3", "119:4", "119:5", "119:6", "119:7", "119:8", "119:9", "119:10",
+        "119:11", "119:12", "119:13", "119:14", "119:15", "119:16", "119:17", "119:18", "I119:18;54:7",
+        "119:22", "119:23", "119:24", "119:25", "119:26", "119:27", "119:28", "119:29", "119:30",
+        "119:31", "119:32", "119:33", "119:34", "119:35", "119:36", "119:37", "119:38",
+        "119:39", "119:40", "119:41", "119:42", "119:43", "119:44", "119:45", "119:46", "119:47",
+        "119:48", "119:49", "119:50", "119:51", "119:52", "119:53", "119:54", "119:55", "I119:55;54:7"
+      ],
+      "mutated": []
+    },
+    "P3.ai-pageheader-component-set": {
+      "created": ["120:8", "120:9", "120:10"],
+      "mutated": ["120:8", "116:2", "119:2", "119:22", "119:39"]
+    },
+    "P3.aj-pageheader-component-properties": {
+      "created": [],
+      "mutated": [
+        "120:8", "116:2", "118:2", "118:3", "117:6", "117:8", "117:10", "117:4", "118:4",
+        "119:2", "119:15", "119:16", "119:8", "119:10", "119:12", "119:6", "119:18",
+        "119:22", "119:35", "119:36", "119:28", "119:30", "119:32", "119:26", "119:38",
+        "119:39", "119:52", "119:53", "119:45", "119:47", "119:49", "119:43", "119:55"
+      ]
+    },
+    "P3.an-searchpanel-page": {
+      "created": ["131:2"],
+      "mutated": []
+    },
+    "P3.an-searchpanel-documentation": {
+      "created": ["131:9", "131:10", "131:11", "131:12", "131:13", "131:14"],
+      "mutated": []
+    },
+    "P3.ao-searchpanel-base-skeleton": {
+      "created": ["132:2", "132:3", "132:4", "132:5", "132:6", "132:7"],
+      "mutated": []
+    },
+    "P3.ao-searchpanel-default-composition": {
+      "created": [
+        "134:10", "I134:10;64:3", "I134:10;64:4", "I134:10;64:6", "I134:10;64:10",
+        "134:22", "I134:22;73:3", "I134:22;73:4", "I134:22;73:6", "I134:22;73:7", "I134:22;73:8", "I134:22;73:8;72:21", "I134:22;73:8;72:22",
+        "134:41", "I134:41;73:3", "I134:41;73:4", "I134:41;73:6", "I134:41;73:7", "I134:41;73:8", "I134:41;73:8;72:21", "I134:41;73:8;72:22",
+        "134:58", "I134:58;54:7", "134:66", "I134:66;55:21", "134:74", "I134:74;55:41", "134:82", "134:92"
+      ],
+      "mutated": ["132:3", "132:5", "132:6", "132:7"]
+    },
+    "P3.ap-searchpanel-variants": {
+      "created": [
+        "135:40", "135:41", "135:42", "135:43", "I135:43;55:41", "135:44", "135:45", "I135:45;64:3", "I135:45;64:4", "I135:45;64:6", "I135:45;64:10",
+        "135:46", "I135:46;73:3", "I135:46;73:4", "I135:46;73:6", "I135:46;73:7", "I135:46;73:8", "I135:46;73:8;72:21", "I135:46;73:8;72:22",
+        "135:47", "I135:47;73:3", "I135:47;73:4", "I135:47;73:6", "I135:47;73:7", "I135:47;73:8", "I135:47;73:8;72:21", "I135:47;73:8;72:22",
+        "135:48", "135:49", "I135:49;54:7", "135:50", "I135:50;55:21", "135:51", "135:52", "135:53",
+        "135:94", "135:95", "135:96", "135:97", "I135:97;55:53", "135:98", "135:99", "I135:99;64:3", "I135:99;64:4", "I135:99;64:6", "I135:99;64:10",
+        "135:100", "I135:100;73:3", "I135:100;73:4", "I135:100;73:6", "I135:100;73:7", "I135:100;73:8", "I135:100;73:8;72:21", "I135:100;73:8;72:22",
+        "135:101", "I135:101;73:3", "I135:101;73:4", "I135:101;73:6", "I135:101;73:7", "I135:101;73:8", "I135:101;73:8;72:21", "I135:101;73:8;72:22",
+        "135:102", "135:103", "I135:103;55:16", "I135:103;55:17", "135:104", "I135:104;55:33", "135:105", "135:106", "135:107"
+      ],
+      "mutated": []
+    },
+    "P3.ap-searchpanel-component-set": {
+      "created": ["136:132"],
+      "mutated": ["136:132", "132:2", "135:40", "135:94"]
+    },
+    "P3.aq-searchpanel-component-properties": {
+      "created": [],
+      "mutated": ["136:132", "132:2", "132:4", "132:3", "134:74", "135:40", "135:42", "135:41", "135:43", "135:94", "135:96", "135:95", "135:97"]
+    },
+    "P3.at-datatable-page": {
+      "created": ["143:2"],
+      "mutated": []
+    },
+    "P3.at-datatable-documentation": {
+      "created": ["144:2", "144:3", "144:4", "144:5", "144:6", "144:7"],
+      "mutated": []
+    },
+    "P3.au-datatable-header-skeleton": {
+      "created": ["145:2"],
+      "mutated": []
+    },
+    "P3.au-datatable-header-columns-1": {
+      "created": ["145:3", "145:4", "145:5", "145:6", "145:7", "145:8", "145:9", "145:10", "145:11", "145:12"],
+      "mutated": ["145:2"]
+    },
+    "P3.au-datatable-header-columns-2": {
+      "created": ["145:377", "145:378", "145:379", "145:380", "145:381", "145:382", "145:383", "145:384"],
+      "mutated": ["145:2"]
+    },
+    "P3.au-datatable-header-properties": {
+      "created": [],
+      "mutated": ["145:2", "145:4", "145:6", "145:8", "145:10", "145:12", "145:378", "145:380", "145:382", "145:384"]
+    },
+    "P3.au-datatable-row-skeleton": {
+      "created": ["146:2"],
+      "mutated": []
+    },
+    "P3.au-datatable-row-columns-1": {
+      "created": ["147:2", "147:3", "147:4", "147:5", "147:6", "147:7", "147:8", "147:9", "147:10", "147:11"],
+      "mutated": ["146:2"]
+    },
+    "P3.au-datatable-row-columns-2": {
+      "created": ["148:2", "148:3", "148:4", "148:5", "148:6", "148:7", "I148:7;88:3", "I148:7;88:4", "148:10", "148:11", "I148:11;55:41"],
+      "mutated": ["146:2"]
+    },
+    "P3.au-datatable-row-properties": {
+      "created": [],
+      "mutated": ["146:2", "147:3", "147:5", "147:7", "147:9", "147:11", "148:3", "148:5", "148:6", "148:10"]
+    },
+    "P3.au-datatable-skeleton-row": {
+      "created": ["150:7", "150:8", "150:9", "150:10", "150:11", "150:12", "150:13", "150:14", "150:15", "150:16"],
+      "mutated": []
+    },
+    "P3.au-datatable-default-shell": {
+      "created": [
+        "151:7", "151:8", "I151:8;145:3", "I151:8;145:4", "I151:8;145:5", "I151:8;145:6", "I151:8;145:7", "I151:8;145:8", "I151:8;145:9", "I151:8;145:10", "I151:8;145:11", "I151:8;145:12",
+        "I151:8;145:377", "I151:8;145:378", "I151:8;145:379", "I151:8;145:380", "I151:8;145:381", "I151:8;145:382", "I151:8;145:383", "I151:8;145:384", "151:27"
+      ],
+      "mutated": []
+    },
+    "P3.au-datatable-default-rows": {
+      "created": [
+        "152:25", "I152:25;147:2", "I152:25;147:3", "I152:25;147:4", "I152:25;147:5", "I152:25;147:6", "I152:25;147:7", "I152:25;147:8", "I152:25;147:9", "I152:25;147:10", "I152:25;147:11", "I152:25;148:2", "I152:25;148:3", "I152:25;148:4", "I152:25;148:5", "I152:25;148:6", "I152:25;148:7", "I152:25;148:7;88:3", "I152:25;148:7;88:4", "I152:25;148:10", "I152:25;148:11", "I152:25;148:11;55:41",
+        "152:69", "I152:69;147:2", "I152:69;147:3", "I152:69;147:4", "I152:69;147:5", "I152:69;147:6", "I152:69;147:7", "I152:69;147:8", "I152:69;147:9", "I152:69;147:10", "I152:69;147:11", "I152:69;148:2", "I152:69;148:3", "I152:69;148:4", "I152:69;148:5", "I152:69;148:6", "I152:69;148:7", "I152:69;148:7;88:3", "I152:69;148:7;88:4", "I152:69;148:10", "I152:69;148:11", "I152:69;148:11;55:41",
+        "152:109", "I152:109;147:2", "I152:109;147:3", "I152:109;147:4", "I152:109;147:5", "I152:109;147:6", "I152:109;147:7", "I152:109;147:8", "I152:109;147:9", "I152:109;147:10", "I152:109;147:11", "I152:109;148:2", "I152:109;148:3", "I152:109;148:4", "I152:109;148:5", "I152:109;148:6", "I152:109;148:7", "I152:109;148:7;89:12", "I152:109;148:7;89:13", "I152:109;148:10", "I152:109;148:11", "I152:109;148:11;55:41"
+      ],
+      "mutated": ["151:7", "151:27"]
+    },
+    "P3.av-datatable-loading": {
+      "created": [
+        "153:94", "153:95", "I153:95;145:3", "I153:95;145:4", "I153:95;145:5", "I153:95;145:6", "I153:95;145:7", "I153:95;145:8", "I153:95;145:9", "I153:95;145:10", "I153:95;145:11", "I153:95;145:12", "I153:95;145:377", "I153:95;145:378", "I153:95;145:379", "I153:95;145:380", "I153:95;145:381", "I153:95;145:382", "I153:95;145:383", "I153:95;145:384", "153:96",
+        "153:187", "I153:187;150:8", "I153:187;150:9", "I153:187;150:10", "I153:187;150:11", "I153:187;150:12", "I153:187;150:13", "I153:187;150:14", "I153:187;150:15", "I153:187;150:16",
+        "153:197", "I153:197;150:8", "I153:197;150:9", "I153:197;150:10", "I153:197;150:11", "I153:197;150:12", "I153:197;150:13", "I153:197;150:14", "I153:197;150:15", "I153:197;150:16",
+        "153:207", "I153:207;150:8", "I153:207;150:9", "I153:207;150:10", "I153:207;150:11", "I153:207;150:12", "I153:207;150:13", "I153:207;150:14", "I153:207;150:15", "I153:207;150:16"
+      ],
+      "mutated": []
+    },
+    "P3.av-datatable-empty": {
+      "created": ["154:139", "154:140", "I154:140;145:3", "I154:140;145:4", "I154:140;145:5", "I154:140;145:6", "I154:140;145:7", "I154:140;145:8", "I154:140;145:9", "I154:140;145:10", "I154:140;145:11", "I154:140;145:12", "I154:140;145:377", "I154:140;145:378", "I154:140;145:379", "I154:140;145:380", "I154:140;145:381", "I154:140;145:382", "I154:140;145:383", "I154:140;145:384", "154:141", "154:232", "154:233", "154:234"],
+      "mutated": []
+    },
+    "P3.av-datatable-error": {
+      "created": ["155:157", "155:158", "I155:158;145:3", "I155:158;145:4", "I155:158;145:5", "I155:158;145:6", "I155:158;145:7", "I155:158;145:8", "I155:158;145:9", "I155:158;145:10", "I155:158;145:11", "I155:158;145:12", "I155:158;145:377", "I155:158;145:378", "I155:158;145:379", "I155:158;145:380", "I155:158;145:381", "I155:158;145:382", "I155:158;145:383", "I155:158;145:384", "155:159", "155:250", "155:251", "155:252", "155:253", "155:254", "I155:254;54:7"],
+      "mutated": []
+    },
+    "P3.av-datatable-component-set": {
+      "created": ["155:626"],
+      "mutated": ["155:626", "151:7", "153:94", "154:139", "155:157"]
+    },
+    "P3.aw-datatable-component-properties": {
+      "created": [],
+      "mutated": ["155:626", "151:7", "151:8", "153:94", "153:95", "154:139", "154:140", "155:157", "155:158", "154:233", "154:234", "155:251", "155:252", "155:253"]
+    },
+    "P3.ax-datatable-validation": {
+      "created": [],
+      "mutated": []
+    },
+    "P3.az-pagination-page": {
+      "created": ["162:2"],
+      "mutated": []
+    },
+    "P3.az-pagination-documentation": {
+      "created": ["163:2", "163:3", "163:4", "163:5", "163:6", "163:7"],
+      "mutated": []
+    },
+    "P3.ba-pagination-page-item": {
+      "created": ["164:2", "164:4", "164:6", "164:3", "164:5", "164:7", "164:8"],
+      "mutated": ["164:2", "164:4", "164:6"]
+    },
+    "P3.ba-pagination-page-item-property": {
+      "created": [],
+      "mutated": ["164:8", "164:3", "164:5", "164:7"]
+    },
+    "P3.ba-pagination-page-size-select": {
+      "created": ["167:2", "167:3", "I167:3;74:25", "I167:3;74:26", "I167:3;74:27", "I167:3;74:27;72:21", "I167:3;74:27;72:22"],
+      "mutated": ["167:2", "167:3", "I167:3;74:26"]
+    },
+    "P3.ba-pagination-page-size-select-disabled": {
+      "created": ["168:12", "168:13", "I168:13;74:59", "I168:13;74:60", "I168:13;74:61", "I168:13;74:61;72:21", "I168:13;74:61;72:22", "168:26"],
+      "mutated": ["167:2", "168:12", "168:26", "I168:13;74:60"]
+    },
+    "P3.bb-pagination-controls-first-default": {
+      "created": ["169:22", "169:23", "I169:23;167:3", "I169:23;167:3;74:25", "I169:23;167:3;74:26", "I169:23;167:3;74:27", "I169:23;167:3;74:27;72:21", "I169:23;167:3;74:27;72:22", "169:33", "I169:33;55:33", "169:41", "I169:41;164:5", "169:43", "I169:43;164:3", "169:45", "I169:45;164:3", "169:47", "I169:47;55:21"],
+      "mutated": ["169:22"]
+    },
+    "P3.bb-pagination-controls-middle-default": {
+      "created": ["170:40", "170:41", "I170:41;167:3", "I170:41;167:3;74:25", "I170:41;167:3;74:26", "I170:41;167:3;74:27", "I170:41;167:3;74:27;72:21", "I170:41;167:3;74:27;72:22", "170:51", "I170:51;55:21", "170:59", "I170:59;164:3", "170:61", "I170:61;164:5", "170:63", "I170:63;164:3", "170:65", "I170:65;55:21"],
+      "mutated": ["170:40"]
+    },
+    "P3.bb-pagination-controls-last-default": {
+      "created": ["171:58", "171:59", "I171:59;167:3", "I171:59;167:3;74:25", "I171:59;167:3;74:26", "I171:59;167:3;74:27", "I171:59;167:3;74:27;72:21", "I171:59;167:3;74:27;72:22", "171:69", "I171:69;55:21", "171:77", "I171:77;164:3", "171:79", "I171:79;164:3", "171:81", "I171:81;164:5", "171:83", "I171:83;55:33"],
+      "mutated": ["171:58"]
+    },
+    "P3.bb-pagination-controls-first-disabled": {
+      "created": ["172:76", "172:77", "I172:77;168:13", "I172:77;168:13;74:59", "I172:77;168:13;74:60", "I172:77;168:13;74:61", "I172:77;168:13;74:61;72:21", "I172:77;168:13;74:61;72:22", "172:87", "I172:87;55:33", "172:95", "I172:95;164:5", "172:97", "I172:97;164:7", "172:99", "I172:99;164:7", "172:101", "I172:101;55:33"],
+      "mutated": ["172:76"]
+    },
+    "P3.bb-pagination-controls-middle-disabled": {
+      "created": ["173:94", "173:95", "I173:95;168:13", "I173:95;168:13;74:59", "I173:95;168:13;74:60", "I173:95;168:13;74:61", "I173:95;168:13;74:61;72:21", "I173:95;168:13;74:61;72:22", "173:105", "I173:105;55:33", "173:113", "I173:113;164:7", "173:115", "I173:115;164:5", "173:117", "I173:117;164:7", "173:119", "I173:119;55:33"],
+      "mutated": ["173:94"]
+    },
+    "P3.bb-pagination-controls-last-disabled": {
+      "created": ["174:112", "174:113", "I174:113;168:13", "I174:113;168:13;74:59", "I174:113;168:13;74:60", "I174:113;168:13;74:61", "I174:113;168:13;74:61;72:21", "I174:113;168:13;74:61;72:22", "174:123", "I174:123;55:33", "174:131", "I174:131;164:7", "174:133", "I174:133;164:7", "174:135", "I174:135;164:5", "174:137", "I174:137;55:33"],
+      "mutated": ["174:112"]
+    },
+    "P3.bb-pagination-controls-component-set": {
+      "created": ["175:130"],
+      "mutated": ["175:130", "169:22", "172:76", "170:40", "173:94", "171:58", "174:112"]
+    },
+    "P3.bb-pagination-controls-layout-fix": {
+      "created": [],
+      "mutated": ["175:130", "169:22", "170:40", "171:58", "172:76", "173:94", "174:112"]
+    },
+    "P3.bb-pagination-default-variants": {
+      "created": ["177:130", "177:131", "177:132", "177:157", "177:158", "177:159", "177:184", "177:185", "177:186"],
+      "mutated": ["177:130", "177:157", "177:184"],
+      "createdInstanceDescendantsRecordedInFigmaReturn": true
+    },
+    "P3.bb-pagination-disabled-variants": {
+      "created": ["178:202", "178:203", "178:204", "178:229", "178:230", "178:231", "178:256", "178:257", "178:258"],
+      "mutated": ["178:202", "178:229", "178:256"],
+      "createdInstanceDescendantsRecordedInFigmaReturn": true
+    },
+    "P3.bb-pagination-component-set": {
+      "created": ["179:274"],
+      "mutated": ["179:274", "177:130", "177:157", "177:184", "178:202", "178:229", "178:256"]
+    },
+    "P3.bc-pagination-component-properties": {
+      "created": [],
+      "mutated": ["179:274", "177:131", "177:132", "177:158", "177:159", "177:185", "177:186", "178:203", "178:204", "178:230", "178:231", "178:257", "178:258"]
+    },
+    "P3.bd-pagination-validation": {
+      "created": [],
+      "mutated": []
+    },
+    "P3.be-pagination-approval-and-descriptions-discovery": {
+      "created": [],
+      "mutated": [],
+      "paginationReview": "APPROVED-2026-08-09",
+      "codeConnectMatch": false,
+      "externalLibraryMatch": false
+    },
+    "P3.bf-descriptions-page-documentation": {
+      "created": ["184:2", "184:3", "184:4", "184:5", "184:6", "184:7"],
+      "mutated": []
+    },
+    "P3.bg-descriptions-item": {
+      "created": ["184:8", "184:9", "184:10", "184:11", "184:12"],
+      "mutated": ["184:8", "184:10", "184:12"]
+    },
+    "P3.bh-descriptions-variants": {
+      "created": [
+        "185:2", "185:3", "185:4", "185:10", "185:16", "185:22", "185:28", "185:34",
+        "185:39", "185:40", "185:41", "185:47", "185:53", "185:59", "185:65", "185:71",
+        "185:76", "185:77", "185:78", "185:83", "185:88", "185:89", "185:94", "185:99", "185:100", "185:105",
+        "185:110", "185:111", "185:112", "185:117", "185:122", "185:123", "185:128", "185:133", "185:134", "185:139"
+      ],
+      "mutated": ["185:2", "185:39", "185:76", "185:110"],
+      "createdInstanceDescendantsRecordedInFigmaReturn": true
+    },
+    "P3.bi-descriptions-component-set-and-properties": {
+      "created": ["186:98", "186:99", "186:100", "186:101", "186:102"],
+      "mutated": ["186:98", "185:2", "185:33", "185:39", "185:70", "185:76", "185:99", "185:110", "185:133"]
+    },
+    "P3.bj-descriptions-validation": {
+      "created": [],
+      "mutated": []
+    },
+    "P3.bk-descriptions-approval-and-timeline-discovery": {
+      "created": [],
+      "mutated": [],
+      "descriptionsReview": "APPROVED-2026-08-09",
+      "codeConnectMatch": false,
+      "externalLibraryMatch": false
+    },
+    "P3.bl-timeline-page-documentation": {
+      "created": ["189:2", "189:3", "189:4", "189:5", "189:6", "189:7"],
+      "mutated": []
+    },
+    "P3.bm-timeline-item-component-set": {
+      "created": [
+        "190:2", "191:2", "191:14", "191:26", "191:38", "191:50", "191:62",
+        "192:2", "192:14", "192:26", "192:38", "192:50", "192:62"
+      ],
+      "mutated": ["192:62", "190:2", "191:2", "191:14", "191:26", "191:38", "191:50", "191:62", "192:2", "192:14", "192:26", "192:38", "192:50"],
+      "createdDescendantsRecordedInFigmaReturn": true
+    },
+    "P3.bn-timeline-business-variants": {
+      "created": [
+        "193:2", "193:3", "193:15", "193:27",
+        "193:39", "193:40", "193:52", "193:64",
+        "193:76", "193:77", "193:89", "193:101",
+        "193:1017", "193:1018", "193:1030", "193:1042",
+        "193:1054", "193:1055", "193:1067", "193:1079",
+        "193:1091", "193:1092", "193:1104", "193:1116",
+        "194:200", "194:201", "194:202", "194:203", "194:204", "194:205"
+      ],
+      "mutated": ["194:200", "193:2", "193:39", "193:76", "193:1017", "193:1054", "193:1091"],
+      "createdInstanceDescendantsRecordedInFigmaReturn": true
+    },
+    "P3.bo-timeline-component-properties": {
+      "created": [],
+      "mutated": ["192:62", "190:2", "191:2", "191:14", "191:26", "191:38", "191:50", "191:62", "192:2", "192:14", "192:26", "192:38", "192:50"]
+    },
+    "P3.bp-timeline-validation": {
+      "created": [],
+      "mutated": []
+    },
+    "P3.bq-timeline-approval-and-dialog-discovery": {
+      "created": [],
+      "mutated": [],
+      "timelineReview": "APPROVED-2026-08-09",
+      "codeConnectMatch": false,
+      "externalLibraryMatch": false
+    },
+    "P3.br-dialog-page-documentation": {
+      "created": ["197:2", "197:3"],
+      "mutated": ["197:3"]
+    },
+    "P3.bs-dialog-variants-and-component-set": {
+      "created": ["199:2", "199:30", "199:58", "199:84", "199:110"],
+      "mutated": ["199:110", "199:2", "199:30", "199:58", "199:84"],
+      "createdInstanceDescendantsRecordedInFigmaReturn": true
+    },
+    "P3.bt-dialog-layout-fix": {
+      "created": [],
+      "mutated": ["199:2", "199:30", "199:58", "199:84"]
+    },
+    "P3.bu-dialog-component-properties": {
+      "created": [],
+      "mutated": ["199:110", "199:2", "199:30", "199:58", "199:84"]
+    },
+    "P3.bv-dialog-validation": {
+      "created": [],
+      "mutated": []
+    }
+  },
+  "phase3Fixes": {
+    "PaginationControlsWidth": {
+      "reason": "Button labels changed from the short placeholder to 上一页/下一页 and increased the true child width",
+      "fix": "Recalculated all six control variants from actual child widths (392px) and reordered the grid by Position rows and State columns",
+      "mutatedNodeIds": ["175:130", "169:22", "170:40", "171:58", "172:76", "173:94", "174:112"]
+    },
+    "StatusTagFontFamily": {
+      "reason": "StatusTag master labels still used Inter and caused a product-font mismatch when reused in DataTable",
+      "fix": "Set all five StatusTag master labels to Noto Sans SC Regular without changing size or semantic styling",
+      "mutatedNodeIds": ["88:2", "88:4", "89:2", "89:4", "89:5", "89:7", "89:8", "89:10", "89:11", "89:13"]
+    },
+    "SearchPanelHeaderHeight": {
+      "reason": "The 38px expand/collapse button overflowed a 24px header row by 7px",
+      "fix": "Set every SearchPanel header row to a fixed 38px height",
+      "mutatedNodeIds": ["132:2", "132:3", "135:40", "135:41", "135:94", "135:95"]
+    },
+    "SearchPanelSearchingActionsFit": {
+      "reason": "The wider loading button caused the searching-state reset action to clip at the right edge",
+      "fix": "Reduce the three primary filter instance widths from 168px to 160px across all states",
+      "mutatedNodeIds": ["134:10", "134:22", "134:41", "132:2", "135:45", "135:46", "135:47", "135:40", "135:99", "135:100", "135:101", "135:94"]
+    },
+    "ButtonPaintFallback": {
+      "reason": "Bound paints required resolved fallback RGB values for reliable Figma screenshot rendering",
+      "updatedPaintNodeCount": 57,
+      "mutatedNodeIds": [
+        "54:2", "54:7", "54:6", "55:2", "55:5", "55:4", "55:6", "55:9", "55:8",
+        "55:10", "55:13", "55:12", "55:14", "55:17", "55:16", "55:18", "55:21", "55:20",
+        "55:22", "55:25", "55:24", "55:26", "55:29", "55:28", "55:30", "55:33", "55:32",
+        "55:34", "55:37", "55:36", "55:41", "55:40", "55:42", "55:45", "55:44", "55:46",
+        "55:49", "55:48", "55:53", "55:52", "55:57", "55:56", "55:58", "55:61", "55:60",
+        "55:62", "55:65", "55:64", "55:66", "55:69", "55:68", "55:70", "55:73", "55:72",
+        "55:74", "55:77", "55:76"
+      ]
+    },
+    "InputFormFieldStateTextProperties": {
+      "reason": "Global Content and Helper TEXT properties overwrote state-specific examples; Label remains the TEXT property while state examples remain local",
+      "deletedPropertyKeys": ["Content#66:7", "Helper#66:14"],
+      "mutatedNodeIds": [
+        "66:2", "64:10", "64:11", "65:8", "65:9", "65:16", "65:17",
+        "65:24", "65:25", "65:32", "65:33", "65:40", "65:41"
+      ]
+    },
+    "SelectChevronGeometry": {
+      "reason": "The right chevron glyph inherited y=0 during creation and rendered asymmetrically",
+      "fix": "Set glyph-right y to 6 to align both chevron legs",
+      "mutatedNodeIds": ["72:22"]
+    },
+    "StatusTagStateTextProperty": {
+      "reason": "A shared Label TEXT property intentionally uses one component-set default and therefore cannot preserve five different master labels",
+      "resolution": "Keep Label editable with default 状态 and add five business-example instances with per-instance text overrides",
+      "exampleFrameId": "91:2",
+      "mutatedNodeIds": ["90:2", "88:4", "89:4", "89:7", "89:10", "89:13"]
+    },
+    "StatusTagScreenshotSpacing": {
+      "reason": "Business examples touched the page screenshot boundary",
+      "fix": "Bind 32px bottom padding to spacing/8",
+      "mutatedNodeIds": ["91:2"]
+    },
+    "PageHeaderDocumentationHeight": {
+      "reason": "The documentation frame retained its initial fixed height and clipped the final usage notes",
+      "fix": "Set vertical sizing to AUTO and disable clipping; resolved height is 235px",
+      "mutatedNodeIds": ["115:2"]
+    },
+    "DialogContentAndActionsWidth": {
+      "reason": "The initial horizontal sections hugged content, which compressed the operation copy and left-aligned the footer actions",
+      "fix": "Set Header, Operation Summary, and Actions to the 432px inner content width; preserved 24px component padding and right-aligned the footer",
+      "mutatedNodeIds": ["199:2", "199:30", "199:58", "199:84"]
+    },
+    "PageStateSkeletonFit": {
+      "reason": "The initial Skeleton included a redundant footer placeholder that touched the fixed 300px component boundary",
+      "fix": "Removed the redundant footer placeholder and retained the title, description, and three content-row skeletons",
+      "mutatedNodeIds": ["206:2"],
+      "removedNodeIds": ["206:8"]
+    }
+  },
+  "phase2Batches": {
+    "P2.c-typography-header": ["31:2", "31:3"],
+    "P2.c-typography-1": [
+      "32:2", "32:3", "32:4", "32:5", "32:6",
+      "32:7", "32:8", "32:9", "32:10", "32:11"
+    ],
+    "P2.c-typography-2": [
+      "33:2", "33:3", "33:4", "33:5", "33:6",
+      "33:7", "33:8", "33:9", "33:10", "33:11"
+    ],
+    "P2.c-typography-3": [
+      "34:2", "34:3", "34:4", "34:5", "34:6",
+      "34:7", "34:8", "34:9", "34:10", "34:11"
+    ],
+    "P2.c-typography-4": ["35:2", "35:3", "35:4", "35:5", "35:6"],
+    "P2.c-spacing-header": ["38:2", "38:3", "38:4"],
+    "P2.c-spacing-1": ["39:2", "39:3", "39:4", "39:5", "39:6", "39:7", "39:8", "39:9", "39:10"],
+    "P2.c-spacing-2": ["40:2", "40:3", "40:4", "40:5", "40:6", "40:7", "40:8", "40:9", "40:10"],
+    "P2.c-spacing-3": ["40:11", "40:12", "40:13", "40:14", "40:15", "40:16", "40:17", "40:18", "40:19"],
+    "P2.c-radius-header": ["41:2", "41:3", "41:4"],
+    "P2.c-radius-1": ["42:2", "42:3", "42:4", "42:5", "42:6", "42:7"],
+    "P2.c-radius-2": ["43:2", "43:3", "43:4", "43:5", "43:6", "43:7"],
+    "P2.c-shadows": ["44:2", "44:3", "44:4", "44:5", "44:6", "44:7", "44:8", "44:9", "44:10"],
+    "P2.d-components-index": ["46:2", "46:3", "46:4", "46:5", "46:6", "46:7", "46:8", "46:9"],
+    "P2.d-utilities-index": ["47:2", "47:3", "47:4", "47:5", "47:6", "47:7", "47:8", "47:9"],
+    "P2.c-colors-primitives-1": [
+      "24:2", "24:3", "24:4", "24:5", "24:6",
+      "24:7", "24:8", "24:9", "24:10", "24:11"
+    ],
+    "P2.c-colors-primitives-2": [
+      "24:12", "24:13", "24:14", "24:15", "24:16",
+      "24:17", "24:18", "24:19", "24:20", "24:21"
+    ],
+    "P2.c-colors-primitives-3": [
+      "24:22", "24:23", "24:24", "24:25", "24:26",
+      "24:27", "24:28", "24:29", "24:30", "24:31"
+    ],
+    "P2.c-colors-primitives-4": [
+      "25:2", "25:3", "25:4", "25:5", "25:6",
+      "25:7", "25:8", "25:9", "25:10", "25:11"
+    ],
+    "P2.c-colors-primitives-5": [
+      "25:12", "25:13", "25:14", "25:15"
+    ],
+    "P2.c-colors-semantic-1": [
+      "26:2", "26:3", "26:4", "26:5", "26:6",
+      "26:7", "26:8", "26:9", "26:10", "26:11"
+    ],
+    "P2.c-colors-semantic-2": [
+      "26:12", "26:13", "26:14", "26:15", "26:16",
+      "26:17", "26:18", "26:19", "26:20", "26:21"
+    ],
+    "P2.c-colors-semantic-3": [
+      "27:2", "27:3", "27:4", "27:5", "27:6",
+      "27:7", "27:8", "27:9", "27:10", "27:11"
+    ],
+    "P2.c-colors-semantic-4": [
+      "28:2", "28:3", "28:4", "28:5", "28:6",
+      "28:7", "28:8", "28:9", "28:10", "28:11"
+    ],
+    "P2.c-colors-semantic-5": [
+      "29:2", "29:3", "29:4", "29:5", "29:6",
+      "29:7", "29:8", "29:9", "29:10", "29:11"
+    ],
+    "P2.c-colors-semantic-6": [
+      "30:2", "30:3", "30:4", "30:5", "30:6",
+      "30:7", "30:8", "30:9", "30:10", "30:11"
+    ],
+    "P2.c-colors-semantic-7": [
+      "30:12", "30:13"
+    ]
+  },
+  "phase2Validation": {
+    "Cover": {
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "frameId": "17:2"
+    },
+    "Getting Started": {
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "frameId": "21:2"
+    },
+    "Foundations": {
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "frameId": "22:2",
+      "primitiveSwatchCount": 22,
+      "semanticSwatchCount": 31,
+      "typographySpecimenCount": 7,
+      "spacingSampleCount": 9,
+      "radiusSampleCount": 4,
+      "shadowSampleCount": 2
+    },
+    "Components Index": {
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "frameId": "46:2",
+      "plannedComponentFamilyCount": 16
+    },
+    "Utilities Index": {
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "frameId": "47:2"
+    },
+    "Page Tree": {
+      "metadata": "PASS",
+      "pageCount": 7,
+      "visibleDocumentationFrameCount": 5
+    }
+  },
+  "phase3Validation": {
+    "Button": {
+      "status": "PASS",
+      "pageId": "51:2",
+      "documentationFrameId": "53:2",
+      "componentSetId": "56:2",
+      "variantCount": 20,
+      "variantAxes": {
+        "Style": ["Primary", "Default", "Text", "Danger"],
+        "State": ["Default", "Hover", "Pressed", "Disabled", "Loading"]
+      },
+      "componentProperties": ["Label", "Show Icon", "Icon"],
+      "autoLayoutCount": 20,
+      "spacingBindingCount": 20,
+      "radiusBindingCount": 20,
+      "labelColorBindingCount": 20,
+      "spinnerColorBindingCount": 20,
+      "propertyReferenceCount": 20,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "review": "APPROVED-2026-08-08"
+    },
+    "Input/FormField": {
+      "status": "PASS",
+      "pageId": "62:2",
+      "documentationFrameId": "63:2",
+      "componentSetId": "66:2",
+      "variantCount": 6,
+      "variantAxes": {
+        "State": ["Default", "Focused", "Filled", "Error", "Disabled", "ReadOnly"]
+      },
+      "componentProperties": ["Label", "Required", "Show Label", "Show Helper", "Show Prefix Icon", "Prefix Icon"],
+      "outerAutoLayoutCount": 6,
+      "fieldAutoLayoutCount": 6,
+      "spacingBindingCount": 6,
+      "radiusBindingCount": 6,
+      "fieldPaintBindingCount": 6,
+      "textPaintBindingCount": 6,
+      "propertyReferenceCount": 6,
+      "stateExamples": "PASS",
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "review": "APPROVED-2026-08-08"
+    },
+    "Select": {
+      "status": "PASS",
+      "pageId": "71:2",
+      "documentationFrameId": "72:2",
+      "componentSetId": "76:12",
+      "variantCount": 5,
+      "variantAxes": {
+        "State": ["Default", "Expanded", "Selected", "Error", "Disabled"]
+      },
+      "componentProperties": ["Label", "Required", "Show Label", "Show Helper", "Show Chevron", "Chevron"],
+      "outerAutoLayoutCount": 5,
+      "fieldAutoLayoutCount": 5,
+      "spacingBindingCount": 5,
+      "fieldGeometryBindingCount": 5,
+      "fieldPaintBindingCount": 5,
+      "textPaintBindingCount": 5,
+      "propertyReferenceCount": 5,
+      "stateExamples": "PASS",
+      "chevronGeometry": "PASS",
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-select.png",
+      "review": "APPROVED-2026-08-08"
+    },
+    "StatusTag": {
+      "status": "PASS",
+      "pageId": "85:2",
+      "documentationFrameId": "86:2",
+      "businessExamplesFrameId": "91:2",
+      "componentSetId": "90:2",
+      "variantCount": 5,
+      "variantAxes": {
+        "Semantic": ["Success", "Warning", "Error", "Info", "Neutral"]
+      },
+      "componentProperties": ["Label", "Show Dot"],
+      "horizontalAutoLayoutCount": 5,
+      "height28Count": 5,
+      "geometryBindingCount": 5,
+      "paintBindingCount": 5,
+      "propertyReferenceCount": 5,
+      "businessExampleCount": 5,
+      "businessExampleOverrideCount": 5,
+      "semanticBindingMapping": "PASS",
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-statustag.png",
+      "review": "APPROVED-2026-08-08"
+    },
+    "AppShell/SidebarNav": {
+      "status": "PASS",
+      "pageId": "96:2",
+      "documentationFrameId": "97:2",
+      "componentSetId": "107:218",
+      "variantCount": 8,
+      "variantAxes": {
+        "Role": ["Employee", "Manager", "HR", "Admin"],
+        "Sidebar": ["Expanded", "Collapsed"]
+      },
+      "componentProperties": ["Show Breadcrumb"],
+      "privateDependencies": {
+        "__AppTopbar": "99:2",
+        "__SidebarNavItem": "101:2"
+      },
+      "layout": {
+        "viewportWidth": 1024,
+        "topbarHeight": 56,
+        "expandedSidebarWidth": 224,
+        "collapsedSidebarWidth": 64
+      },
+      "roleMenuCounts": {
+        "Employee": 5,
+        "Manager": 3,
+        "HR": 5,
+        "Admin": 3
+      },
+      "rootDimensionPassCount": 8,
+      "topbarPassCount": 8,
+      "sidebarBindingPassCount": 8,
+      "p0MenuPassCount": 8,
+      "singleActiveMenuPassCount": 8,
+      "pageTitlePassCount": 8,
+      "showBreadcrumbReferenceCount": 8,
+      "fontFamily": "Noto Sans SC",
+      "fontPassCount": 8,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-appshell.png",
+      "detailScreenshotPath": "D:\\temp\\figma-phase3-appshell-detail.png",
+      "review": "APPROVED-2026-08-08"
+    },
+    "PageHeader": {
+      "status": "PASS",
+      "pageId": "114:2",
+      "documentationFrameId": "115:2",
+      "componentSetId": "120:8",
+      "variantCount": 4,
+      "variantAxes": {
+        "Context": ["List", "Detail"],
+        "Action": ["Hidden", "Shown"]
+      },
+      "componentProperties": [
+        "Title", "Description", "Breadcrumb Root", "Breadcrumb Middle",
+        "Breadcrumb Current", "Return Label", "Show Description", "Action Button"
+      ],
+      "width": 736,
+      "height": 96,
+      "listReturnHiddenCount": 2,
+      "detailReturnVisibleCount": 2,
+      "actionVisibilityPassCount": 4,
+      "buttonReusePassCount": 4,
+      "buttonMainComponentId": "54:2",
+      "variableBindingPassCount": 4,
+      "propertyReferencePassCount": 4,
+      "fontFamily": "Noto Sans SC",
+      "fontPassCount": 4,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-pageheader.png",
+      "detailScreenshotPath": "D:\\temp\\figma-phase3-pageheader-detail.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "SearchPanel": {
+      "status": "PASS",
+      "pageId": "131:2",
+      "documentationFrameId": "131:9",
+      "componentSetId": "136:132",
+      "variantCount": 3,
+      "variantAxes": {
+        "State": ["Default", "Expanded", "Searching"]
+      },
+      "componentProperties": ["Panel Title", "Show Header", "Show Expand Control"],
+      "width": 736,
+      "stateHeights": {
+        "Default": 190,
+        "Expanded": 294,
+        "Searching": 190
+      },
+      "primaryFilterCount": 3,
+      "expandedDateFilterCount": 2,
+      "exposedNestedInstanceCountPerVariant": 8,
+      "inputMainComponentId": "64:2",
+      "selectMainComponentId": "73:2",
+      "queryDefaultMainComponentId": "54:2",
+      "querySearchingMainComponentId": "55:14",
+      "resetDefaultMainComponentId": "55:18",
+      "resetSearchingMainComponentId": "55:30",
+      "rootBindingPassCount": 3,
+      "propertyReferencePassCount": 3,
+      "componentReusePassCount": 3,
+      "exposedInstancePassCount": 3,
+      "fontFamily": "Noto Sans SC",
+      "fontPassCount": 3,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-searchpanel.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "DataTable": {
+      "status": "PASS",
+      "pageId": "143:2",
+      "documentationFrameId": "144:2",
+      "componentSetId": "155:626",
+      "variantCount": 4,
+      "variantAxes": {
+        "State": ["Default", "Loading", "Empty", "Error"]
+      },
+      "componentProperties": [
+        "Show Header", "Empty Title", "Empty Description", "Error Title",
+        "Error Description", "Trace ID", "Show Trace ID"
+      ],
+      "width": 736,
+      "stateHeights": {
+        "Default": 188,
+        "Loading": 188,
+        "Empty": 188,
+        "Error": 204
+      },
+      "columnCount": 9,
+      "columnWidths": [150, 64, 64, 88, 88, 48, 72, 88, 74],
+      "headerHeight": 44,
+      "dataRowHeight": 48,
+      "mockRowCount": 3,
+      "headerRowMainComponentId": "145:2",
+      "dataRowMainComponentId": "146:2",
+      "skeletonRowMainComponentId": "150:7",
+      "statusTagReuse": "PASS",
+      "buttonReuse": "PASS",
+      "rootBindingPassCount": 4,
+      "headerReusePassCount": 4,
+      "headerPropertyReferencePassCount": 4,
+      "fontFamily": "Noto Sans SC",
+      "fontPassCount": 4,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-datatable.png",
+      "detailScreenshotPath": "D:\\temp\\figma-phase3-datatable-page.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "Pagination": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "162:2",
+      "documentationFrameId": "163:2",
+      "componentSetId": "179:274",
+      "variantCount": 6,
+      "variantAxes": {
+        "Position": ["First", "Middle", "Last"],
+        "State": ["Default", "Disabled"]
+      },
+      "componentProperties": ["Total Text", "Show Total", "Show Controls"],
+      "width": 736,
+      "height": 38,
+      "mock": {
+        "total": 48,
+        "pageCount": 3,
+        "defaultPage": 1,
+        "defaultPageSize": 20,
+        "pageSizeOptions": [10, 20, 50]
+      },
+      "privateDependencies": {
+        "pageItemSetId": "164:8",
+        "pageItemVariantCount": 3,
+        "pageSizeSetId": "168:26",
+        "pageSizeVariantCount": 2,
+        "controlsSetId": "175:130",
+        "controlsVariantCount": 6,
+        "controlsWidth": 392
+      },
+      "buttonReuse": "PASS",
+      "selectReuse": "PASS",
+      "externalLibraryDecision": "Simple Design System Pagination exists but was not imported because its API and token model conflict with the local Element Plus-aligned system",
+      "propertyReferencePassCount": 6,
+      "exposedControlsPassCount": 6,
+      "fontFamily": "Noto Sans SC",
+      "fontPassCount": 6,
+      "geometryPassCount": 6,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-pagination.png",
+      "detailScreenshotPath": "D:\\temp\\figma-phase3-pagination-page.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "Descriptions": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "184:2",
+      "documentationFrameId": "184:3",
+      "componentSetId": "186:98",
+      "variantCount": 4,
+      "variantAxes": {
+        "Columns": ["One", "Two"],
+        "Content": ["Filled", "Empty"]
+      },
+      "componentProperties": ["Show Last Row"],
+      "nestedItemProperties": ["Label", "Value"],
+      "width": 736,
+      "stateHeights": {
+        "One": 288,
+        "Two": 144
+      },
+      "rowHeight": 48,
+      "labelWidth": 120,
+      "mock": {
+        "courseName": "数据库基础训练",
+        "courseType": "技能类",
+        "trainerName": "王老师",
+        "trainingTime": "2026-08-20 09:00–17:00",
+        "location": "A101培训室",
+        "duration": "8小时",
+        "emptyValue": "—"
+      },
+      "privateDependencies": {
+        "itemComponentId": "184:8",
+        "itemTextProperties": ["Label", "Value"]
+      },
+      "externalLibraryDecision": "No matching Descriptions/details key-value component was found in Material 3 or Simple Design System; built locally to preserve the Element Plus-aligned token model",
+      "rootBindingPassCount": 4,
+      "itemReusePassCount": 4,
+      "lastRowReferencePassCount": 4,
+      "exposedInstanceCount": 24,
+      "emptyDashPassCount": 2,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "geometryPassCount": 4,
+      "overlapPairCount": 0,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-descriptions.png",
+      "detailScreenshotPath": "D:\\temp\\figma-phase3-descriptions-page.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "Timeline": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "189:2",
+      "documentationFrameId": "189:3",
+      "componentSetId": "194:200",
+      "variantCount": 6,
+      "variantAxes": {
+        "Flow": ["Request", "Registration"],
+        "State": ["InProgress", "Completed", "Terminated"]
+      },
+      "componentProperties": ["Flow", "State"],
+      "nestedItemProperties": ["Title", "Meta", "Summary", "Show Summary"],
+      "width": 736,
+      "height": 156,
+      "nodeCountPerVariant": 3,
+      "mockFlows": {
+        "Request": ["员工提交", "主管审批", "HR备案"],
+        "Registration": ["报名成功", "签到", "培训完成/异常终止"]
+      },
+      "privateDependencies": {
+        "itemComponentSetId": "192:62",
+        "itemVariantCount": 12,
+        "itemVariantAxes": {
+          "Position": ["First", "Middle", "Last"],
+          "Status": ["Complete", "Current", "Future", "Error"]
+        }
+      },
+      "externalLibraryDecision": "No matching Timeline/progress workflow component was found in Material 3 or Simple Design System; built locally to preserve the approved business-state model and local variables",
+      "privateVariantPassCount": 12,
+      "glyphSemanticPassCount": 12,
+      "positionRailPassCount": 12,
+      "rootBindingPassCount": 6,
+      "itemReusePassCount": 6,
+      "exposedInstanceCount": 18,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "geometryPassCount": 6,
+      "overlapPairCount": 0,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-timeline.png",
+      "detailScreenshotPath": "D:\\temp\\figma-phase3-timeline-page.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "Dialog": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "197:2",
+      "documentationFrameId": "197:3",
+      "componentSetId": "199:110",
+      "variantCount": 4,
+      "variantAxes": {
+        "Type": ["Confirm", "Danger"],
+        "State": ["Default", "Loading"]
+      },
+      "componentProperties": ["Confirm Title", "Danger Title", "Confirm Description", "Danger Description", "Show Close"],
+      "width": 480,
+      "height": 232,
+      "contentWidth": 432,
+      "mockScenarios": {
+        "Confirm": "完成 HR 备案",
+        "Danger": "标记缺勤"
+      },
+      "nestedButtonReuse": {
+        "componentSetId": "56:2",
+        "instanceCount": 8,
+        "exposedInstanceCount": 8
+      },
+      "externalLibraryDecision": "No directly importable Dialog matched the Element Plus-aligned local variable model and approved Chinese desktop density; built locally and reused the existing Button component set",
+      "rootBindingPassCount": 4,
+      "propertyReferencePassCount": 4,
+      "buttonReusePassCount": 4,
+      "exposedInstanceCount": 8,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "geometryPassCount": 4,
+      "overlapPairCount": 0,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-dialog.png",
+      "detailScreenshotPath": "D:\\temp\\figma-phase3-dialog-page.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "PageState": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "204:2",
+      "documentationFrameId": "205:2",
+      "componentSetId": "211:23",
+      "variantCount": 5,
+      "variantAxes": {
+        "State": ["Skeleton", "Empty", "Alert", "403", "404"]
+      },
+      "componentProperties": [
+        "Empty Title", "Empty Description", "Alert Title", "Alert Description",
+        "Trace ID", "Show Trace ID", "403 Title", "403 Description",
+        "Role Meta", "Show Role Meta", "404 Title", "404 Description", "Show Actions"
+      ],
+      "width": 736,
+      "height": 300,
+      "componentSetWidth": 816,
+      "componentSetHeight": 1676,
+      "mockScenarios": {
+        "Empty": "暂无培训申请",
+        "Alert": "数据加载失败 / TRACE-DEMO-500",
+        "403": "当前角色无页面权限",
+        "404": "页面或资源暂时找不到"
+      },
+      "nestedButtonReuse": {
+        "componentSetId": "56:2",
+        "instanceCount": 7
+      },
+      "externalLibraryDecision": "No matching PageState component combined Skeleton, Empty, Alert, 403, and 404 with the local Element Plus-aligned token model; built locally and reused the existing Button component set",
+      "rootBindingPassCount": 5,
+      "propertyReferencePassCount": 16,
+      "buttonReusePassCount": 7,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "geometryPassCount": 5,
+      "overlapPairCount": 0,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-pagestate.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "StatCard": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "216:3",
+      "documentationFrameId": "217:2",
+      "componentSetId": "217:30",
+      "variantCount": 4,
+      "variantAxes": {
+        "State": ["Loading", "Default", "Empty", "Link"]
+      },
+      "componentProperties": [
+        "Metric Label", "Default Value", "Default Helper", "Show Default Helper",
+        "Empty Value", "Empty Helper", "Show Empty Helper",
+        "Link Value", "Link Helper", "Show Link Cue"
+      ],
+      "width": 232,
+      "height": 144,
+      "componentSetWidth": 488,
+      "componentSetHeight": 312,
+      "mockScenarios": {
+        "Default": "待审批申请 / 8 / 数据来自当前角色待办",
+        "Empty": "待审批申请 / 0 / 当前暂无待处理事项",
+        "Link": "待审批申请 / 8 / 查看详情"
+      },
+      "dataBoundary": "Metric labels and values are component-only examples; role dashboard metrics remain subject to frozen page and API design",
+      "externalLibraryDecision": "No reusable local or remote statistic card matched the approved Element Plus-aligned variables, desktop density, and required Loading/Default/Empty/Link semantics; built locally",
+      "rootBindingPassCount": 4,
+      "propertyReferenceCount": 12,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "geometryPassCount": 4,
+      "overlapPairCount": 0,
+      "overflowOffenderCount": 0,
+      "linkCueCount": 1,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-statcard.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "CourseSummary": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "223:2",
+      "documentationFrameId": "226:166",
+      "componentSetId": "225:1333",
+      "variantCount": 4,
+      "variantAxes": {
+        "State": ["Published", "Closed", "Full", "Restricted"]
+      },
+      "componentProperties": [
+        "Section Title", "Show Eligibility",
+        "Published Hint", "Published Seats",
+        "Closed Hint", "Closed Seats",
+        "Full Hint", "Full Seats",
+        "Restricted Hint", "Restricted Seats"
+      ],
+      "width": 736,
+      "height": 264,
+      "componentSetWidth": 736,
+      "componentSetHeight": 1128,
+      "mockScenarios": {
+        "Published": "已发布 / 当前可提交培训申请 / 剩余名额12",
+        "Closed": "已关闭 / 课程当前不可申请或报名 / 剩余名额5",
+        "Full": "已满员 / 课程名额已满，请选择其他课程 / 剩余名额0",
+        "Restricted": "已发布 / 申请尚未完成HR备案 / 剩余名额12"
+      },
+      "nestedReuse": {
+        "descriptionsComponentSetId": "186:98",
+        "descriptionsVariantId": "185:76",
+        "descriptionsInstanceCount": 4,
+        "exposedDescriptionsCount": 4,
+        "statusTagComponentSetId": "90:2",
+        "statusTagInstanceCount": 4
+      },
+      "dataBoundary": "remainingSeats and eligibility reasons must come from backend responses; the frontend must not derive them from other course fields",
+      "externalLibraryDecision": "No remote course summary component matched the project-specific fields and eligibility semantics; built locally by composing the approved Descriptions and StatusTag component sets",
+      "rootBindingPassCount": 4,
+      "directPropertyReferenceCount": 16,
+      "totalPropertyReferenceCountIncludingNested": 76,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "geometryPassCount": 4,
+      "overlapPairCount": 0,
+      "overflowOffenderCount": 0,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-course-summary.png",
+      "review": "APPROVED-2026-08-09"
+    },
+    "Link/FileEntry": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "pageId": "231:2",
+      "documentationFrameId": "236:17",
+      "componentSetId": "235:1348",
+      "variantCount": 3,
+      "variantAxes": {
+        "State": ["Available", "Expired", "Forbidden"]
+      },
+      "componentProperties": [
+        "Available Title", "Available Helper",
+        "Expired Title", "Expired Helper",
+        "Forbidden Title", "Forbidden Helper",
+        "Show Action", "Available Icon", "Expired Icon", "Forbidden Icon"
+      ],
+      "width": 480,
+      "height": 80,
+      "componentSetWidth": 480,
+      "componentSetHeight": 288,
+      "mockScenarios": {
+        "Available": "课件资料 / PDF · 2.4 MB / 打开",
+        "Expired": "训前测试 / 链接已失效，请联系管理员更新 / 链接失效",
+        "Forbidden": "受限资源 / 你没有访问此资源的权限 / 无权限"
+      },
+      "nestedReuse": {
+        "buttonComponentSetId": "56:2",
+        "availableButtonVariantId": "55:38",
+        "disabledButtonVariantId": "55:50",
+        "buttonInstanceCount": 3,
+        "privateSvgIconComponentCount": 3
+      },
+      "securityRules": [
+        "Raw URLs are never displayed",
+        "Forbidden uses generic resource naming and reveals no resource name, type, path, or sensitive metadata",
+        "Resource-link errors remain local and do not block the course body"
+      ],
+      "externalLibraryDecision": "No matching remote resource-entry component was found; reused the approved local Button component set and created only three private SVG icons",
+      "propertyDefinitionCountIncludingState": 11,
+      "directPropertyReferenceCount": 12,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "geometryPassCount": 3,
+      "forbiddenSensitiveDataLeakCount": 0,
+      "metadata": "PASS",
+      "bindings": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase3-link-fileentry.png",
+      "review": "APPROVED-2026-08-09"
+    }
+  },
+  "phase3Completion": {
+    "status": "COMPLETE",
+    "completedAt": "2026-08-09",
+    "componentFamilyCount": 16,
+    "formalVariantCount": 91,
+    "finalReviewedComponent": "Link/FileEntry"
+  },
+  "phase4Validation": {
+    "Login": {
+      "status": "PASS",
+      "validatedAt": "2026-08-09",
+      "screenCode": "HF-P0-01",
+      "route": "/login",
+      "pageId": "243:6",
+      "screenFrameId": "243:7",
+      "width": 1024,
+      "height": 768,
+      "sections": {
+        "brandPanelId": "243:8",
+        "formStageId": "243:9",
+        "loginCardId": "246:2"
+      },
+      "componentReuse": {
+        "inputFormFieldVariantId": "64:2",
+        "inputInstanceIds": ["246:6", "246:18"],
+        "buttonVariantId": "54:2",
+        "buttonInstanceId": "246:28"
+      },
+      "requiredCopy": ["员工账号", "请输入员工账号", "密码", "请输入密码", "登录系统"],
+      "excludedFeatures": ["注册", "找回密码", "第三方登录"],
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "copyBoundaryPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-login.png",
+      "review": "APPROVED-2026-08-10"
+    },
+    "Dashboard": {
+      "status": "PASS",
+      "validatedAt": "2026-08-10",
+      "screenCode": "HF-P0-02",
+      "route": "/dashboard",
+      "pageId": "259:14",
+      "roleScreens": {
+        "Employee": {
+          "frameId": "259:15",
+          "contentRootId": "259:1413",
+          "snapshot": "FLOW-SNAPSHOT-02",
+          "statCardCount": 3,
+          "quickActionCount": 4
+        },
+        "Manager": {
+          "frameId": "259:16",
+          "contentRootId": "259:1489",
+          "snapshot": "FLOW-SNAPSHOT-02",
+          "statCardCount": 3,
+          "quickActionCount": 2
+        },
+        "HR": {
+          "frameId": "259:17",
+          "contentRootId": "259:1575",
+          "snapshot": "FLOW-SNAPSHOT-03",
+          "statCardCount": 3,
+          "quickActionCount": 3
+        },
+        "Admin": {
+          "frameId": "259:18",
+          "contentRootId": "259:1651",
+          "snapshot": "FLOW-SNAPSHOT-05",
+          "statCardCount": 3,
+          "quickActionCount": 2
+        }
+      },
+      "width": 1024,
+      "height": 768,
+      "contentWidth": 800,
+      "contentHeight": 712,
+      "componentReuse": {
+        "appShellInstanceCount": 4,
+        "pageHeaderInstanceCount": 4,
+        "statCardInstanceCount": 12,
+        "statusTagInstanceCount": 8,
+        "buttonInstanceCount": 11
+      },
+      "dataBoundary": "Only fixed Mock snapshot records and explicitly labeled Mock sample counts are shown; unresolved aggregate metrics are not fabricated",
+      "adminBoundary": "Admin quick entrances are limited to confirmed P0 capabilities: attendance and course center",
+      "activeNavigationPass": true,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "fontFamily": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-dashboard.png",
+      "review": "APPROVED-2026-08-10"
+    },
+    "CourseList": {
+      "status": "PASS",
+      "validatedAt": "2026-08-10",
+      "screenCode": "HF-P0-03",
+      "route": "/courses",
+      "pageId": "268:12",
+      "screenFrameId": "268:13",
+      "role": "Employee",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "268:130",
+      "sections": {
+        "headerSlotId": "268:131",
+        "searchSlotId": "268:132",
+        "toolbarSlotId": "268:133",
+        "tableSlotId": "268:134",
+        "paginationSlotId": "268:135"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "268:14",
+        "pageHeaderInstanceId": "268:1835",
+        "searchPanelInstanceId": "268:1896",
+        "sortSelectInstanceId": "269:237",
+        "dataTableInstanceId": "269:1911",
+        "paginationInstanceId": "271:405"
+      },
+      "visibleCourseIds": [4001, 4002],
+      "visibleRowCount": 2,
+      "dataBoundary": "Course 4001 remainingSeats is rendered from Mock field; course 4002 full state uses frozen conflict scenario; undefined location and duration render as —",
+      "activeNavigation": "课程中心",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-course-list.png",
+      "review": "APPROVED-2026-08-10"
+    },
+    "CourseDetail": {
+      "status": "PASS",
+      "validatedAt": "2026-08-10",
+      "screenCode": "HF-P0-04",
+      "route": "/courses/:id",
+      "pageId": "275:106",
+      "screenFrameId": "275:107",
+      "role": "Employee",
+      "scenario": "SCN-COURSE-05",
+      "courseId": 4001,
+      "trainerId": 3001,
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "275:182",
+      "sections": {
+        "headerSlotId": "275:183",
+        "summarySlotId": "275:184",
+        "trainerEligibilitySlotId": "275:185",
+        "resourcesSlotId": "275:186"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "275:108",
+        "pageHeaderInstanceId": "275:2073",
+        "courseSummaryInstanceId": "275:2132",
+        "courseDescriptionsInstanceId": "I275:2132;225:4",
+        "trainerDescriptionItemIds": ["279:248", "279:253", "279:259", "279:264"],
+        "applyButtonInstanceId": "280:243",
+        "registerButtonInstanceId": "280:251",
+        "fileEntryInstanceIds": ["281:248", "281:273", "281:289"]
+      },
+      "actionEligibility": {
+        "canApply": true,
+        "applyReason": null,
+        "canRegister": false,
+        "registerReason": "申请尚未完成 HR 备案"
+      },
+      "dataBoundary": "Course 4001 and trainer 3001 fields are rendered from frozen Mock data; remainingSeats and action eligibility are backend-provided; raw resource URLs and employee-hidden budget are not rendered",
+      "remainingSeatsSource": "Mock Course.remainingSeats",
+      "rawUrlRendered": false,
+      "budgetRendered": false,
+      "activeNavigation": "课程中心",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "contentBackgroundBindingPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-course-detail.png",
+      "review": "APPROVED-2026-08-10"
+    },
+    "RequestCreate": {
+      "status": "PASS",
+      "validatedAt": "2026-08-10",
+      "screenCode": "HF-P0-05",
+      "route": "/my/requests/new",
+      "pageId": "286:407",
+      "screenFrameId": "286:408",
+      "role": "Employee",
+      "scenario": "SCN-REQ-01",
+      "courseId": 4001,
+      "employeeId": 1001,
+      "departmentId": 101,
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "286:486",
+      "sections": {
+        "pageHeaderInstanceId": "286:2262",
+        "courseSummaryInstanceId": "286:2321",
+        "applicationFormId": "286:489",
+        "reasonFieldId": "288:247",
+        "reasonTextareaId": "288:251"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "286:409",
+        "pageHeaderInstanceId": "286:2262",
+        "courseSummaryInstanceId": "286:2321",
+        "readOnlyInputInstanceIds": ["288:225", "288:237"],
+        "cancelButtonInstanceId": "288:257",
+        "submitButtonInstanceId": "288:265"
+      },
+      "readOnlyContext": {
+        "applicant": "张三",
+        "department": "技术部"
+      },
+      "reasonRules": {
+        "required": true,
+        "maxLength": 500,
+        "initialCount": 0
+      },
+      "dataBoundary": "Course 4001, employee 1001 and department 101 are rendered from frozen Mock context and cannot be changed on this page; duplicate request 5001 remains isolated in CONFLICT-001 and is not mixed into SCN-REQ-01",
+      "activeNavigation": "我的申请",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "reasonBoundaryPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-request-create.png",
+      "review": "APPROVED-2026-08-11"
+    },
+    "MyRequests": {
+      "status": "PASS",
+      "validatedAt": "2026-08-11",
+      "screenCode": "HF-P0-06",
+      "route": "/my/requests",
+      "pageId": "292:2",
+      "screenFrameId": "292:3",
+      "role": "Employee",
+      "scenario": "FLOW-SNAPSHOT-02",
+      "employeeId": 1001,
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "292:112",
+      "sections": {
+        "pageHeaderInstanceId": "292:2415",
+        "searchPanelInstanceId": "292:2461",
+        "resultToolbarId": "292:115",
+        "dataTableInstanceId": "293:231",
+        "paginationInstanceId": "293:2630"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "292:4",
+        "pageHeaderInstanceId": "292:2415",
+        "searchPanelInstanceId": "292:2461",
+        "dataTableInstanceId": "293:231",
+        "statusTagInstanceId": "I293:231;152:25;148:7",
+        "detailButtonInstanceId": "I293:231;152:25;148:11",
+        "paginationInstanceId": "293:2630"
+      },
+      "filters": ["courseName", "requestStatus", "currentStage", "requestDateStart", "requestDateEnd"],
+      "visibleRequestIds": [5001],
+      "visibleRowCount": 1,
+      "requestStatus": "PENDING",
+      "statusLabel": "待审批",
+      "currentStage": "李主管审批",
+      "pagination": {
+        "page": 1,
+        "totalPages": 1,
+        "totalRecords": 1,
+        "controlsVisible": false
+      },
+      "dataBoundary": "Only TrainingRequest 5001 from FLOW-SNAPSHOT-02 is shown for employee 1001; wireframe sample rows R002 and R003 are not treated as frozen Mock data and are not rendered",
+      "activeNavigation": "我的申请",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "singlePageBoundaryPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-my-requests.png",
+      "review": "APPROVED-2026-08-11"
+    },
+    "RequestDetail": {
+      "status": "PASS",
+      "validatedAt": "2026-08-11",
+      "screenCode": "HF-P0-07",
+      "route": "/requests/:id",
+      "pageId": "303:2",
+      "screenFrameId": "303:3",
+      "role": "Employee",
+      "scenario": "FLOW-SNAPSHOT-02",
+      "requestId": 5001,
+      "courseId": 4001,
+      "employeeId": 1001,
+      "statusCode": "PENDING",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "303:112",
+      "sections": {
+        "headerSlotId": "303:113",
+        "progressCardId": "303:176",
+        "detailCardId": "303:249",
+        "recordCardId": "303:311",
+        "requestReasonRowId": "304:2"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "303:4",
+        "pageHeaderInstanceId": "303:114",
+        "statusTagInstanceId": "303:173",
+        "timelineInstanceId": "303:179",
+        "descriptionsInstanceId": "303:253"
+      },
+      "timeline": {
+        "employeeSubmission": "COMPLETE",
+        "departmentApproval": "CURRENT",
+        "hrFiling": "FUTURE"
+      },
+      "requestReason": "提升数据库设计与查询能力",
+      "roleActionBoundary": "Employee PENDING view is read-only; manager approval and HR filing actions are not rendered",
+      "dataBoundary": "TrainingRequest 5001, employee 1001 and course 4001 are rendered from FLOW-SNAPSHOT-02; null approval timestamps and remarks are represented as waiting/not-started states and are not fabricated",
+      "activeNavigation": "我的申请",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "roleBoundaryPass": true,
+      "bottomClearance": 12,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-request-detail.png",
+      "review": "APPROVED-2026-08-11"
+    },
+    "DepartmentApproval": {
+      "status": "PASS",
+      "validatedAt": "2026-08-11",
+      "screenCode": "HF-P0-08",
+      "route": "/approvals/department",
+      "pageId": "308:2",
+      "screenFrameId": "308:3",
+      "role": "Manager",
+      "scenario": "SCN-APPROVAL-01",
+      "snapshot": "FLOW-SNAPSHOT-02",
+      "managerId": 1002,
+      "departmentId": 101,
+      "requestId": 5001,
+      "requestStatus": "PENDING",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "308:94",
+      "sections": {
+        "headerSlotId": "308:95",
+        "searchSlotId": "308:96",
+        "resultToolbarSlotId": "308:97",
+        "tableStackSlotId": "308:98",
+        "paginationSlotId": "308:99",
+        "approvalActionBarId": "309:206"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "308:4",
+        "pageHeaderInstanceId": "308:2762",
+        "searchPanelInstanceId": "308:2850",
+        "dataTableInstanceId": "309:3",
+        "statusTagInstanceId": "I309:3;152:25;148:7",
+        "detailButtonInstanceId": "I309:3;152:25;148:11",
+        "rejectButtonInstanceId": "309:209",
+        "approveButtonInstanceId": "309:217",
+        "paginationInstanceId": "309:2959"
+      },
+      "filters": ["employee", "course", "requestStatus", "requestDateStart", "requestDateEnd"],
+      "visibleRequestIds": [5001],
+      "visibleRowCount": 1,
+      "departmentScope": "技术部",
+      "actions": ["detail", "reject", "approve"],
+      "batchApprovalRendered": false,
+      "hrFilingActionRendered": false,
+      "pagination": {
+        "page": 1,
+        "totalPages": 1,
+        "totalRecords": 1,
+        "controlsVisible": false
+      },
+      "dataBoundary": "Only TrainingRequest 5001 from FLOW-SNAPSHOT-02 is shown for manager 1002 within department 101; no additional department requests or aggregate counts are fabricated",
+      "permissionBoundary": "Department manager sees only authorized department requests; approval is per request, with no batch approval and no HR filing action",
+      "activeNavigation": "主管审批",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "singlePageBoundaryPass": true,
+      "bottomClearance": 44,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-department-approval.png",
+      "review": "APPROVED-2026-08-11"
+    },
+    "HrFiling": {
+      "status": "PASS",
+      "validatedAt": "2026-08-11",
+      "screenCode": "HF-P0-09",
+      "route": "/filings/hr",
+      "pageId": "312:2",
+      "screenFrameId": "312:3",
+      "role": "HR",
+      "scenario": "SCN-FILING-01",
+      "snapshot": "FLOW-SNAPSHOT-03",
+      "hrEmployeeId": 1003,
+      "requestId": 5001,
+      "requestStatus": "DEPT_APPROVED",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "312:5",
+      "sections": {
+        "headerSlotId": "312:6",
+        "searchSlotId": "312:8",
+        "resultToolbarSlotId": "312:10",
+        "tableStackSlotId": "312:14",
+        "paginationSlotId": "312:22",
+        "filingActionBarId": "312:17"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "312:4",
+        "pageHeaderInstanceId": "312:7",
+        "searchPanelInstanceId": "312:9",
+        "dataTableInstanceId": "312:16",
+        "statusTagInstanceId": "I312:16;152:25;148:7",
+        "detailButtonInstanceId": "I312:16;152:25;148:11",
+        "completeFilingButtonInstanceId": "312:21",
+        "paginationInstanceId": "312:23"
+      },
+      "filters": ["employee", "department", "course", "requestDateStart", "requestDateEnd"],
+      "visibleRequestIds": [5001],
+      "visibleRowCount": 1,
+      "actions": ["detail", "completeFiling"],
+      "batchFilingRendered": false,
+      "departmentApprovalActionRendered": false,
+      "approvalTimeRendered": false,
+      "approvalRemarkRendered": false,
+      "pagination": {
+        "page": 1,
+        "totalPages": 1,
+        "totalRecords": 1,
+        "controlsVisible": false
+      },
+      "dataBoundary": "Only TrainingRequest 5001 from FLOW-SNAPSHOT-03 is shown; the snapshot changes the request to DEPT_APPROVED but does not provide an approval timestamp or remark, so both remain explicitly unavailable",
+      "permissionBoundary": "HR employee 1003 can file only DEPT_APPROVED requests; no department approval, batch filing, duplicate filing, or administrator-only action is rendered",
+      "activeNavigation": "HR备案",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "singlePageBoundaryPass": true,
+      "bottomClearance": 44,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-hr-filing.png",
+      "review": "APPROVED-2026-08-11"
+    },
+    "MyRegistrations": {
+      "status": "PASS",
+      "validatedAt": "2026-08-11",
+      "screenCode": "HF-P0-10",
+      "route": "/my/registrations",
+      "pageId": "317:438",
+      "screenFrameId": "317:439",
+      "role": "Employee",
+      "scenario": "SCN-REG-01",
+      "snapshot": "FLOW-SNAPSHOT-05",
+      "employeeId": 1001,
+      "registrationId": 6001,
+      "courseId": 4001,
+      "registrationStatus": "REGISTERED",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "317:441",
+      "sections": {
+        "pageHeaderId": "317:442",
+        "searchPanelId": "317:443",
+        "resultToolbarId": "317:444",
+        "tableStackId": "319:417",
+        "registrationActionBarId": "319:419",
+        "paginationId": "317:448"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "317:440",
+        "pageHeaderInstanceId": "317:442",
+        "searchPanelInstanceId": "317:443",
+        "dataTableInstanceId": "319:418",
+        "statusTagInstanceId": "I319:418;152:25;148:7",
+        "detailButtonInstanceId": "I319:418;152:25;148:11",
+        "cancelRegistrationButtonInstanceId": "319:423",
+        "paginationInstanceId": "317:448"
+      },
+      "filters": ["courseName", "registrationStatus", "courseStartDateStart", "courseStartDateEnd"],
+      "visibleRegistrationIds": [6001],
+      "visibleRowCount": 1,
+      "actions": ["browseCourses", "detail", "cancelRegistration"],
+      "cancelRegistrationEligible": true,
+      "ratingActionRendered": false,
+      "certificateActionRendered": false,
+      "hrOperationRendered": false,
+      "pagination": {
+        "page": 1,
+        "totalPages": 1,
+        "totalRecords": 1,
+        "controlsVisible": false
+      },
+      "dataBoundary": "Only Registration 6001 from FLOW-SNAPSHOT-05 is shown for employee 1001; SIGNED_IN, COMPLETED, ABSENT, and CANCELED remain separate snapshot states and no extra registrations are fabricated",
+      "permissionBoundary": "Employee 1001 sees only personal registration data; cancellation is shown only for REGISTERED before course start, with no HR operation, rating, or certificate action in this state",
+      "activeNavigation": "我的报名",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "singlePageBoundaryPass": true,
+      "bottomClearance": 34,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-my-registrations.png",
+      "review": "APPROVED-2026-08-11"
+    },
+    "RegistrationDetail": {
+      "status": "PASS",
+      "validatedAt": "2026-08-11",
+      "screenCode": "HF-P0-11",
+      "route": "/registrations/:id",
+      "pageId": "327:101",
+      "screenFrameId": "327:102",
+      "role": "Employee",
+      "scenario": "SCN-REG-DETAIL-01",
+      "snapshot": "FLOW-SNAPSHOT-06",
+      "employeeId": 1001,
+      "registrationId": 6001,
+      "courseId": 4001,
+      "attendanceId": 7001,
+      "registrationStatus": "SIGNED_IN",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "327:104",
+      "sections": {
+        "pageHeaderId": "327:105",
+        "registrationProgressId": "327:108",
+        "courseAndRegistrationId": "327:112",
+        "attendanceRecordId": "327:120"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "327:103",
+        "pageHeaderInstanceId": "327:106",
+        "statusTagInstanceId": "327:107",
+        "timelineInstanceId": "327:111",
+        "descriptionsInstanceId": "327:116"
+      },
+      "attendance": {
+        "type": "MANUAL",
+        "checkedInAt": "2026-08-20 09:06",
+        "latenessMinutes": 6,
+        "deductHours": 0.5,
+        "actualHours": null,
+        "remark": "交通延误，HR补签到",
+        "operatorId": 1003
+      },
+      "timelineStates": ["registrationComplete", "signedInComplete", "trainingCompletionPending"],
+      "actions": ["returnToMyRegistrations"],
+      "cancelRegistrationRendered": false,
+      "ratingActionRendered": false,
+      "certificateActionRendered": false,
+      "hrOperationRendered": false,
+      "dataBoundary": "Registration 6001 and Attendance 7001 are rendered from FLOW-SNAPSHOT-06; undefined actualHours renders as — and is not derived from course duration or deduction",
+      "permissionBoundary": "Employee 1001 sees only the personal registration detail; SIGNED_IN is read-only and does not expose cancellation, rating, certificate, manager approval, HR filing, or attendance-management operations",
+      "activeNavigation": "我的报名",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "singlePageBoundaryPass": true,
+      "sectionOverlapCount": 0,
+      "bottomClearance": 12,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-registration-detail.png",
+      "review": "APPROVED-2026-08-12"
+    },
+    "AttendanceManagement": {
+      "status": "PASS",
+      "validatedAt": "2026-08-12",
+      "screenCode": "HF-P0-12",
+      "route": "/operations/attendance",
+      "pageId": "332:431",
+      "screenFrameId": "332:432",
+      "role": "HR",
+      "scenario": "SCN-ATT-01",
+      "snapshot": "FLOW-SNAPSHOT-05",
+      "hrEmployeeId": 1003,
+      "courseId": 4001,
+      "employeeId": 1001,
+      "registrationId": 6001,
+      "registrationStatus": "REGISTERED",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "332:434",
+      "sections": {
+        "pageHeaderId": "332:435",
+        "searchPanelId": "332:437",
+        "courseContextId": "332:439",
+        "tableStackId": "332:443",
+        "paginationId": "332:451"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "332:433",
+        "pageHeaderInstanceId": "332:436",
+        "searchPanelInstanceId": "332:438",
+        "dataTableInstanceId": "332:445",
+        "statusTagInstanceId": "I332:445;152:25;148:7",
+        "detailButtonInstanceId": "I332:445;152:25;148:11",
+        "signInButtonInstanceId": "332:450",
+        "paginationInstanceId": "332:452"
+      },
+      "filters": ["course", "employee", "registrationStatus"],
+      "visibleRegistrationIds": [6001],
+      "visibleRowCount": 1,
+      "courseStatistics": {
+        "registered": null,
+        "signedIn": null,
+        "absent": null,
+        "completed": null,
+        "source": "backendResponse"
+      },
+      "actions": ["detail", "signIn"],
+      "markAbsentRendered": false,
+      "completeTrainingRendered": false,
+      "tabNavigationRendered": false,
+      "statisticsDerivedOnFrontend": false,
+      "pagination": {
+        "page": 1,
+        "totalPages": 1,
+        "totalRecords": 1,
+        "controlsVisible": false
+      },
+      "dataBoundary": "Only Registration 6001 from FLOW-SNAPSHOT-05 is shown for Course 4001; course statistics are undefined in the frozen Mock and therefore render as — instead of being derived from the visible row",
+      "permissionBoundary": "HR employee 1003 can query registrations and operate attendance; in REGISTERED first state only sign-in and detail are rendered, while mark-absent waits for course end and complete-training waits for SIGNED_IN plus backend eligibility",
+      "activeNavigation": "报名与签到",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "singlePageBoundaryPass": true,
+      "sectionOverlapCount": 0,
+      "bottomClearance": 118,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-attendance-management.png",
+      "review": "APPROVED-2026-08-12"
+    },
+    "MyCertificates": {
+      "status": "PASS",
+      "validatedAt": "2026-08-12",
+      "screenCode": "HF-P0-13",
+      "route": "/my/certificates",
+      "pageId": "341:2",
+      "screenFrameId": "341:3",
+      "role": "Employee",
+      "scenario": "SCN-CERT-01",
+      "snapshot": "FLOW-SNAPSHOT-08",
+      "employeeId": 1001,
+      "certificateId": 10001,
+      "courseId": 4001,
+      "certificateDisplayStatus": "VALID",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "341:112",
+      "sections": {
+        "pageHeaderSlotId": "341:113",
+        "searchPanelSlotId": "341:114",
+        "resultToolbarSlotId": "341:115",
+        "tableStackSlotId": "341:116",
+        "paginationSlotId": "341:117"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "341:4",
+        "pageHeaderInstanceId": "343:117",
+        "searchPanelInstanceId": "344:310",
+        "dataTableInstanceId": "351:228",
+        "statusTagInstanceId": "I351:228;152:25;148:7",
+        "detailButtonInstanceId": "I351:228;152:25;148:11",
+        "paginationInstanceId": "352:366"
+      },
+      "filters": ["courseName", "certificateStatus", "issueDateStart", "issueDateEnd"],
+      "visibleCertificateIds": [10001],
+      "visibleRowCount": 1,
+      "actions": ["detail"],
+      "certificateCode": "CERT-20260820-4001-1001",
+      "issueDate": "2026-08-20",
+      "expireDate": "2028-08-20",
+      "statusDerivedOnFrontend": false,
+      "generateActionRendered": false,
+      "notifyActionRendered": false,
+      "printActionRendered": false,
+      "pdfActionRendered": false,
+      "qrCodeRendered": false,
+      "pagination": {
+        "page": 1,
+        "totalPages": 1,
+        "totalRecords": 1,
+        "controlsVisible": false
+      },
+      "dataBoundary": "Only Certificate 10001 from FLOW-SNAPSHOT-08 is shown for employee 1001; no expired certificate is fabricated and VALID is rendered from the frozen Mock displayStatus instead of being derived from dates",
+      "permissionBoundary": "Employee 1001 sees only the personal certificate and detail action; certificate generation, notification, editing, printing, PDF, and QR code capabilities are not rendered",
+      "activeNavigation": "我的证书",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "singlePageBoundaryPass": true,
+      "sectionOverlapCount": 0,
+      "bottomClearance": 146,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-my-certificates.png",
+      "review": "APPROVED-2026-08-12"
+    },
+    "CertificateManagement": {
+      "status": "PASS",
+      "validatedAt": "2026-08-12",
+      "screenCode": "HF-P0-14",
+      "route": "/operations/certificates",
+      "pageId": "357:2",
+      "screenFrameId": "357:3",
+      "role": "HR",
+      "scenario": "SCN-CERT-05",
+      "snapshot": "FLOW-SNAPSHOT-07",
+      "employeeId": 1001,
+      "registrationId": 6001,
+      "courseId": 4001,
+      "certificateExists": false,
+      "registrationStatus": "COMPLETED",
+      "width": 1024,
+      "height": 768,
+      "contentRootId": "357:5",
+      "sections": {
+        "pageHeaderSlotId": "357:6",
+        "searchPanelSlotId": "357:8",
+        "resultToolbarSlotId": "357:10",
+        "tableStackSlotId": "357:14",
+        "paginationSlotId": "357:22"
+      },
+      "componentReuse": {
+        "appShellInstanceId": "357:4",
+        "pageHeaderInstanceId": "357:7",
+        "searchPanelInstanceId": "357:9",
+        "ruleStatusTagInstanceId": "357:13",
+        "dataTableInstanceId": "357:16",
+        "certificateStatusTagInstanceId": "I357:16;152:25;148:7",
+        "detailButtonInstanceId": "I357:16;152:25;148:11",
+        "generateButtonInstanceId": "357:21",
+        "paginationInstanceId": "357:23"
+      },
+      "filters": ["employee", "department", "course", "certificateStatus"],
+      "visibleRegistrationIds": [6001],
+      "visibleRowCount": 1,
+      "actions": ["detail", "generateCertificate"],
+      "actualHoursRendered": "—",
+      "testScoreRendered": "—",
+      "testThresholdFrozen": false,
+      "finalEligibilityDerivedOnFrontend": false,
+      "certificateCodeGeneratedBySystem": true,
+      "notifyActionRendered": false,
+      "editActionRendered": false,
+      "printActionRendered": false,
+      "pdfActionRendered": false,
+      "qrCodeRendered": false,
+      "pagination": {
+        "page": 1,
+        "totalPages": 1,
+        "totalRecords": 1,
+        "controlsVisible": false
+      },
+      "dataBoundary": "Only Registration 6001 from FLOW-SNAPSHOT-07 is shown as COMPLETED with no certificate record; actual hours and test scores remain unknown instead of being fabricated",
+      "eligibilityBoundary": "The first state proves only COMPLETED registration and absence of a certificate; the test threshold is explicitly pending confirmation and final eligibility is revalidated by the backend during generation",
+      "permissionBoundary": "HR 1003 can inspect the candidate and initiate certificate generation; administrator inheritance and reminder, editing, printing, PDF, and QR code capabilities are not rendered",
+      "activeNavigation": "证书管理",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "placeholderSectionCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "singlePageBoundaryPass": true,
+      "sectionOverlapCount": 0,
+      "bottomClearance": 44,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-certificate-management.png",
+      "review": "APPROVED-2026-08-12"
+    },
+    "CertificateDetail": {
+      "status": "PASS",
+      "validatedAt": "2026-08-12",
+      "screenCode": "HF-P0-15",
+      "route": "/certificates/:id",
+      "pageId": "361:2",
+      "scenario": "SCN-CERT-09",
+      "snapshot": "FLOW-SNAPSHOT-08",
+      "employeeScreenFrameId": "361:3",
+      "hrScreenFrameId": "361:18",
+      "certificateId": 10001,
+      "employeeId": 1001,
+      "registrationId": 6001,
+      "courseId": 4001,
+      "certificateCode": "CERT-20260820-4001-1001",
+      "courseDuration": 8.0,
+      "issueDate": "2026-08-20",
+      "expireDate": "2028-08-20",
+      "certificateDisplayStatus": "VALID",
+      "notified": "N",
+      "width": 1024,
+      "height": 768,
+      "employeeView": {
+        "contentRootId": "362:216",
+        "pageHeaderInstanceId": "362:218",
+        "statusTagInstanceId": "362:277",
+        "certificateBodyId": "363:233",
+        "metadataId": "363:242",
+        "activeNavigation": "我的证书",
+        "returnTarget": "/my/certificates",
+        "operationsContextRendered": false
+      },
+      "hrView": {
+        "contentRootId": "364:233",
+        "pageHeaderInstanceId": "364:235",
+        "statusTagInstanceId": "364:236",
+        "certificateBodyId": "364:237",
+        "metadataId": "364:246",
+        "operationsContextId": "364:309",
+        "activeNavigation": "证书管理",
+        "returnTarget": "/operations/certificates",
+        "operationsFields": ["employeeId", "department", "registrationId", "notified"]
+      },
+      "componentReuse": {
+        "employeeAppShellInstanceId": "361:4",
+        "hrAppShellInstanceId": "361:19",
+        "pageHeaderVariantId": "119:22",
+        "statusTagSuccessVariantId": "88:2"
+      },
+      "actions": ["returnToSource"],
+      "statusDerivedOnFrontend": false,
+      "reminderActionRendered": false,
+      "editActionRendered": false,
+      "printActionRendered": false,
+      "pdfActionRendered": false,
+      "qrCodeRendered": false,
+      "dataBoundary": "Certificate 10001 is rendered from FLOW-SNAPSHOT-08 with the frozen certificate, employee, course, issue and expiry values; VALID is not derived from dates",
+      "permissionBoundary": "Employee 1001 sees only the personal certificate business fields; HR sees read-only employee, department, registration and reminder context; P2 reminder action and print or derived-file capabilities are not rendered",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "employeeOutOfBoundsCount": 0,
+      "hrOutOfBoundsCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "employeeScreenshotPath": "D:\\temp\\figma-phase4-certificate-detail-employee.png",
+      "hrScreenshotPath": "D:\\temp\\figma-phase4-certificate-detail-hr.png",
+      "review": "APPROVED-2026-08-12"
+    },
+    "Forbidden": {
+      "status": "PASS",
+      "validatedAt": "2026-08-12",
+      "screenCode": "HF-P0-16",
+      "route": "/403",
+      "pageId": "367:2",
+      "screenFrameId": "367:3",
+      "role": "Employee",
+      "scenario": "SCN-ERROR-01",
+      "globalScenario": "SCN-GLOBAL-10",
+      "mockState": "MOCK-STATE-10",
+      "employeeId": 1001,
+      "width": 1024,
+      "height": 768,
+      "layout": "simplePublic",
+      "sections": {
+        "topbarId": "367:4",
+        "stageId": "367:9",
+        "cardId": "367:10",
+        "securityBoundaryTextId": "367:52"
+      },
+      "componentReuse": {
+        "pageState403VariantId": "209:11",
+        "pageStateInstanceId": "367:11",
+        "secondaryActionVariantId": "55:18",
+        "primaryActionVariantId": "54:2"
+      },
+      "currentAccount": "张三",
+      "currentRole": "员工",
+      "actions": ["back", "dashboard"],
+      "businessSidebarRendered": false,
+      "targetPageRendered": false,
+      "resourceNameRendered": false,
+      "recordIdRendered": false,
+      "permissionCodeRendered": false,
+      "dataBoundary": "The fixed 403 page shows only the signed-in account and role, without identifying the original page, resource, record ID, or permission code",
+      "securityBoundary": "Route guards improve experience but backend APIs still validate access; the page does not reveal whether a restricted resource exists",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "outOfBoundsCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-forbidden.png",
+      "review": "APPROVED-2026-08-12"
+    },
+    "NotFound": {
+      "status": "PASS",
+      "validatedAt": "2026-08-12",
+      "screenCode": "HF-P0-17",
+      "route": "/:pathMatch(.*)*",
+      "pageId": "369:2",
+      "screenFrameId": "369:3",
+      "role": "Public",
+      "scenario": "SCN-ERROR-02",
+      "globalScenario": "SCN-GLOBAL-13",
+      "mockState": "MOCK-STATE-13",
+      "authenticationRequired": false,
+      "width": 1024,
+      "height": 768,
+      "layout": "simplePublic",
+      "sections": {
+        "topbarId": "369:4",
+        "stageId": "369:9",
+        "cardId": "369:10",
+        "securityBoundaryTextId": "369:12"
+      },
+      "componentReuse": {
+        "pageState404VariantId": "210:17",
+        "pageStateInstanceId": "369:11",
+        "secondaryActionVariantId": "55:18",
+        "primaryActionVariantId": "54:2"
+      },
+      "actions": ["back", "dashboard"],
+      "accountContextRendered": false,
+      "roleContextRendered": false,
+      "businessSidebarRendered": false,
+      "targetPathRendered": false,
+      "resourceNameRendered": false,
+      "recordIdRendered": false,
+      "internalErrorRendered": false,
+      "dataBoundary": "The fixed 404 page presents invalid address, removed record, and incorrect link as parallel possibilities without confirming a specific target state",
+      "securityBoundary": "Public and authenticated users receive the same non-disclosing feedback; no resource existence, internal route, record ID, SQL, connection, or stack information is exposed",
+      "productFont": "Noto Sans SC",
+      "fontOffenderCount": 0,
+      "outOfBoundsCount": 0,
+      "screenSizePass": true,
+      "componentReusePass": true,
+      "mockDataPass": true,
+      "permissionBoundaryPass": true,
+      "metadata": "PASS",
+      "screenshot": "PASS",
+      "screenshotPath": "D:\\temp\\figma-phase4-not-found.png",
+      "review": "APPROVED-2026-08-12"
+    },
+    "PrototypeFlows": {
+      "status": "PASS",
+      "validatedAt": "2026-08-12",
+      "pageId": "372:2",
+      "formalScreenCount": 25,
+      "overlayCount": 5,
+      "flowStartingPoints": {
+        "Employee": "372:3",
+        "Manager": "372:245",
+        "HR": "372:319",
+        "Admin": "372:473",
+        "Forbidden": "372:548",
+        "NotFound": "372:558"
+      },
+      "nodeReactionEdgeCount": 95,
+      "requiredInteractionCount": 22,
+      "missingDestinationCount": 0,
+      "crossPageDestinationCount": 0,
+      "selfNavigateCount": 0,
+      "adminAttendanceShellRole": "Admin",
+      "originalHighFidelityPagesMutated": false,
+      "manualClickValidation": {
+        "status": "PASS",
+        "validatedAt": "2026-08-12",
+        "flowCount": 6,
+        "issuesFound": 0,
+        "approval": "APPROVED"
+      },
+      "review": "APPROVED-2026-08-12"
+    }
+  },
+  "completedSteps": [
+    "P0.a",
+    "P0.b",
+    "P0.c",
+    "P0.d",
+    "P0.e",
+    "P0.f",
+    "P1.a",
+    "P1.b",
+    "P1.c",
+    "P1.d",
+    "P1.e",
+    "P1.f",
+    "P1.g",
+    "P1.h",
+    "P2.a",
+    "P2.b",
+    "P2.c",
+    "P2.d",
+    "P2.e",
+    "P2.f",
+    "P2.g",
+    "P3.a",
+    "P3.b",
+    "P3.c",
+    "P3.d",
+    "P3.e",
+    "P3.f",
+    "P3.g",
+    "P3.h",
+    "P3.i",
+    "P3.j",
+    "P3.k",
+    "P3.l",
+    "P3.m",
+    "P3.n",
+    "P3.o",
+    "P3.p",
+    "P3.q",
+    "P3.r",
+    "P3.s",
+    "P3.t",
+    "P3.u",
+    "P3.v",
+    "P3.w",
+    "P3.x",
+    "P3.y",
+    "P3.z",
+    "P3.aa",
+    "P3.ab",
+    "P3.ac",
+    "P3.ad",
+    "P3.ae",
+    "P3.af",
+    "P3.ag",
+    "P3.ah",
+    "P3.ai",
+    "P3.aj",
+    "P3.ak",
+    "P3.al",
+    "P3.am",
+    "P3.an",
+    "P3.ao",
+    "P3.ap",
+    "P3.aq",
+    "P3.ar",
+    "P3.as",
+    "P3.at",
+    "P3.au",
+    "P3.av",
+    "P3.aw",
+    "P3.ax",
+    "P3.ay",
+    "P3.az",
+    "P3.ba",
+    "P3.bb",
+    "P3.bc",
+    "P3.bd",
+    "P3.be",
+    "P3.bf",
+    "P3.bg",
+    "P3.bh",
+    "P3.bi",
+    "P3.bj",
+    "P3.bk",
+    "P3.bl",
+    "P3.bm",
+    "P3.bn",
+    "P3.bo",
+    "P3.bp",
+    "P3.bq",
+    "P3.br",
+    "P3.bs",
+    "P3.bt",
+    "P3.bu",
+    "P3.bv",
+    "P3.bw",
+    "P3.bx",
+    "P3.by",
+    "P3.bz",
+    "P3.ca",
+    "P3.cb",
+    "P3.cc",
+    "P3.cd",
+    "P3.ce",
+    "P3.cf",
+    "P3.cg",
+    "P3.ch",
+    "P3.ci",
+    "P3.cj",
+    "P3.ck",
+    "P3.cl",
+    "P3.cm",
+    "P3.cn",
+    "P3.co",
+    "P3.cp",
+    "P3.cq",
+    "P3.cr",
+    "P3.cs",
+    "P3.ct",
+    "P3.cu",
+    "P3.cv",
+    "P3.cw",
+    "P3.cx",
+    "P3.cy",
+    "P3.cz",
+    "P3.da",
+    "P4.a",
+    "P4.b",
+    "P4.c",
+    "P4.d",
+    "P4.e",
+    "P4.f",
+    "P4.g",
+    "P4.h",
+    "P4.i",
+    "P4.j",
+    "P4.k",
+    "P4.l",
+    "P4.m",
+    "P4.n",
+    "P4.o",
+    "P4.p",
+    "P4.q",
+    "P4.r",
+    "P4.s",
+    "P4.t",
+    "P4.u",
+    "P4.v",
+    "P4.w",
+    "P4.x",
+    "P4.y",
+    "P4.z",
+    "P4.aa",
+    "P4.ab",
+    "P4.ac",
+    "P4.ad",
+    "P4.ae",
+    "P4.af",
+    "P4.ag",
+    "P4.ah",
+    "P4.ai",
+    "P4.aj",
+    "P4.ak",
+    "P4.al",
+    "P4.am",
+    "P4.an",
+    "P4.ao",
+    "P4.ap",
+    "P4.aq",
+    "P4.ar",
+    "P4.as",
+    "P4.at",
+    "P4.au",
+    "P4.av",
+    "P4.aw",
+    "P4.ax",
+    "P4.ay",
+    "P4.az",
+    "P4.ba",
+    "P4.bb",
+    "P4.bc",
+    "P4.bd",
+    "P4.be",
+    "P4.bf",
+    "P4.bg",
+    "P4.bh",
+    "P4.bi",
+    "P4.bj",
+    "P4.bk",
+    "P4.bl",
+    "P4.bm",
+    "P4.bn",
+    "P4.bo",
+    "P4.bp",
+    "P4.bq",
+    "P4.br",
+    "P4.bs",
+    "P4.bt",
+    "P4.bu",
+    "P4.bv",
+    "P4.bw",
+    "P4.bx",
+    "P4.by",
+    "P4.bz",
+    "P4.ca",
+    "P4.cb",
+    "P4.cc",
+    "P4.cd",
+    "P4.ce",
+    "P4.cf",
+    "P4.cg",
+    "P4.ch",
+    "P4.ci",
+    "P4.cj",
+    "P4.ck",
+    "P4.cl",
+    "P4.cm",
+    "P4.cn",
+    "P4.co",
+    "P4.cp",
+    "P4.cq",
+    "P4.cr",
+    "P4.cs",
+    "P4.ct",
+    "P4.cu",
+    "P4.cv",
+    "P4.cw",
+    "P4.cx",
+    "P4.cy",
+    "P4.cz",
+    "P4.da",
+    "P4.db",
+    "P4.dc"
+  ],
+  "phase4Completion": {
+    "status": "COMPLETE",
+    "completedAt": "2026-08-12",
+    "screenReviewCount": 17,
+    "prototypePageId": "372:2",
+    "flowStartingPointCount": 6,
+    "prototypeInteractionEdgeCount": 95,
+    "manualReview": "APPROVED",
+    "nextStep": "Step 11 - interface requirements and open questions"
+  },
+  "phase1Validation": {
+    "status": "PASS",
+    "validatedAt": "2026-08-07",
+    "collectionCount": 5,
+    "totalVariables": 75,
+    "aliasCount": 34,
+    "brokenAliasCount": 0,
+    "missingWebCodeSyntaxCount": 0,
+    "allScopesMisuseCount": 0,
+    "primitiveScopeViolationCount": 0,
+    "exposedNonPrimitiveCount": 0,
+    "semanticRawColorValueCount": 0,
+    "textStyleCount": 7,
+    "effectStyleCount": 2
+  },
+  "libraryDecision": {
+    "addedLibraries": [],
+    "availableRelevantLibraries": [
+      "Material 3 Design Kit",
+      "Simple Design System"
+    ],
+    "decision": "Build local Element Plus-aligned variables and components; do not import incompatible full libraries"
+  },
+  "blockedBy": null
+}

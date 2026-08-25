@@ -1,21 +1,54 @@
-/** 后端统一响应结构，对应 ApiResponse<T> */
-export interface ApiResponse<T = unknown> {
-  success: boolean
-  message: string
-  data: T
-  traceId: string
-  errors?: ApiError[]
-}
+export type ServiceOperation = 'query' | 'write'
 
-export interface ApiError {
+export type UiErrorKind =
+  | 'validation'
+  | 'unauthorized'
+  | 'forbidden'
+  | 'not-found'
+  | 'conflict'
+  | 'network'
+  | 'timeout'
+  | 'canceled'
+  | 'server'
+  | 'result-unknown'
+  | 'unknown'
+
+export interface FieldError {
   field: string
   message: string
+  code?: string
 }
 
-/** 后端分页结构，对应 PagedResult<T> */
-export interface PagedResult<T> {
+export interface UiError {
+  kind: UiErrorKind
+  code: string
+  message: string
+  traceId?: string
+  fieldErrors: FieldError[]
+  retryable: boolean
+  resultUnknown: boolean
+}
+
+export interface PageResult<T> {
   items: T[]
   page: number
   pageSize: number
   total: number
 }
+
+export interface ServiceRequestOptions {
+  signal?: AbortSignal
+}
+
+export class ServiceError extends Error {
+  readonly ui: UiError
+
+  constructor(ui: UiError) {
+    super(ui.message)
+    this.name = 'ServiceError'
+    this.ui = ui
+  }
+}
+
+export const isServiceError = (error: unknown): error is ServiceError =>
+  error instanceof ServiceError
