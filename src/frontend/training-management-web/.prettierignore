@@ -1,9 +1,0 @@
-node_modules/
-dist/
-dist-integration/
-coverage/
-playwright-report/
-test-results/
-pnpm-lock.yaml
-src/types/auto-imports.d.ts
-src/types/components.d.ts
