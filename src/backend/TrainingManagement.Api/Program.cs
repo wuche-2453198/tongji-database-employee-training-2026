@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Text;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -208,6 +208,18 @@ builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
+
+// Employee
+builder.Services.AddScoped<IEmployeeRepository, OracleEmployeeRepository>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+// DepartmentTraining
+builder.Services.AddScoped<IDepartmentTrainingRepository, OracleDepartmentTrainingRepository>();
+builder.Services.AddScoped<IDepartmentTrainingService, DepartmentTrainingService>();
+
+// Blacklist
+builder.Services.AddScoped<IBlacklistRepository, OracleBlacklistRepository>();
+builder.Services.AddScoped<IBlacklistService, BlacklistService>();
 
 var app = builder.Build();
 
