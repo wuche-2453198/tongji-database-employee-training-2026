@@ -49,13 +49,13 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
 
         if (query.StartDateFrom.HasValue)
         {
-            conditions.Add("b.START_DATE >= :StartDateFrom");
+            conditions.Add("b.START_AT >= :StartDateFrom");
             parameters.Add("StartDateFrom", query.StartDateFrom.Value);
         }
 
         if (query.StartDateTo.HasValue)
         {
-            conditions.Add("b.START_DATE <= :StartDateTo");
+            conditions.Add("b.START_AT <= :StartDateTo");
             parameters.Add("StartDateTo", query.StartDateTo.Value);
         }
 
@@ -64,8 +64,8 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
         var sortField = query.SortBy?.ToLower() switch
         {
             "empid" => "b.EMP_ID",
-            "startdate" => "b.START_DATE",
-            "enddate" => "b.END_DATE",
+            "startdate" => "b.START_AT",
+            "enddate" => "b.END_AT",
             "status" => "b.STATUS",
             _ => "b.BLACK_ID"
         };
@@ -87,8 +87,8 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 b.BLACK_ID AS ""BlackId"",
                 b.EMP_ID AS ""EmpId"",
                 b.REASON AS ""Reason"",
-                b.START_DATE AS ""StartDate"",
-                b.END_DATE AS ""EndDate"",
+                b.START_AT AS ""StartDate"",
+                b.END_AT AS ""EndDate"",
                 b.STATUS AS ""Status""
             FROM BLACKLIST b
             {whereClause}
@@ -122,8 +122,8 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 b.BLACK_ID AS ""BlackId"",
                 b.EMP_ID AS ""EmpId"",
                 b.REASON AS ""Reason"",
-                b.START_DATE AS ""StartDate"",
-                b.END_DATE AS ""EndDate"",
+                b.START_AT AS ""StartDate"",
+                b.END_AT AS ""EndDate"",
                 b.STATUS AS ""Status""
             FROM BLACKLIST b
             WHERE b.BLACK_ID = :BlackId";
@@ -147,13 +147,13 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 b.BLACK_ID AS ""BlackId"",
                 b.EMP_ID AS ""EmpId"",
                 b.REASON AS ""Reason"",
-                b.START_DATE AS ""StartDate"",
-                b.END_DATE AS ""EndDate"",
+                b.START_AT AS ""StartDate"",
+                b.END_AT AS ""EndDate"",
                 b.STATUS AS ""Status""
             FROM BLACKLIST b
             WHERE b.EMP_ID = :EmpId
               AND b.STATUS = 'ACTIVE'
-              AND (b.END_DATE IS NULL OR b.END_DATE >= SYSDATE)
+              AND (b.END_AT IS NULL OR b.END_AT >= SYSDATE)
             ORDER BY b.BLACK_ID
             FETCH FIRST 1 ROWS ONLY";
 
@@ -176,7 +176,7 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
             FROM BLACKLIST
             WHERE EMP_ID = :EmpId
               AND STATUS = 'ACTIVE'
-              AND (END_DATE IS NULL OR END_DATE >= SYSDATE)";
+              AND (END_AT IS NULL OR END_AT >= SYSDATE)";
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var count = await connection.ExecuteScalarAsync<int>(
@@ -210,8 +210,8 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 BLACK_ID,
                 EMP_ID,
                 REASON,
-                START_DATE,
-                END_DATE,
+                START_AT,
+                END_AT,
                 STATUS
             ) VALUES (
                 SEQ_BLACKLIST.NEXTVAL,
@@ -245,7 +245,7 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
         const string sql = @"
             UPDATE BLACKLIST SET
                 REASON = :Reason,
-                END_DATE = :EndDate,
+                END_AT = :EndDate,
                 STATUS = :Status
             WHERE BLACK_ID = :BlackId";
 

@@ -44,7 +44,7 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
 
         if (!string.IsNullOrWhiteSpace(query.DeptName))
         {
-            conditions.Add("e.DEPT_NAME = :DeptName");
+            conditions.Add("d.DEPT_NAME = :DeptName");
             parameters.Add("DeptName", query.DeptName);
         }
 
@@ -61,7 +61,7 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
         {
             "empname" => "e.EMP_NAME",
             "hiredate" => "e.HIRE_DATE",
-            "createddate" => "e.CREATED_DATE",
+            "createdat" => "e.CREATED_AT",
             _ => "e.EMP_ID"
         };
         var sortOrder = query.SortOrder?.ToUpper() == "DESC" ? "DESC" : "ASC";
@@ -85,14 +85,15 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
                 e.LOGIN_NAME AS ""LoginName"",
                 e.PASSWORD_HASH AS ""PasswordHash"",
                 e.EMP_NAME AS ""EmpName"",
-                e.DEPT_NAME AS ""DeptName"",
+                d.DEPT_NAME AS ""DeptName"",
                 e.POSITION AS ""Position"",
                 e.EMAIL AS ""Email"",
                 e.PHONE AS ""Phone"",
                 e.HIRE_DATE AS ""HireDate"",
                 e.STATUS AS ""Status"",
-                e.CREATED_DATE AS ""CreatedDate""
+                e.CREATED_AT AS ""CreatedAt""
             FROM EMPLOYEES e
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
             {whereClause}
             ORDER BY {sortField} {sortOrder}
             OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY";
@@ -125,14 +126,15 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
                 e.LOGIN_NAME AS ""LoginName"",
                 e.PASSWORD_HASH AS ""PasswordHash"",
                 e.EMP_NAME AS ""EmpName"",
-                e.DEPT_NAME AS ""DeptName"",
+                d.DEPT_NAME AS ""DeptName"",
                 e.POSITION AS ""Position"",
                 e.EMAIL AS ""Email"",
                 e.PHONE AS ""Phone"",
                 e.HIRE_DATE AS ""HireDate"",
                 e.STATUS AS ""Status"",
-                e.CREATED_DATE AS ""CreatedDate""
+                e.CREATED_AT AS ""CreatedAt""
             FROM EMPLOYEES e
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
             WHERE e.EMP_ID = :EmpId";
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -199,7 +201,7 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
                 PHONE,
                 HIRE_DATE,
                 STATUS,
-                CREATED_DATE
+                CREATED_AT
             ) VALUES (
                 SEQ_EMPLOYEES.NEXTVAL,
                 :LoginName,
@@ -211,7 +213,7 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
                 :Phone,
                 :HireDate,
                 :Status,
-                :CreatedDate
+                :CreatedAt
             )
             RETURNING EMP_ID INTO :EmpId";
 

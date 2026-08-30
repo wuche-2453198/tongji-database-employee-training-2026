@@ -35,5 +35,5 @@ public sealed class Employee
     public string Status { get; set; } = "ACTIVE";
 
     // 创建日期
-    public DateTime CreatedDate { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

@@ -67,7 +67,7 @@ public sealed class EmployeeService : IEmployeeService
             Phone = request.Phone,
             HireDate = request.HireDate,
             Status = EmployeeStatusValues.Active,
-            CreatedDate = DateTime.Now
+            CreatedAt = DateTime.Now
         };
 
         // 保存到数据库
@@ -159,7 +159,7 @@ public sealed class EmployeeService : IEmployeeService
             Phone = employee.Phone,
             HireDate = employee.HireDate,
             Status = employee.Status,
-            CreatedDate = employee.CreatedDate
+            CreatedAt = employee.CreatedAt
         };
     }
 }
