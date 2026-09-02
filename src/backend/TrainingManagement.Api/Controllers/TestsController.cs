@@ -1,24 +1,34 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Dtos.Tests;
+using TrainingManagement.Api.Services.Interfaces;
 
-namespace TrainingManagement.Api.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class TestsController : ControllerBase
+namespace TrainingManagement.Api.Controllers
 {
-    [HttpPost]
-    public async Task<ActionResult<ApiResponse<bool>>> Create([FromBody] CreateTestRequest request)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TestsController : ControllerBase
     {
-        // TODO: 校验分数 0-100，同一员工同一课程同一类型只能有一条
-        return Ok(ApiResponse<bool>.Success(true, "成绩录入成功"));
-    }
+        private readonly ITestService _testService;
 
-    [HttpGet]
-    public async Task<ActionResult<ApiResponse<object>>> GetList([FromQuery] int? employeeId, [FromQuery] int? courseId, [FromQuery] string? testType)
-    {
-        // TODO: 返回列表
-        return Ok(ApiResponse<object>.Success(new { message = "查询待实现" }));
+        public TestsController(ITestService testService)
+        {
+            _testService = testService;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse<bool>>> Create([FromBody] CreateTestRequest request)
+        {
+            var result = await _testService.CreateTestAsync(request);
+            return Ok(ApiResponse<bool>.Success(result, "成绩录入成功"));
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<ApiResponse<object>>> GetList([FromQuery] int? employeeId, [FromQuery] int? courseId, [FromQuery] string? testType)
+        {
+            var result = await _testService.GetTestListAsync(employeeId, courseId, testType);
+            return Ok(ApiResponse<object>.Success(result, "查询成功"));
+        }
     }
 }
