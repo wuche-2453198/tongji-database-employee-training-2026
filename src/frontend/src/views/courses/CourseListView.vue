@@ -3,17 +3,14 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { LatestRequestController } from '@/api/request-control'
-import AppButton from '@/components/common/AppButton.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
-import DataTable from '@/components/common/DataTable.vue'
+import CourseCard from '@/components/business/CourseCard.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import PageState from '@/components/common/PageState.vue'
 import SearchPanel from '@/components/common/SearchPanel.vue'
-import StatusTag from '@/components/common/StatusTag.vue'
 import { getCourseService } from '@/services/course'
 import { isServiceError, type UiError } from '@/types/api'
 import type { CourseQuery, CourseStatus, CourseSummary, CourseType } from '@/domains/course'
-import type { TableColumn } from '@/types/ui'
 import {
   compactListQuery,
   readPositiveQueryInteger,
@@ -40,24 +37,6 @@ const total = ref(0)
 const error = ref<UiError | null>(null)
 const hasLoaded = ref(false)
 
-const columns: TableColumn[] = [
-  { key: 'name', label: '课程名称', minWidth: 240 },
-  { key: 'typeLabel', label: '课程类型', width: 120 },
-  { key: 'trainerName', label: '讲师', width: 100 },
-  { key: 'startTimeLabel', label: '开课时间', width: 170 },
-  { key: 'location', label: '地点', minWidth: 170 },
-  { key: 'remainingSeatsLabel', label: '剩余名额', width: 110, align: 'right' },
-  { key: 'statusLabel', label: '状态', width: 100, align: 'center' },
-]
-
-const tableRows = computed<Record<string, unknown>[]>(() =>
-  rows.value.map((course) => ({
-    ...course,
-    startTimeLabel: formatDateTime(course.startTime),
-    remainingSeatsLabel: `${course.remainingSeats} / ${course.maxStudents}`,
-  })),
-)
-
 const hasActiveFilter = computed(() =>
   Boolean(
     filters.keyword || filters.type || filters.status !== 'PUBLISHED' || filters.dateRange.length,
@@ -69,19 +48,6 @@ const state = computed<'default' | 'loading' | 'empty' | 'error'>(() => {
   if (!loading.value && rows.value.length === 0) return 'empty'
   return loading.value ? 'loading' : 'default'
 })
-
-function formatDateTime(value: string): string {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'short', timeStyle: 'short' }).format(date)
-}
-
-function statusSemantic(status: CourseStatus): 'success' | 'warning' | 'error' | 'neutral' {
-  if (status === 'PUBLISHED') return 'success'
-  if (status === 'CLOSED') return 'neutral'
-  if (status === 'DRAFT') return 'warning'
-  return 'error'
-}
 
 function applyRouteQuery(): void {
   filters.keyword = readQueryString(route.query.keyword)
@@ -187,11 +153,7 @@ onBeforeUnmount(() => latestQuery.cancel())
 
 <template>
   <section class="course-list-view">
-    <PageHeader
-      title="课程中心"
-      description="浏览已发布课程，查看培训安排与报名资格。"
-      :breadcrumbs="['培训中心', '课程中心']"
-    />
+    <PageHeader title="课程中心" description="浏览已发布课程，查看培训安排与报名资格。" />
 
     <SearchPanel
       :expanded="searchExpanded"
@@ -207,9 +169,10 @@ onBeforeUnmount(() => latestQuery.cancel())
         placeholder="请输入课程名称"
       />
       <el-select v-model="filters.type" clearable aria-label="课程类型" placeholder="课程类型">
-        <el-option label="技能培训" value="SKILL" />
-        <el-option label="管理培训" value="MANAGEMENT" />
-        <el-option label="安全培训" value="SAFETY" />
+        <el-option label="技术培训" value="技术培训" />
+        <el-option label="管理培训" value="管理培训" />
+        <el-option label="产品培训" value="产品培训" />
+        <el-option label="营销培训" value="营销培训" />
       </el-select>
       <el-select v-model="filters.status" clearable aria-label="课程状态" placeholder="课程状态">
         <el-option label="已发布" value="PUBLISHED" />
@@ -269,40 +232,9 @@ onBeforeUnmount(() => latestQuery.cancel())
       compact
       @secondary="resetFilters"
     />
-    <DataTable
-      v-else
-      :columns="columns"
-      :rows="tableRows"
-      state="default"
-      has-actions
-      empty-title="暂无已发布课程"
-      empty-description="当前没有可报名的课程。"
-      @retry="loadCourses"
-    >
-      <template #cell="{ column, row }">
-        <StatusTag
-          v-if="column.key === 'statusLabel'"
-          :label="String(row.statusLabel)"
-          :semantic="statusSemantic(row.status as CourseStatus)"
-        />
-        <button
-          v-else-if="column.key === 'name'"
-          type="button"
-          class="course-list-view__link"
-          @click="openDetail(row as unknown as CourseSummary)"
-        >
-          {{ row.name }}
-        </button>
-        <span v-else>{{ row[column.key] || '—' }}</span>
-      </template>
-      <template #actions="{ row }">
-        <AppButton
-          label="查看详情"
-          variant="text"
-          @click="openDetail(row as unknown as CourseSummary)"
-        />
-      </template>
-    </DataTable>
+    <div v-else class="course-list-view__grid">
+      <CourseCard v-for="course in rows" :key="course.id" :course="course" @open="openDetail" />
+    </div>
 
     <AppPagination
       v-if="state === 'default' && total > 0"
@@ -332,16 +264,10 @@ onBeforeUnmount(() => latestQuery.cancel())
   color: var(--text-primary);
   font-size: var(--font-size-title-component);
 }
-.course-list-view__link {
-  padding: 0;
-  border: 0;
-  color: var(--text-link);
-  background: transparent;
-  cursor: pointer;
-  text-align: left;
-}
-.course-list-view__link:hover {
-  text-decoration: underline;
+.course-list-view__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-6);
 }
 .course-list-view :deep(.el-date-editor) {
   width: 100%;

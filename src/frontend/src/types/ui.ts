@@ -36,5 +36,6 @@ export interface CourseInfo {
   schedule: string
   location: string
   hours: number
-  remainingSeats?: number
+  remainingSeats?: number | null
+  cover?: string
 }

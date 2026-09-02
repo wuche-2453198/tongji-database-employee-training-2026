@@ -58,11 +58,7 @@ onMounted(load)
 </script>
 <template>
   <section class="certificate-detail">
-    <PageHeader
-      title="证书详情"
-      context="detail"
-      :breadcrumbs="['证书管理', '证书详情']"
-      @back="router.back"
+    <PageHeader title="证书详情" context="detail" @back="router.back"
       ><template #action
         ><AppButton label="刷新状态" :loading="loading" @click="load" /></template></PageHeader
     ><PageState v-if="loading" state="loading" /><PageState
@@ -104,9 +100,7 @@ onMounted(load)
           ]"
         />
       </section>
-      <p class="certificate-detail__note">
-        证书信息由培训管理服务生成。当前版本提供查看能力，下载、打印等操作待后端契约冻结后接入。
-      </p></template
+      <p class="certificate-detail__note">证书信息由培训管理服务生成。</p></template
     >
   </section>
 </template>

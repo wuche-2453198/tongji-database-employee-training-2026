@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CircleCloseFilled, Lock, Search, WarningFilled } from '@element-plus/icons-vue'
+import { CircleCloseFilled, Document, Lock, Search } from '@element-plus/icons-vue'
 
 import AppButton from './AppButton.vue'
 
@@ -55,7 +55,8 @@ const icon = computed(() => {
   if (props.state === 'forbidden') return Lock
   if (props.state === 'not-found') return Search
   if (props.state === 'error') return CircleCloseFilled
-  return WarningFilled
+  if (props.state === 'no-result') return Search
+  return Document
 })
 </script>
 

@@ -65,7 +65,7 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm dev
 ```
 
-默认启动 Mock 模式，可验收全部17个P0页面。连接本地后端时，复制 `.env.local.example` 为未跟踪的 `.env.local`，再执行 `corepack pnpm dev:local`。
+默认启动 Mock 模式，可验收全部19个P0页面。连接本地后端时，复制 `.env.local.example` 为未跟踪的 `.env.local`，再执行 `corepack pnpm dev:local`。
 
 如果 `dotnet --version` 找不到 .NET 8 SDK，请先安装 .NET 8 SDK，或按本机实际 SDK 路径执行 `dotnet.exe`。
 

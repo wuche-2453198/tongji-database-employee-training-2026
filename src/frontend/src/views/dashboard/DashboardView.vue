@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { Component } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-import { ArrowRight } from '@element-plus/icons-vue'
+import {
+  AlarmClock,
+  ArrowRight,
+  Calendar,
+  CircleCheck,
+  Clock,
+  DocumentChecked,
+  Medal,
+  Reading,
+} from '@element-plus/icons-vue'
 
 import PageHeader from '@/components/common/PageHeader.vue'
 import StatCard from '@/components/common/StatCard.vue'
@@ -21,11 +31,34 @@ const roleLabels: Record<AppRole, string> = {
   ADMIN: '管理员',
 }
 
-const roleStats: Record<AppRole, { label: string }[]> = {
-  EMPLOYEE: [{ label: '待开始课程' }, { label: '处理中申请' }, { label: '有效证书' }],
-  DEPT_MANAGER: [{ label: '待审批申请' }, { label: '本周已处理' }, { label: '逾期申请' }],
-  HR: [{ label: '待备案申请' }, { label: '待签到报名' }, { label: '待生成证书' }],
-  ADMIN: [{ label: '员工总数' }, { label: '课程总数' }, { label: '异常数据' }],
+interface RoleStat {
+  label: string
+  value: number
+  icon: Component
+  to: string
+}
+
+const roleStats: Record<AppRole, RoleStat[]> = {
+  EMPLOYEE: [
+    { label: '待开始课程', value: 3, icon: Calendar, to: '/courses' },
+    { label: '处理中申请', value: 1, icon: DocumentChecked, to: '/my/requests' },
+    { label: '有效证书', value: 2, icon: Medal, to: '/my/certificates' },
+  ],
+  DEPT_MANAGER: [
+    { label: '待审批申请', value: 5, icon: DocumentChecked, to: '/approvals/department' },
+    { label: '本周已处理', value: 12, icon: CircleCheck, to: '/approvals/department' },
+    { label: '逾期申请', value: 2, icon: AlarmClock, to: '/approvals/department' },
+  ],
+  HR: [
+    { label: '待备案申请', value: 4, icon: DocumentChecked, to: '/filings/hr' },
+    { label: '待签到报名', value: 3, icon: Clock, to: '/operations/attendance' },
+    { label: '待生成证书', value: 2, icon: Medal, to: '/operations/certificates' },
+  ],
+  ADMIN: [
+    { label: '课程总数', value: 24, icon: Reading, to: '/courses' },
+    { label: '待审批申请', value: 5, icon: DocumentChecked, to: '/approvals/department' },
+    { label: '待生成证书', value: 2, icon: Medal, to: '/operations/certificates' },
+  ],
 }
 
 const stats = computed(() => (currentUser.value ? roleStats[currentUser.value.primaryRole] : []))
@@ -46,7 +79,7 @@ const quickLinks = computed(() => {
       <div>
         <span class="dashboard-view__eyebrow">{{ roleLabels[currentUser.primaryRole] }}工作台</span>
         <h2>欢迎回来，{{ currentUser.displayName }}</h2>
-        <p>业务指标将在接口契约冻结后接入；当前页面用于验证角色导航与布局。</p>
+        <p>祝你今天工作顺利，从这里快速进入你的培训任务。</p>
       </div>
       <span class="dashboard-view__identity">{{ currentUser.account }}</span>
     </article>
@@ -56,8 +89,10 @@ const quickLinks = computed(() => {
         v-for="item in stats"
         :key="item.label"
         :label="item.label"
-        value="—"
-        helper="接口冻结后提供"
+        :value="item.value"
+        :icon="item.icon"
+        state="link"
+        :to="item.to"
       />
     </div>
 
@@ -65,7 +100,7 @@ const quickLinks = computed(() => {
       <div class="dashboard-view__section-heading">
         <div>
           <h2>快捷入口</h2>
-          <p>仅展示当前角色已确认的 P0 能力。</p>
+          <p>从这里进入你的常用功能。</p>
         </div>
       </div>
       <div class="dashboard-view__links">
@@ -85,7 +120,7 @@ const quickLinks = computed(() => {
       <div class="dashboard-view__section-heading">
         <div>
           <h2>最近动态</h2>
-          <p>接口冻结后提供真实业务动态。</p>
+          <p>这里会展示与你相关的最近动态。</p>
         </div>
       </div>
       <el-empty description="暂无可展示的动态" :image-size="72" />
@@ -101,11 +136,11 @@ const quickLinks = computed(() => {
 
 .dashboard-view__welcome {
   display: flex;
-  min-height: 132px;
+  min-height: 96px;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-8);
-  padding: var(--space-6) var(--space-8);
+  padding: var(--space-5) var(--space-6);
   border-radius: var(--radius-xl);
   color: var(--text-on-primary);
   background: linear-gradient(110deg, #1e3a8a, #2563eb);
@@ -120,7 +155,7 @@ const quickLinks = computed(() => {
 
 .dashboard-view__welcome h2 {
   margin: var(--space-1) 0 0;
-  font-size: 24px;
+  font-size: var(--font-size-title-section);
 }
 
 .dashboard-view__welcome p {
@@ -150,6 +185,9 @@ const quickLinks = computed(() => {
 }
 
 .dashboard-view__section--muted {
+  display: grid;
+  min-height: 240px;
+  align-content: start;
   box-shadow: none;
 }
 
@@ -187,5 +225,14 @@ const quickLinks = computed(() => {
   border-color: var(--color-primary);
   color: var(--color-primary);
   background: var(--color-primary-soft);
+}
+
+@media (width <= 700px) {
+  .dashboard-view__stats {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-view__links {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

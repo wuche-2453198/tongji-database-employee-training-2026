@@ -55,7 +55,7 @@ test('四角色均可登录、显示正确身份并退出', async ({ page }) => 
       role: '管理员',
       group: '培训运营',
       menu: '报名与签到',
-      forbiddenMenu: '证书管理',
+      forbiddenMenu: '我的申请',
     },
   ]
 
@@ -150,8 +150,8 @@ test('1024px 主布局尺寸与管理员菜单边界正确', async ({ page }) =>
   await expect(sidebar).toHaveCSS('width', '224px')
   await sidebar.getByRole('menuitem', { name: '培训运营' }).click()
   await expect(sidebar.getByText('报名与签到', { exact: true })).toBeVisible()
-  await expect(sidebar.getByText('HR 备案', { exact: true })).toHaveCount(0)
-  await expect(sidebar.getByText('证书管理', { exact: true })).toHaveCount(0)
+  await expect(sidebar.getByText('证书管理', { exact: true })).toBeVisible()
+  await expect(sidebar.getByText('我的申请', { exact: true })).toHaveCount(0)
 
   await page.getByRole('button', { name: '收起侧边导航' }).click()
   await expect(sidebar).toHaveCSS('width', '64px')

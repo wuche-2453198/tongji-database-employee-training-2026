@@ -51,15 +51,16 @@ describe('M3/M4 路由守卫', () => {
     expect(target.params.id).toBe('10001')
   })
 
-  it('完整注册 17 个 P0 页面且管理员不继承 HR 权限', () => {
+  it('完整注册 19 个 P0 页面且管理员拥有全部运营权限', () => {
     const p0Routes = router.getRoutes().filter((route) => route.meta.priority === 'P0')
     const adminMenuKeys = getNavigationForRole('ADMIN')
       .flatMap((group) => group.items)
       .map((item) => item.menuKey)
 
-    expect(p0Routes).toHaveLength(17)
+    expect(p0Routes).toHaveLength(19)
     expect(adminMenuKeys).toContain('attendance-management')
-    expect(adminMenuKeys).not.toContain('hr-filing')
-    expect(adminMenuKeys).not.toContain('certificate-management')
+    expect(adminMenuKeys).toContain('hr-filing')
+    expect(adminMenuKeys).toContain('certificate-management')
+    expect(adminMenuKeys).toContain('test-management')
   })
 })

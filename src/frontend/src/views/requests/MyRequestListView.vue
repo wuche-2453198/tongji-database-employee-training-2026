@@ -195,20 +195,22 @@ watch(
   },
   { deep: true },
 )
-onMounted(() => {
+onMounted(async () => {
   applyRouteQuery()
-  void loadRequests()
+  if (route.query.submitted) {
+    const query = { ...route.query }
+    delete query.submitted
+    await router.replace({ query })
+    return
+  }
+  await loadRequests()
 })
 onBeforeUnmount(() => latestQuery.cancel())
 </script>
 
 <template>
   <section class="my-request-list-view">
-    <PageHeader
-      title="我的申请"
-      description="查看本人培训申请的审批与备案进度。"
-      :breadcrumbs="['我的培训', '我的申请']"
-    >
+    <PageHeader title="我的申请" description="查看本人培训申请的审批与备案进度。">
       <template #action
         ><AppButton
           label="浏览课程并申请"

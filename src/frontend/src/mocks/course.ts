@@ -55,7 +55,7 @@ function actorEligibility(course: CourseDetail): CourseActionEligibility {
     return {
       apply: { allowed: false, reasonCode: 'REQUEST_FILED', reason: '该课程申请已备案。' },
       register:
-        course.remainingSeats > 0
+        (course.remainingSeats ?? 0) > 0
           ? { allowed: true }
           : { allowed: false, reasonCode: 'COURSE_FULL', reason: '课程暂无剩余名额。' },
     }

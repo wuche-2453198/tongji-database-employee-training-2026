@@ -5,9 +5,24 @@ import type {
   ServiceRequestOptions,
 } from '@/domains/shared'
 
-export type CourseType = 'SKILL' | 'MANAGEMENT' | 'SAFETY' | 'UNKNOWN'
+export type CourseType = '技术培训' | '管理培训' | '产品培训' | '营销培训' | 'UNKNOWN'
 export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'UNKNOWN'
 export type CourseAction = 'apply' | 'register'
+
+export const COURSE_TYPES: readonly CourseType[] = [
+  '技术培训',
+  '管理培训',
+  '产品培训',
+  '营销培训',
+] as const
+
+export const COURSE_TYPE_LABELS: Record<CourseType, string> = {
+  技术培训: '技术培训',
+  管理培训: '管理培训',
+  产品培训: '产品培训',
+  营销培训: '营销培训',
+  UNKNOWN: '未知类型',
+}
 
 export interface CourseQuery extends DomainPageQuery {
   keyword?: string
@@ -29,8 +44,8 @@ export interface CourseSummary {
   status: CourseStatus
   statusLabel: string
   maxStudents: number
-  registeredCount: number
-  remainingSeats: number
+  registeredCount: number | null
+  remainingSeats: number | null
 }
 
 export interface CourseTrainer {

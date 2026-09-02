@@ -108,7 +108,7 @@ export function createMockRegistrationService(
       if (existing) throw domainError('REGISTRATION_EXISTS')
       if (request?.status !== 'HR_FILED')
         throw domainError('REGISTRATION_NOT_ELIGIBLE', { message: '申请尚未完成 HR 备案。' })
-      if (course.remainingSeats <= 0) throw domainError('COURSE_FULL')
+      if ((course.remainingSeats ?? 0) <= 0) throw domainError('COURSE_FULL')
       const registration: Registration = {
         id: `600${state.registrations.length + 1}`,
         courseId: course.id,
@@ -129,8 +129,8 @@ export function createMockRegistrationService(
         next.registrations.push(registration)
         const nextCourse = next.courses.find((item) => item.id === course.id)
         if (nextCourse) {
-          nextCourse.registeredCount += 1
-          nextCourse.remainingSeats -= 1
+          nextCourse.registeredCount = (nextCourse.registeredCount ?? 0) + 1
+          nextCourse.remainingSeats = (nextCourse.remainingSeats ?? 0) - 1
         }
       })
       return registration

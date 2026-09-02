@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { Lock, User } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 
-import { appConfig } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
 import { isAuthServiceError } from '@/types/auth'
 
@@ -16,9 +15,6 @@ const formAlert = ref<{ message: string; type: 'error' | 'warning' } | null>(nul
 const form = reactive({ account: '', password: '' })
 const submitting = computed(() => authStore.status === 'authenticating')
 const sessionExpired = computed(() => route.query.reason === 'session-expired')
-const authNotice = computed(() =>
-  appConfig.useMock ? '当前为开发阶段 Mock 会话。' : '当前连接真实认证服务。',
-)
 
 const rules: FormRules<typeof form> = {
   account: [{ required: true, message: '请输入员工账号', trigger: 'blur' }],
@@ -114,8 +110,6 @@ const submit = async () => {
         {{ submitting ? '登录中…' : '登录系统' }}
       </el-button>
     </el-form>
-
-    <p class="login-view__notice">{{ authNotice }}</p>
   </div>
 </template>
 
@@ -149,8 +143,7 @@ const submit = async () => {
   line-height: var(--line-height-title-page);
 }
 
-.login-view__heading p,
-.login-view__notice {
+.login-view__heading p {
   color: var(--text-secondary);
 }
 
@@ -165,11 +158,5 @@ const submit = async () => {
 .login-view__submit {
   width: 100%;
   margin-top: var(--space-2);
-}
-
-.login-view__notice {
-  margin: var(--space-6) 0 0;
-  font-size: var(--font-size-caption);
-  text-align: center;
 }
 </style>

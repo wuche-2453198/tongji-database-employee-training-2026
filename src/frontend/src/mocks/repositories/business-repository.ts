@@ -2,6 +2,8 @@ import type { CourseDetail } from '@/domains/course'
 import type { Certificate } from '@/domains/certificate'
 import type { TrainingRequest } from '@/domains/training-request'
 import type { Registration } from '@/domains/registration'
+import type { CourseRating } from '@/domains/rating'
+import type { TrainingTest } from '@/domains/test'
 
 export type FlowSnapshotId =
   | 'FLOW-SNAPSHOT-01'
@@ -20,6 +22,8 @@ export interface MockBusinessState {
   requests: TrainingRequest[]
   registrations: Registration[]
   certificates: Certificate[]
+  ratings: CourseRating[]
+  tests: TrainingTest[]
 }
 
 const STORAGE_KEY = 'training-management.mock-business-state'
@@ -29,8 +33,8 @@ const createCourse = (): CourseDetail[] => [
   {
     id: '4001',
     name: '数据库性能优化实战',
-    type: 'SKILL',
-    typeLabel: '技能培训',
+    type: '技术培训',
+    typeLabel: '技术培训',
     trainerName: '陈老师',
     startTime: '2026-09-02T09:00:00+08:00',
     endTime: '2026-09-02T17:00:00+08:00',
@@ -69,7 +73,7 @@ const createCourse = (): CourseDetail[] => [
   {
     id: '4002',
     name: '新任主管沟通与反馈',
-    type: 'MANAGEMENT',
+    type: '管理培训',
     typeLabel: '管理培训',
     trainerName: '周老师',
     startTime: '2026-09-08T13:30:00+08:00',
@@ -96,6 +100,78 @@ const createCourse = (): CourseDetail[] => [
     eligibility: {
       apply: { allowed: true },
       register: { allowed: false, reasonCode: 'COURSE_FULL', reason: '课程暂无剩余名额。' },
+    },
+  },
+  {
+    id: '4003',
+    name: '产品需求分析与设计',
+    type: '产品培训',
+    typeLabel: '产品培训',
+    trainerName: '林老师',
+    startTime: '2026-09-15T09:30:00+08:00',
+    endTime: '2026-09-15T16:30:00+08:00',
+    location: '创新中心 B305',
+    status: 'PUBLISHED',
+    statusLabel: '已发布',
+    maxStudents: 20,
+    registeredCount: 8,
+    remainingSeats: 12,
+    description: '从用户洞察到需求文档，系统掌握产品需求分析与原型设计方法。',
+    objectives: ['掌握用户调研方法', '学会撰写需求文档', '完成一次原型设计'],
+    hours: 7,
+    organizer: '培训发展部',
+    trainer: {
+      id: '3003',
+      name: '林老师',
+      title: '高级产品经理',
+      department: '产品部',
+      expertise: '需求分析、原型设计',
+      rating: 4.7,
+    },
+    materials: [],
+    eligibility: {
+      apply: { allowed: true },
+      register: {
+        allowed: false,
+        reasonCode: 'REQUEST_NOT_FILED',
+        reason: '申请尚未完成 HR 备案。',
+      },
+    },
+  },
+  {
+    id: '4004',
+    name: '数字营销与客户增长',
+    type: '营销培训',
+    typeLabel: '营销培训',
+    trainerName: '黄老师',
+    startTime: '2026-09-22T14:00:00+08:00',
+    endTime: '2026-09-22T18:00:00+08:00',
+    location: '线上直播',
+    status: 'PUBLISHED',
+    statusLabel: '已发布',
+    maxStudents: 40,
+    registeredCount: 15,
+    remainingSeats: 25,
+    description: '拆解主流数字营销渠道与增长漏斗，掌握可复用的获客方法。',
+    objectives: ['理解增长漏斗模型', '掌握渠道投放要点'],
+    hours: 4,
+    organizer: '培训发展部',
+    trainer: {
+      id: '3004',
+      name: '黄老师',
+      title: '市场增长顾问',
+      department: '市场部',
+      expertise: '数字营销、用户增长',
+      rating: 4.5,
+    },
+    materials: [],
+    eligibility: {
+      apply: { allowed: true },
+      register: {
+        allowed: false,
+        reasonCode: 'REQUEST_NOT_FILED',
+        reason: '申请尚未完成 HR 备案。',
+      },
     },
   },
 ]
@@ -143,6 +219,44 @@ const baseCertificate = (): Certificate => ({
   displayStatus: 'VALID',
 })
 
+const baseRating = (): CourseRating => ({
+  id: '8001',
+  courseId: '4001',
+  courseName: '数据库性能优化实战',
+  trainerId: '3001',
+  trainerName: '陈老师',
+  employeeId: 1001,
+  employeeName: '张三',
+  score: 4.5,
+  comment: '讲解清晰，案例实用。',
+  hrVerified: 'N',
+  hrComment: null,
+  ratingDate: '2026-08-20T18:00:00+08:00',
+})
+
+const baseTests = (): TrainingTest[] => [
+  {
+    id: '9001',
+    employeeId: 1001,
+    employeeName: '张三',
+    courseId: '4001',
+    courseName: '数据库性能优化实战',
+    testType: 'PRE',
+    score: 78,
+    testDate: '2026-08-19T09:00:00+08:00',
+  },
+  {
+    id: '9002',
+    employeeId: 1001,
+    employeeName: '张三',
+    courseId: '4001',
+    courseName: '数据库性能优化实战',
+    testType: 'POST',
+    score: 85,
+    testDate: '2026-08-21T17:00:00+08:00',
+  },
+]
+
 function buildSnapshot(snapshotId: FlowSnapshotId): MockBusinessState {
   const requests = snapshotId === 'FLOW-SNAPSHOT-01' ? [] : [baseRequest()]
   const registrations = [
@@ -154,6 +268,8 @@ function buildSnapshot(snapshotId: FlowSnapshotId): MockBusinessState {
     ? [baseRegistration()]
     : []
   const certificates = snapshotId === 'FLOW-SNAPSHOT-08' ? [baseCertificate()] : []
+  const ratings = [baseRating()]
+  const tests = baseTests()
 
   if (snapshotId === 'FLOW-SNAPSHOT-03' && requests[0]) requests[0].status = 'DEPT_APPROVED'
   if (snapshotId === 'FLOW-SNAPSHOT-04' && requests[0]) requests[0].status = 'HR_FILED'
@@ -176,10 +292,10 @@ function buildSnapshot(snapshotId: FlowSnapshotId): MockBusinessState {
 
   const courses = createCourse()
   if (courses[0]) {
-    courses[0].registeredCount += registrations.length
-    courses[0].remainingSeats -= registrations.length
+    courses[0].registeredCount = (courses[0].registeredCount ?? 0) + registrations.length
+    courses[0].remainingSeats = (courses[0].remainingSeats ?? 0) - registrations.length
   }
-  return { snapshotId, version: 1, courses, requests, registrations, certificates }
+  return { snapshotId, version: 1, courses, requests, registrations, certificates, ratings, tests }
 }
 
 export const FLOW_SNAPSHOTS: Record<FlowSnapshotId, MockBusinessState> = {

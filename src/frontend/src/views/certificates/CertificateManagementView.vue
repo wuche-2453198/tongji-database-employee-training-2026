@@ -143,11 +143,7 @@ onMounted(load)
 </script>
 <template>
   <section class="business-list">
-    <PageHeader
-      title="证书管理"
-      description="为完成培训且满足条件的员工生成证书。"
-      :breadcrumbs="['培训运营', '证书管理']"
-    /><SearchPanel
+    <PageHeader title="证书管理" description="为完成培训且满足条件的员工生成证书。" /><SearchPanel
       :expanded="false"
       :searching="loading"
       @search="sync({}, true)"

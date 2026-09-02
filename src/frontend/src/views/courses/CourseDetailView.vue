@@ -11,6 +11,7 @@ import StatusTag from '@/components/common/StatusTag.vue'
 import { getCourseService } from '@/services/course'
 import { getRegistrationService } from '@/services/registration'
 import { useAuthStore } from '@/stores/auth'
+import { resolveCourseCover } from '@/utils/course-cover'
 import { isServiceError, type UiError } from '@/types/api'
 import type { CourseDetail } from '@/domains/course'
 import type { CourseInfo } from '@/types/ui'
@@ -43,12 +44,13 @@ const courseInfo = computed<CourseInfo | null>(() =>
         location: course.value.location,
         hours: course.value.hours ?? 0,
         remainingSeats: course.value.remainingSeats,
+        cover: resolveCourseCover(course.value.type),
       }
     : null,
 )
 const summaryState = computed<'published' | 'closed' | 'full' | 'restricted'>(() => {
   if (!course.value || course.value.status === 'CLOSED') return 'closed'
-  if (course.value.remainingSeats <= 0) return 'full'
+  if (course.value.remainingSeats !== null && course.value.remainingSeats <= 0) return 'full'
   if (
     isEmployee.value &&
     !course.value.eligibility.apply.allowed &&
@@ -156,12 +158,7 @@ onBeforeUnmount(() => latestQuery.cancel())
 
 <template>
   <section class="course-detail-view">
-    <PageHeader
-      title="课程详情"
-      context="detail"
-      :breadcrumbs="['培训中心', '课程中心', '课程详情']"
-      @back="goBack"
-    />
+    <PageHeader title="课程详情" context="detail" @back="goBack" />
     <PageState v-if="loading" state="loading" />
     <PageState
       v-else-if="error?.kind === 'forbidden'"
@@ -248,15 +245,14 @@ onBeforeUnmount(() => latestQuery.cancel())
           </div>
           <AppDescriptions
             :items="[
-              { label: '课程类型', value: course.typeLabel },
               { label: '课程编号', value: course.id },
               {
-                label: '培训时间',
-                value: `${formatDateTime(course.startTime)} - ${formatDateTime(course.endTime)}`,
+                label: '剩余名额',
+                value:
+                  course.remainingSeats === null
+                    ? '名额数据暂不可用'
+                    : `${course.remainingSeats} / ${course.maxStudents}`,
               },
-              { label: '培训地点', value: course.location },
-              { label: '培训学时', value: course.hours === null ? '—' : `${course.hours} 学时` },
-              { label: '剩余名额', value: `${course.remainingSeats} / ${course.maxStudents}` },
               { label: '主办部门', value: course.organizer },
             ]"
           />
@@ -280,13 +276,25 @@ onBeforeUnmount(() => latestQuery.cancel())
             :items="[
               { label: '所属部门', value: course.trainer.department },
               { label: '擅长领域', value: course.trainer.expertise },
-              {
-                label: '课程评分',
-                value: course.trainer.rating === undefined ? '—' : `${course.trainer.rating} / 5`,
-              },
             ]"
             :columns="1"
           />
+          <div class="course-detail-view__rating">
+            <span class="course-detail-view__rating-label">课程评分</span>
+            <el-rate
+              v-if="course.trainer.rating !== undefined"
+              :model-value="course.trainer.rating"
+              disabled
+              allow-half
+            />
+            <span
+              v-if="course.trainer.rating !== undefined"
+              class="course-detail-view__rating-value"
+            >
+              {{ course.trainer.rating.toFixed(1) }} / 5
+            </span>
+            <span v-else class="course-detail-view__rating-value">暂无评分</span>
+          </div>
           <h2>课程资料</h2>
           <ul class="course-detail-view__materials">
             <li v-for="material in course.materials" :key="material.id">
@@ -381,6 +389,18 @@ onBeforeUnmount(() => latestQuery.cancel())
 .course-detail-view__trainer p {
   margin: var(--space-1) 0 0;
   color: var(--text-secondary);
+}
+.course-detail-view__rating {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.course-detail-view__rating-label {
+  color: var(--text-secondary);
+}
+.course-detail-view__rating-value {
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
 }
 .course-detail-view__materials {
   display: grid;

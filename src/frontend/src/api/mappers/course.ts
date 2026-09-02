@@ -17,9 +17,10 @@ import type {
 } from '@/types/course'
 
 const courseTypeLabels: Record<CourseType, string> = {
-  SKILL: '技能培训',
-  MANAGEMENT: '管理培训',
-  SAFETY: '安全培训',
+  技术培训: '技术培训',
+  管理培训: '管理培训',
+  产品培训: '产品培训',
+  营销培训: '营销培训',
   UNKNOWN: '未知类型',
 }
 
@@ -30,19 +31,36 @@ const courseStatusLabels: Record<CourseStatus, string> = {
   UNKNOWN: '未知状态',
 }
 
-const knownTypes = new Set<CourseType>(['SKILL', 'MANAGEMENT', 'SAFETY'])
+const knownTypes = new Set<CourseType>(['技术培训', '管理培训', '产品培训', '营销培训'])
 const knownStatuses = new Set<CourseStatus>(['DRAFT', 'PUBLISHED', 'CLOSED'])
 
+/** 兼容历史英文枚举，避免后端过渡期返回旧值时被判为 UNKNOWN。 */
+const legacyTypeAliases: Record<string, CourseType> = {
+  SKILL: '技术培训',
+  MANAGEMENT: '管理培训',
+  PRODUCT: '产品培训',
+  MARKETING: '营销培训',
+}
+
 const mapCourseType = (value: string): CourseType =>
-  knownTypes.has(value as CourseType) ? (value as CourseType) : 'UNKNOWN'
+  knownTypes.has(value as CourseType)
+    ? (value as CourseType)
+    : (legacyTypeAliases[value] ?? 'UNKNOWN')
 
 const mapCourseStatus = (value: string): CourseStatus =>
   knownStatuses.has(value as CourseStatus) ? (value as CourseStatus) : 'UNKNOWN'
 
+const toNullableNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) ? value : null
+
 export function mapCourseSummary(dto: CourseSummaryDto): CourseSummary {
   const type = mapCourseType(dto.courseType)
   const status = mapCourseStatus(dto.status || dto.courseStatus || '')
-  const registeredCount = dto.registeredCount ?? dto.enrolledCount ?? 0
+  const registeredCount = toNullableNumber(dto.registeredCount ?? dto.enrolledCount)
+  const maxStudents = toNullableNumber(dto.maxStudents)
+  const remainingSeats =
+    toNullableNumber(dto.remainingSeats) ??
+    (registeredCount !== null && maxStudents !== null ? maxStudents - registeredCount : null)
 
   return {
     id: String(dto.courseId),
@@ -55,9 +73,9 @@ export function mapCourseSummary(dto: CourseSummaryDto): CourseSummary {
     location: dto.location || '—',
     status,
     statusLabel: courseStatusLabels[status],
-    maxStudents: dto.maxStudents,
+    maxStudents: maxStudents ?? 0,
     registeredCount,
-    remainingSeats: dto.remainingSeats ?? Math.max(0, dto.maxStudents - registeredCount),
+    remainingSeats,
   }
 }
 

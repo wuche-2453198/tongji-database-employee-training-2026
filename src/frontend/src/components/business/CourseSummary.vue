@@ -29,7 +29,6 @@ const stateMeta = computed<{ label: string; semantic: StatusSemantic; message: s
 })
 
 const items = computed<DescriptionItem[]>(() => [
-  { label: '课程名称', value: props.course.name },
   { label: '课程类型', value: props.course.type },
   { label: '培训讲师', value: props.course.trainer },
   { label: '培训时间', value: props.course.schedule },
@@ -40,19 +39,32 @@ const items = computed<DescriptionItem[]>(() => [
 
 <template>
   <article class="course-summary">
-    <div class="course-summary__header">
-      <div>
-        <p class="course-summary__eyebrow">课程摘要</p>
-        <h3>{{ course.name }}</h3>
+    <div class="course-summary__top">
+      <div class="course-summary__cover">
+        <img
+          v-if="course.cover"
+          :src="course.cover"
+          :alt="`${course.name} 封面`"
+          loading="lazy"
+          decoding="async"
+        />
+        <span v-else class="course-summary__cover-fallback">{{ course.type }}</span>
       </div>
-      <StatusTag :label="stateMeta.label" :semantic="stateMeta.semantic" />
+      <div class="course-summary__main">
+        <div class="course-summary__header">
+          <div>
+            <p class="course-summary__eyebrow">课程摘要</p>
+            <h3>{{ course.name }}</h3>
+          </div>
+          <StatusTag :label="stateMeta.label" :semantic="stateMeta.semantic" />
+        </div>
+        <AppDescriptions :items="items" :columns="2" />
+      </div>
     </div>
-
-    <AppDescriptions :items="items" :columns="2" />
 
     <div class="course-summary__notice" :class="`course-summary__notice--${stateMeta.semantic}`">
       <span>{{ stateMeta.message }}</span>
-      <span v-if="state === 'full' && course.remainingSeats !== undefined" class="numeric">
+      <span v-if="state === 'full' && course.remainingSeats != null" class="numeric">
         剩余名额：{{ course.remainingSeats }}
       </span>
     </div>
@@ -71,6 +83,41 @@ const items = computed<DescriptionItem[]>(() => [
   border: var(--border-default);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+}
+
+.course-summary__top {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.course-summary__cover {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+}
+
+.course-summary__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-summary__cover-fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: var(--text-on-primary);
+  background: linear-gradient(120deg, #1e3a8a, #2563eb);
+  font-weight: 600;
+}
+
+.course-summary__main {
+  display: grid;
+  gap: var(--space-4);
 }
 
 .course-summary__header {
@@ -120,5 +167,11 @@ const items = computed<DescriptionItem[]>(() => [
 .course-summary__action {
   display: flex;
   justify-content: flex-end;
+}
+
+@media (width <= 700px) {
+  .course-summary__top {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

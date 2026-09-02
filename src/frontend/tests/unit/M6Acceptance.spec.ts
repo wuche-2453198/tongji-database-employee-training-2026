@@ -10,10 +10,32 @@ import {
 } from '@/utils/list-route-state'
 
 const expectedMenuKeys: Record<AppRole, string[]> = {
-  EMPLOYEE: ['dashboard', 'courses', 'my-requests', 'my-registrations', 'my-certificates'],
+  EMPLOYEE: [
+    'dashboard',
+    'courses',
+    'my-requests',
+    'my-registrations',
+    'my-certificates',
+    'my-ratings',
+  ],
   DEPT_MANAGER: ['dashboard', 'courses', 'department-approval'],
-  HR: ['dashboard', 'courses', 'hr-filing', 'attendance-management', 'certificate-management'],
-  ADMIN: ['dashboard', 'courses', 'attendance-management'],
+  HR: [
+    'dashboard',
+    'courses',
+    'hr-filing',
+    'attendance-management',
+    'certificate-management',
+    'test-management',
+  ],
+  ADMIN: [
+    'dashboard',
+    'courses',
+    'department-approval',
+    'hr-filing',
+    'attendance-management',
+    'certificate-management',
+    'test-management',
+  ],
 }
 
 describe('M6 公共基础能力验收', () => {

@@ -118,11 +118,7 @@ onMounted(load)
 </script>
 <template>
   <section class="business-detail">
-    <PageHeader
-      title="报名详情"
-      context="detail"
-      :breadcrumbs="['报名管理', '报名详情']"
-      @back="router.back"
+    <PageHeader title="报名详情" context="detail" @back="router.back"
       ><template #action
         ><AppButton label="刷新状态" :loading="loading" @click="load" /></template></PageHeader
     ><PageState v-if="loading" state="loading" /><PageState

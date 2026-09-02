@@ -52,7 +52,11 @@ const protectedPage = (
                             ? () => import('@/views/certificates/CertificateManagementView.vue')
                             : name === 'certificate-detail'
                               ? () => import('@/views/certificates/CertificateDetailView.vue')
-                              : () => import('@/views/errors/NotFoundView.vue'),
+                              : name === 'my-rating-list'
+                                ? () => import('@/views/ratings/MyRatingListView.vue')
+                                : name === 'test-management'
+                                  ? () => import('@/views/tests/TestManagementView.vue')
+                                  : () => import('@/views/errors/NotFoundView.vue'),
   meta: {
     title,
     requiresAuth: true,
@@ -124,7 +128,7 @@ const routes: RouteRecordRaw[] = [
         'requests/:id',
         'request-detail',
         '申请详情',
-        ['EMPLOYEE', 'DEPT_MANAGER', 'HR'],
+        ['EMPLOYEE', 'DEPT_MANAGER', 'HR', 'ADMIN'],
         'my-requests',
         ['申请管理', '申请详情'],
       ),
@@ -132,11 +136,11 @@ const routes: RouteRecordRaw[] = [
         'approvals/department',
         'department-approval',
         '主管审批',
-        ['DEPT_MANAGER'],
+        ['DEPT_MANAGER', 'ADMIN'],
         'department-approval',
         ['审批管理', '主管审批'],
       ),
-      protectedPage('filings/hr', 'hr-filing', 'HR 备案', ['HR'], 'hr-filing', [
+      protectedPage('filings/hr', 'hr-filing', 'HR 备案', ['HR', 'ADMIN'], 'hr-filing', [
         '审批管理',
         'HR 备案',
       ]),
@@ -176,7 +180,7 @@ const routes: RouteRecordRaw[] = [
         'operations/certificates',
         'certificate-management',
         '证书管理',
-        ['HR'],
+        ['HR', 'ADMIN'],
         'certificate-management',
         ['培训运营', '证书管理'],
       ),
@@ -184,9 +188,21 @@ const routes: RouteRecordRaw[] = [
         'certificates/:id',
         'certificate-detail',
         '证书详情',
-        ['EMPLOYEE', 'HR'],
+        ['EMPLOYEE', 'HR', 'ADMIN'],
         'my-certificates',
         ['证书管理', '证书详情'],
+      ),
+      protectedPage('my/ratings', 'my-rating-list', '我的评分', ['EMPLOYEE'], 'my-ratings', [
+        '我的培训',
+        '我的评分',
+      ]),
+      protectedPage(
+        'operations/tests',
+        'test-management',
+        '测试成绩',
+        ['HR', 'ADMIN'],
+        'test-management',
+        ['培训运营', '测试成绩'],
       ),
     ],
   },

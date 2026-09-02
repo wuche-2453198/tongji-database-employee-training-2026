@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppButton from '@/components/common/AppButton.vue'
+import AppDescriptions from '@/components/common/AppDescriptions.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import DataTable from '@/components/common/DataTable.vue'
@@ -36,7 +37,6 @@ const hasLoaded = ref(false)
 const error = ref<UiError | null>(null)
 const selected = ref<TrainingRequest | null>(null)
 const dialogVisible = ref(false)
-const opinion = ref('')
 const saving = ref(false)
 const columns: TableColumn[] = [
   { key: 'employeeName', label: '申请人', width: 130 },
@@ -153,14 +153,13 @@ async function sync(next: Partial<typeof filters>, reset = false) {
 }
 function open(row: TrainingRequest) {
   selected.value = row
-  opinion.value = ''
   dialogVisible.value = true
 }
 async function submit() {
   if (!selected.value) return
   saving.value = true
   try {
-    await (await getTrainingRequestService()).file(selected.value.id, opinion.value)
+    await (await getTrainingRequestService()).file(selected.value.id, '')
     dialogVisible.value = false
     await load()
   } catch (caught) {
@@ -176,11 +175,7 @@ onMounted(load)
 </script>
 <template>
   <section class="business-list">
-    <PageHeader
-      title="HR 备案"
-      description="对已通过部门审批的培训申请进行备案。"
-      :breadcrumbs="['审批管理', 'HR 备案']"
-    /><SearchPanel
+    <PageHeader title="HR 备案" description="对已通过部门审批的培训申请进行备案。" /><SearchPanel
       :expanded="true"
       :searching="loading"
       @search="sync({}, true)"
@@ -284,7 +279,15 @@ onMounted(load)
       confirm-label="确认备案"
       :loading="saving"
       @confirm="submit"
-      ><el-input v-model="opinion" type="textarea" :rows="3" placeholder="可填写备案备注（选填）"
+      ><AppDescriptions
+        :columns="1"
+        :items="[
+          { label: '申请人', value: selected?.employeeName ?? '—' },
+          { label: '所属部门', value: selected?.departmentName ?? '—' },
+          { label: '课程名称', value: selected?.courseName ?? '—' },
+          { label: '申请时间', value: selected ? formatDate(selected.submittedAt) : '—' },
+          { label: '主管意见', value: selected?.departmentOpinion || '—' },
+        ]"
     /></ConfirmDialog>
   </section>
 </template>

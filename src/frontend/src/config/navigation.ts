@@ -43,6 +43,12 @@ export const navigationGroups: NavigationGroup[] = [
         menuKey: 'my-certificates',
         roles: ['EMPLOYEE'],
       },
+      {
+        label: '我的评分',
+        path: '/my/ratings',
+        menuKey: 'my-ratings',
+        roles: ['EMPLOYEE'],
+      },
     ],
   },
   {
@@ -53,13 +59,13 @@ export const navigationGroups: NavigationGroup[] = [
         label: '主管审批',
         path: '/approvals/department',
         menuKey: 'department-approval',
-        roles: ['DEPT_MANAGER'],
+        roles: ['DEPT_MANAGER', 'ADMIN'],
       },
       {
         label: 'HR 备案',
         path: '/filings/hr',
         menuKey: 'hr-filing',
-        roles: ['HR'],
+        roles: ['HR', 'ADMIN'],
       },
     ],
   },
@@ -77,7 +83,13 @@ export const navigationGroups: NavigationGroup[] = [
         label: '证书管理',
         path: '/operations/certificates',
         menuKey: 'certificate-management',
-        roles: ['HR'],
+        roles: ['HR', 'ADMIN'],
+      },
+      {
+        label: '测试成绩',
+        path: '/operations/tests',
+        menuKey: 'test-management',
+        roles: ['HR', 'ADMIN'],
       },
     ],
   },
@@ -98,6 +110,7 @@ const detailMenuKeys: Record<string, Partial<Record<AppRole, string>>> = {
     EMPLOYEE: 'my-requests',
     DEPT_MANAGER: 'department-approval',
     HR: 'hr-filing',
+    ADMIN: 'department-approval',
   },
   'registration-detail': {
     EMPLOYEE: 'my-registrations',
@@ -107,6 +120,7 @@ const detailMenuKeys: Record<string, Partial<Record<AppRole, string>>> = {
   'certificate-detail': {
     EMPLOYEE: 'my-certificates',
     HR: 'certificate-management',
+    ADMIN: 'certificate-management',
   },
 }
 

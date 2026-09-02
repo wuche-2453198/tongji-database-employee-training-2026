@@ -164,11 +164,7 @@ onMounted(load)
 </script>
 <template>
   <section class="business-list">
-    <PageHeader
-      title="报名与签到"
-      description="维护培训报名、签到和完成状态。"
-      :breadcrumbs="['培训运营', '报名与签到']"
-    /><SearchPanel
+    <PageHeader title="报名与签到" description="维护培训报名、签到和完成状态。" /><SearchPanel
       :expanded="true"
       :searching="loading"
       @search="sync({}, true)"

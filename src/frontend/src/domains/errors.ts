@@ -74,7 +74,7 @@ const defaultMessage: Record<BusinessErrorCode, string> = {
   CERTIFICATE_EXISTS: '该报名记录已经生成证书。',
   CONCURRENT_UPDATE: '数据状态已发生变化，请刷新后重试。',
   RESULT_UNKNOWN: '操作结果未知，请先查询最新状态，避免重复提交。',
-  HTTP_CONTRACT_NOT_FROZEN: '真实接口契约尚未冻结，当前仅支持 Mock 验收。',
+  HTTP_CONTRACT_NOT_FROZEN: '服务暂不可用，请稍后重试。',
 }
 
 export function domainError(

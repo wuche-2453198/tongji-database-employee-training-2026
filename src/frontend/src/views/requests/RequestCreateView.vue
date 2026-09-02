@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 
 import { LatestRequestController, SingleFlightController } from '@/api/request-control'
 import AppButton from '@/components/common/AppButton.vue'
@@ -11,6 +11,7 @@ import PageState from '@/components/common/PageState.vue'
 import { getCourseService } from '@/services/course'
 import { getTrainingRequestService } from '@/services/training-request'
 import { useAuthStore } from '@/stores/auth'
+import { resolveCourseCover } from '@/utils/course-cover'
 import { isServiceError, type UiError } from '@/types/api'
 import type { CourseDetail } from '@/domains/course'
 import type { CourseInfo } from '@/types/ui'
@@ -23,6 +24,7 @@ const submissions = new SingleFlightController()
 const course = ref<CourseDetail | null>(null)
 const loading = ref(false)
 const submitting = ref(false)
+const submitted = ref(false)
 const error = ref<UiError | null>(null)
 const submissionError = ref<UiError | null>(null)
 const reasonError = ref('')
@@ -42,12 +44,13 @@ const courseInfo = computed<CourseInfo | null>(() =>
         location: course.value.location,
         hours: course.value.hours ?? 0,
         remainingSeats: course.value.remainingSeats,
+        cover: resolveCourseCover(course.value.type),
       }
     : null,
 )
 const summaryState = computed<'published' | 'closed' | 'full' | 'restricted'>(() => {
   if (!course.value || course.value.status === 'CLOSED') return 'closed'
-  if (course.value.remainingSeats <= 0) return 'full'
+  if (course.value.remainingSeats !== null && course.value.remainingSeats <= 0) return 'full'
   if (!course.value.eligibility.apply.allowed) return 'restricted'
   return 'published'
 })
@@ -120,6 +123,7 @@ async function submit(): Promise<void> {
     const request = await submissions.run(`create:${courseId.value}`, () =>
       service.create({ courseId: courseId.value, reason }),
     )
+    submitted.value = true
     await router.push({ name: 'my-request-list', query: { submitted: request.id } })
   } catch (caught) {
     if (isServiceError(caught) && caught.ui.resultUnknown) {
@@ -130,6 +134,7 @@ async function submit(): Promise<void> {
           (item) => item.courseId === courseId.value && item.status !== 'DEPT_REJECTED',
         )
         if (confirmed) {
+          submitted.value = true
           await router.push({ name: 'my-request-list', query: { submitted: confirmed.id } })
           return
         }
@@ -157,6 +162,11 @@ function goBack(): void {
   else void router.replace({ name: 'course-detail', params: { id: courseId.value } })
 }
 
+onBeforeRouteLeave(() => {
+  if (submitted.value || !form.reason.trim()) return true
+  return window.confirm('尚未提交申请，离开后已填写的内容将丢失，确认离开？')
+})
+
 onMounted(loadCourse)
 onBeforeUnmount(() => latestQuery.cancel())
 </script>
@@ -167,7 +177,6 @@ onBeforeUnmount(() => latestQuery.cancel())
       title="发起培训申请"
       description="提交申请理由后等待部门主管审批。"
       context="detail"
-      :breadcrumbs="['我的培训', '我的申请', '发起申请']"
       @back="goBack"
     />
     <PageState v-if="loading" state="loading" />
@@ -226,7 +235,7 @@ onBeforeUnmount(() => latestQuery.cancel())
               ref="reasonInput"
               v-model="form.reason"
               type="textarea"
-              :rows="6"
+              :rows="5"
               maxlength="500"
               show-word-limit
               placeholder="请输入申请理由"

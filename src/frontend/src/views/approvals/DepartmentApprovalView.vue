@@ -184,11 +184,7 @@ onMounted(load)
 
 <template>
   <section class="business-list">
-    <PageHeader
-      title="主管审批"
-      description="处理本部门员工提交的培训申请。"
-      :breadcrumbs="['审批管理', '主管审批']"
-    />
+    <PageHeader title="主管审批" description="处理本部门员工提交的培训申请。" />
     <SearchPanel
       :expanded="true"
       :searching="loading"

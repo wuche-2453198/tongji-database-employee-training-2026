@@ -65,7 +65,7 @@ describe('M5 API 与 Mock 边界', () => {
 
   it.each([
     ['empty', 0],
-    ['normal', 2],
+    ['normal', 4],
   ] as const)('Mock 查询场景 %s 返回领域分页', async (scenario, expectedTotal) => {
     const service = createMockCourseService(() => scenario)
     const result = await service.listCourses(query)

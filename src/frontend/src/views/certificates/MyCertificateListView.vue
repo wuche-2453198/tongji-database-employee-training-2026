@@ -111,11 +111,7 @@ onMounted(load)
 </script>
 <template>
   <section class="business-list">
-    <PageHeader
-      title="我的证书"
-      description="查看本人已生成的培训证书。"
-      :breadcrumbs="['我的培训', '我的证书']"
-    /><SearchPanel
+    <PageHeader title="我的证书" description="查看本人已生成的培训证书。" /><SearchPanel
       :expanded="false"
       :searching="loading"
       @search="sync({}, true)"

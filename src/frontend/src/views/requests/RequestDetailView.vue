@@ -165,12 +165,7 @@ onBeforeUnmount(() => latestQuery.cancel())
 
 <template>
   <section class="request-detail-view">
-    <PageHeader
-      title="申请详情"
-      context="detail"
-      :breadcrumbs="['我的培训', '申请详情']"
-      @back="goBack"
-    >
+    <PageHeader title="申请详情" context="detail" @back="goBack">
       <template #action
         ><AppButton label="刷新状态" :loading="loading" @click="loadRequest"
       /></template>
