@@ -1,0 +1,75 @@
+@baseUrl = http://localhost:5156
+@employeeToken = replace-with-employee-token
+@hrToken = replace-with-hr-or-admin-token
+@courseId = replace-with-published-course-id
+@regId = replace-with-registration-id
+
+### Login as employee
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "employee",
+  "password": "Password2026!"
+}
+
+### Login as HR
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "hr",
+  "password": "Password2026!"
+}
+
+### My registrations (employee only)
+GET {{baseUrl}}/api/registrations/my?page=1&pageSize=20
+Authorization: Bearer {{employeeToken}}
+
+### All registrations (HR/admin only)
+GET {{baseUrl}}/api/registrations?page=1&pageSize=20
+Authorization: Bearer {{hrToken}}
+
+### Registration summary by course (HR/admin only)
+GET {{baseUrl}}/api/registrations/summary?courseId={{courseId}}
+Authorization: Bearer {{hrToken}}
+
+### Create registration, requires an HR_FILED request for the same employee + course
+POST {{baseUrl}}/api/registrations
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}}
+}
+
+### Duplicate registration, expected 409
+POST {{baseUrl}}/api/registrations
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}}
+}
+
+### Registration detail
+GET {{baseUrl}}/api/registrations/{{regId}}
+Authorization: Bearer {{employeeToken}}
+
+### Cancel before course start, employee or HR/admin
+PATCH {{baseUrl}}/api/registrations/{{regId}}/cancel
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "reason": "临时有事"
+}
+
+### Cancel again, expected 409
+PATCH {{baseUrl}}/api/registrations/{{regId}}/cancel
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "reason": "再次取消"
+}

@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using TrainingManagement.Api.Dtos.Registration;
 using TrainingManagement.Api.Dtos.Course;
 using TrainingManagement.Api.Dtos.Trainer;
 using TrainingManagement.Api.Entities;
@@ -237,5 +239,293 @@ internal sealed class FakeTrainerRepository : ITrainerRepository
             CreatedAt = source.CreatedAt,
             UpdatedAt = source.UpdatedAt
         };
+    }
+}
+
+internal sealed class FakeRegistrationRepository : IRegistrationRepository
+{
+    public RegistrationRecord? Registration { get; set; }
+
+    public RegistrationContextRecord? Context { get; set; }
+
+    public long? FiledRequestId { get; set; } = 5;
+
+    public EmployeeEligibilityRecord? Employee { get; set; }
+
+    public CourseEligibilityRecord? Course { get; set; }
+
+    public RegistrationCreateResult CreateResult { get; set; } =
+        new(RegistrationCreateOutcome.Created, 100);
+
+    public bool CancelResult { get; set; } = true;
+
+    public bool AbsentResult { get; set; } = true;
+
+    public bool CompleteResult { get; set; } = true;
+
+    public RegistrationSummaryRecord Summary { get; set; } = new();
+
+    public RegistrationQuery? LastQuery { get; private set; }
+
+    public long? LastScopeEmpId { get; private set; }
+
+    public RegistrationRecord? LastCreated { get; private set; }
+
+    public long? LastCancelRegId { get; private set; }
+
+    public string? LastCancelReason { get; private set; }
+
+    public long? LastAbsentRegId { get; private set; }
+
+    public long? LastCompleteRegId { get; private set; }
+
+    public Task<(IReadOnlyList<RegistrationRecord> Items, long Total)> GetAllAsync(
+        RegistrationQuery query,
+        long? empId,
+        CancellationToken cancellationToken)
+    {
+        LastQuery = query;
+        LastScopeEmpId = empId;
+
+        IReadOnlyList<RegistrationRecord> items = Registration is null
+            ? Array.Empty<RegistrationRecord>()
+            : new[] { Registration };
+
+        return Task.FromResult((items, (long)items.Count));
+    }
+
+    public Task<RegistrationRecord?> GetByIdAsync(
+        long regId,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(
+            Registration?.RegId == regId
+                ? Registration
+                : null);
+    }
+
+    public Task<RegistrationContextRecord?> GetContextAsync(
+        long regId,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(
+            Context?.RegId == regId
+                ? Context
+                : null);
+    }
+
+    public Task<long?> FindFiledRequestIdAsync(
+        long empId,
+        long courseId,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(FiledRequestId);
+    }
+
+    public Task<EmployeeEligibilityRecord?> GetEmployeeEligibilityAsync(
+        long empId,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Employee);
+    }
+
+    public Task<CourseEligibilityRecord?> GetCourseEligibilityAsync(
+        long courseId,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(
+            Course?.CourseId == courseId
+                ? Course
+                : null);
+    }
+
+    public Task<RegistrationCreateResult> CreateAsync(
+        RegistrationRecord registration,
+        CancellationToken cancellationToken)
+    {
+        LastCreated = registration;
+
+        if (CreateResult.Outcome == RegistrationCreateOutcome.Created)
+        {
+            Registration = CopyRegistration(
+                registration,
+                CreateResult.RegId);
+        }
+
+        return Task.FromResult(CreateResult);
+    }
+
+    public Task<bool> CancelAsync(
+        long regId,
+        string? cancelReason,
+        CancellationToken cancellationToken)
+    {
+        LastCancelRegId = regId;
+        LastCancelReason = cancelReason;
+
+        if (CancelResult
+            && Registration?.RegId == regId)
+        {
+            Registration = CopyRegistration(
+                Registration,
+                Registration.RegId,
+                status: "CANCELED",
+                canceledAt: DateTime.Now,
+                cancelReason: cancelReason);
+        }
+
+        return Task.FromResult(CancelResult);
+    }
+
+    public Task<bool> MarkAbsentAsync(
+        long regId,
+        CancellationToken cancellationToken)
+    {
+        LastAbsentRegId = regId;
+
+        if (AbsentResult
+            && Registration?.RegId == regId)
+        {
+            Registration = CopyRegistration(
+                Registration,
+                Registration.RegId,
+                status: "ABSENT",
+                actualHours: 0m);
+        }
+
+        return Task.FromResult(AbsentResult);
+    }
+
+    public Task<bool> CompleteAsync(
+        long regId,
+        CancellationToken cancellationToken)
+    {
+        LastCompleteRegId = regId;
+
+        if (CompleteResult
+            && Registration?.RegId == regId)
+        {
+            Registration = CopyRegistration(
+                Registration,
+                Registration.RegId,
+                status: "COMPLETED",
+                completedAt: DateTime.Now);
+        }
+
+        return Task.FromResult(CompleteResult);
+    }
+
+    public Task<RegistrationSummaryRecord> GetSummaryAsync(
+        long? courseId,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Summary);
+    }
+
+    private static RegistrationRecord CopyRegistration(
+        RegistrationRecord source,
+        long regId,
+        string? status = null,
+        decimal? actualHours = null,
+        DateTime? completedAt = null,
+        DateTime? canceledAt = null,
+        string? cancelReason = null)
+    {
+        return new RegistrationRecord
+        {
+            RegId = regId,
+            RequestId = source.RequestId,
+            EmpId = source.EmpId,
+            EmpName = source.EmpName,
+            DeptId = source.DeptId,
+            DeptName = source.DeptName,
+            CourseId = source.CourseId,
+            CourseName = source.CourseName,
+            CourseType = source.CourseType,
+            DurationHours = source.DurationHours,
+            TrainerName = source.TrainerName,
+            StartAt = source.StartAt,
+            EndAt = source.EndAt,
+            Location = source.Location,
+            CourseStatus = source.CourseStatus,
+            MaxStudents = source.MaxStudents,
+            Status = status ?? source.Status,
+            RegisteredAt = source.RegisteredAt,
+            CompletedAt = completedAt ?? source.CompletedAt,
+            ActualHours = actualHours ?? source.ActualHours,
+            CanceledAt = canceledAt ?? source.CanceledAt,
+            CancelReason = cancelReason ?? source.CancelReason,
+            UpdatedAt = source.UpdatedAt,
+            AttendId = source.AttendId,
+            SigninType = source.SigninType,
+            SignedInAt = source.SignedInAt,
+            LatenessMinutes = source.LatenessMinutes,
+            DeductHours = source.DeductHours,
+            AttendanceRemark = source.AttendanceRemark
+        };
+    }
+}
+
+internal sealed class FakeAttendanceRepository : IAttendanceRepository
+{
+    public SignInResult Result { get; set; } =
+        new(SignInOutcome.Success, 7);
+
+    public AttendanceRecord? LastAttendance { get; private set; }
+
+    public decimal LastActualHours { get; private set; }
+
+    public Task<SignInResult> SignInAsync(
+        AttendanceRecord attendance,
+        decimal actualHours,
+        CancellationToken cancellationToken)
+    {
+        LastAttendance = attendance;
+        LastActualHours = actualHours;
+
+        return Task.FromResult(Result);
+    }
+}
+
+internal static class TestPrincipals
+{
+    public static ClaimsPrincipal Employee(long empId)
+    {
+        return Principal(
+            empId,
+            TrainingManagement.Api.Common.Security.RoleCodes.Employee);
+    }
+
+    public static ClaimsPrincipal Hr(long empId = 99)
+    {
+        return Principal(
+            empId,
+            TrainingManagement.Api.Common.Security.RoleCodes.Hr);
+    }
+
+    public static ClaimsPrincipal Admin(long empId = 100)
+    {
+        return Principal(
+            empId,
+            TrainingManagement.Api.Common.Security.RoleCodes.Admin);
+    }
+
+    private static ClaimsPrincipal Principal(
+        long empId,
+        string role)
+    {
+        var identity = new ClaimsIdentity(
+            new[]
+            {
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    empId.ToString()),
+                new Claim(
+                    ClaimTypes.Role,
+                    role)
+            },
+            "test");
+
+        return new ClaimsPrincipal(identity);
     }
 }
