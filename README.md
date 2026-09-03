@@ -84,6 +84,24 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 | `GET` | `/api/health` | 后端存活检查 |
 | `GET` | `/api/health/db` | Oracle 连接检查 |
 
+## 报名签到接口
+
+| 方法 | 路径 | 角色 | 说明 |
+| --- | --- | --- | --- |
+| `GET` | `/api/registrations/my` | 员工 | 当前员工的报名分页列表 |
+| `GET` | `/api/registrations` | HR/管理员 | 全量报名查询（员工、部门、课程、状态、签到状态、培训日期筛选） |
+| `GET` | `/api/registrations/{id}` | 本人或 HR/管理员 | 报名详情、签到摘要和可执行操作资格 |
+| `GET` | `/api/registrations/summary` | HR/管理员 | 按状态统计报名数量，传 `courseId` 时返回剩余名额 |
+| `POST` | `/api/registrations` | 员工 | 报名已发布课程（校验 HR 备案、员工、黑名单、课程状态/时间、容量和防重） |
+| `PATCH` | `/api/registrations/{id}/cancel` | 本人或 HR/管理员 | 课程开始前取消报名 |
+| `PATCH` | `/api/registrations/{id}/absent` | HR/管理员 | 课程结束后将未签到报名标记缺勤 |
+| `PATCH` | `/api/registrations/{id}/complete` | HR/管理员 | 课程结束后完成已签到培训 |
+| `POST` | `/api/registrations/{id}/signin` | HR/管理员 | 正常签到（SCAN，时间取服务端） |
+| `POST` | `/api/attendance/manual` | HR/管理员 | 补签（MANUAL，备注必填，可指定签到时间） |
+
+报名状态枚举：`REGISTERED`、`SIGNED_IN`、`ABSENT`、`COMPLETED`、`CANCELED`；签到类型：`SCAN`、`MANUAL`。迟到扣减规则：实际学时 = 课程学时 - 按迟到分钟等比例折算并四舍五入到 0.5 小时的扣减（上限为课程学时）。
+
+
 Oracle 种子测试账号：
 
 | 登录名 | 密码 | 角色 |
