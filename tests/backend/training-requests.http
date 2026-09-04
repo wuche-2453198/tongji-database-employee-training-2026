@@ -1,0 +1,116 @@
+@baseUrl = https://localhost:7156
+@employeeToken = <employee_token>
+@managerToken = <manager_token>
+@hrToken = <hr_token>
+@invalidToken = <invalid_token>
+@existingRequestId = <replace_with_a_real_request_id>
+
+### ============================================================
+### 1. 正常流程测试
+### ============================================================
+
+### 1.1 员工提交申请（成功）
+# 预期：201 Created，返回申请数据，状态为 PENDING
+# 前置条件：使用 employeeToken，courseId 存在且已发布
+POST {{baseUrl}}/api/TrainingRequests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": 26,
+  "requestReason": "希望通过培训提升微服务架构设计能力"
+}
+
+### 1.2 员工查看自己的申请列表
+# 预期：200 OK，返回分页数据，包含刚创建的申请
+GET {{baseUrl}}/api/TrainingRequests/my?Page=1&PageSize=10
+Authorization: Bearer {{employeeToken}}
+
+### 1.3 员工查看申请详情
+# 预期：200 OK，返回完整的申请信息（包含员工姓名、课程名称等）
+# 前置条件：将 {{existingRequestId}} 替换为上一步返回的真实 ID
+GET {{baseUrl}}/api/TrainingRequests/{{existingRequestId}}
+Authorization: Bearer {{employeeToken}}
+
+### 1.4 主管审批通过
+# 预期：200 OK，状态变为 DEPT_APPROVED
+# 前置条件：使用 managerToken，申请状态为 PENDING
+PATCH {{baseUrl}}/api/TrainingRequests/{{existingRequestId}}/dept-approve
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "批准，请协调好工作"
+}
+
+### 1.5 HR 备案
+# 预期：200 OK，状态变为 HR_FILED
+# 前置条件：使用 hrToken，申请状态为 DEPT_APPROVED
+PATCH {{baseUrl}}/api/TrainingRequests/{{existingRequestId}}/hr-file
+Authorization: Bearer {{hrToken}}
+
+### 1.6 查询所有申请（主管/HR 专用）
+# 预期：200 OK，返回所有申请列表
+GET {{baseUrl}}/api/TrainingRequests?Page=1&PageSize=10
+Authorization: Bearer {{managerToken}}
+
+### ============================================================
+### 2. 失败/边界场景测试
+### ============================================================
+
+### 2.1 无 Token 提交申请
+# 预期：401 Unauthorized
+POST {{baseUrl}}/api/TrainingRequests
+Content-Type: application/json
+
+{
+  "courseId": 26,
+  "requestReason": "无Token测试"
+}
+
+### 2.2 普通员工查看所有申请（越权）
+# 预期：403 Forbidden
+GET {{baseUrl}}/api/TrainingRequests
+Authorization: Bearer {{employeeToken}}
+
+### 2.3 普通员工审批（越权）
+# 预期：403 Forbidden
+PATCH {{baseUrl}}/api/TrainingRequests/{{existingRequestId}}/dept-approve
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "comment": "越权审批"
+}
+
+### 2.4 员工重复提交同一课程申请
+# 预期：409 Conflict，返回 "您已提交过该课程的申请，请勿重复提交。"
+POST {{baseUrl}}/api/TrainingRequests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": 26,
+  "requestReason": "重复提交测试"
+}
+
+### 2.5 主管审批不存在的申请
+# 预期：400 Bad Request，返回 "申请不存在。"
+PATCH {{baseUrl}}/api/TrainingRequests/99999/dept-approve
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "审批不存在的申请"
+}
+
+### 2.6 主管审批已备案的申请（状态流转冲突）
+# 预期：400 Bad Request，返回 "当前状态为 HR_FILED，无法进行审批操作。"
+# 前置条件：使用已备案的申请 ID
+PATCH {{baseUrl}}/api/TrainingRequests/{{existingRequestId}}/dept-approve
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "再次审批已备案的申请"
+}
