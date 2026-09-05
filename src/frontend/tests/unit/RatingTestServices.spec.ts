@@ -23,7 +23,7 @@ describe('评分与测试 Mock 服务', () => {
     expect(result.total).toBe(1)
     expect(result.items[0]).toMatchObject({
       courseName: '数据库性能优化实战',
-      employeeId: 1001,
+      employeeId: 55,
       score: 4.5,
     })
 

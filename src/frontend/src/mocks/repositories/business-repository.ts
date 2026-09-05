@@ -180,7 +180,7 @@ const baseRequest = (): TrainingRequest => ({
   id: '5001',
   courseId: '4001',
   courseName: '数据库性能优化实战',
-  employeeId: 1001,
+  employeeId: 55,
   employeeName: '张三',
   departmentName: '技术部',
   reason: '提升数据库设计与查询能力',
@@ -195,7 +195,7 @@ const baseRegistration = (): Registration => ({
   id: '6001',
   courseId: '4001',
   courseName: '数据库性能优化实战',
-  employeeId: 1001,
+  employeeId: 55,
   employeeName: '张三',
   status: 'REGISTERED',
   registeredAt: '2026-08-21T10:00:00+08:00',
@@ -212,7 +212,7 @@ const baseCertificate = (): Certificate => ({
   certificateNo: 'CERT-2026-0001',
   courseId: '4001',
   courseName: '数据库性能优化实战',
-  employeeId: 1001,
+  employeeId: 55,
   employeeName: '张三',
   issuedAt: '2026-09-03T10:00:00+08:00',
   expiresAt: '2028-09-03T23:59:59+08:00',
@@ -225,7 +225,7 @@ const baseRating = (): CourseRating => ({
   courseName: '数据库性能优化实战',
   trainerId: '3001',
   trainerName: '陈老师',
-  employeeId: 1001,
+  employeeId: 55,
   employeeName: '张三',
   score: 4.5,
   comment: '讲解清晰，案例实用。',
@@ -237,7 +237,7 @@ const baseRating = (): CourseRating => ({
 const baseTests = (): TrainingTest[] => [
   {
     id: '9001',
-    employeeId: 1001,
+    employeeId: 55,
     employeeName: '张三',
     courseId: '4001',
     courseName: '数据库性能优化实战',
@@ -247,7 +247,7 @@ const baseTests = (): TrainingTest[] => [
   },
   {
     id: '9002',
-    employeeId: 1001,
+    employeeId: 55,
     employeeName: '张三',
     courseId: '4001',
     courseName: '数据库性能优化实战',
@@ -412,7 +412,7 @@ export function getMockActor(): {
     }
   > = {
     'employee.demo': {
-      employeeId: 1001,
+      employeeId: 55,
       role: 'EMPLOYEE',
       departmentId: 101,
       departmentName: '技术部',
@@ -426,21 +426,21 @@ export function getMockActor(): {
       status: 'RESIGNED',
     },
     'manager.demo': {
-      employeeId: 1002,
+      employeeId: 56,
       role: 'DEPT_MANAGER',
       departmentId: 101,
       departmentName: '技术部',
       status: 'ACTIVE',
     },
     'hr.demo': {
-      employeeId: 1003,
+      employeeId: 57,
       role: 'HR',
       departmentId: 102,
       departmentName: '人力资源部',
       status: 'ACTIVE',
     },
     'admin.demo': {
-      employeeId: 1004,
+      employeeId: 54,
       role: 'ADMIN',
       departmentId: 103,
       departmentName: '管理部',
