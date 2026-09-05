@@ -5,6 +5,11 @@ var tests = CourseServiceTests
     .Concat(TrainerServiceTests.GetTests())
     .ToArray();
 
+if (args.Contains("--auth-http"))
+{
+    tests = tests.Append(("Course/trainer HTTP login and authorization matrix", (Func<Task>)HttpAuthorizationTests.RunAsync)).ToArray();
+}
+
 var failed = 0;
 
 foreach (var test in tests)
