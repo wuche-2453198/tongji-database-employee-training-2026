@@ -1,29 +1,28 @@
-﻿using TrainingManagement.Api.Dtos.TrainingRequest;
-using TrainingManagement.Api.Entities;
+using TrainingManagement.Api.Dtos.TrainingRequest;
+using TrainingManagement.Api.Common.Responses;
 
-namespace TrainingManagement.Api.Services.Interfaces
+namespace TrainingManagement.Api.Services.Interfaces;
+
+public interface ITrainingRequestService
 {
-    public interface ITrainingRequestService
-    {
-        // 提交申请
-        Task<TrainingRequest> SubmitRequestAsync(int employeeId, CreateTrainingRequestDto dto);
+    Task<TrainingRequestResponseDto> SubmitRequestAsync(
+        int employeeId, CreateTrainingRequestDto dto, CancellationToken cancellationToken);
 
-        // 获取我的申请（员工）
-        Task<(List<TrainingRequest> Items, int Total)> GetMyRequestsAsync(int employeeId, TrainingRequestQueryDto query);
+    Task<PagedResult<TrainingRequestResponseDto>> GetMyRequestsAsync(
+        int employeeId, TrainingRequestQueryDto query, CancellationToken cancellationToken);
 
-        // 获取所有申请（主管/HR）
-        Task<(List<TrainingRequest> Items, int Total)> GetAllRequestsAsync(TrainingRequestQueryDto query);
+    Task<PagedResult<TrainingRequestResponseDto>> GetAllRequestsAsync(
+        ActorContext actor, TrainingRequestQueryDto query, CancellationToken cancellationToken);
 
-        // 根据ID获取申请详情
-        Task<TrainingRequest?> GetRequestByIdAsync(int id);
+    Task<TrainingRequestResponseDto> GetRequestByIdAsync(
+        ActorContext actor, int id, CancellationToken cancellationToken);
 
-        // 主管审批通过
-        Task<bool> DeptApproveAsync(int requestId, int approverId, string? comment);
+    Task<TrainingRequestResponseDto> DeptApproveAsync(
+        ActorContext actor, int requestId, string? comment, CancellationToken cancellationToken);
 
-        // 主管驳回
-        Task<bool> DeptRejectAsync(int requestId, int approverId, string? comment);
+    Task<TrainingRequestResponseDto> DeptRejectAsync(
+        ActorContext actor, int requestId, string? comment, CancellationToken cancellationToken);
 
-        // HR备案
-        Task<bool> HrFileAsync(int requestId, int hrId);
-    }
+    Task<TrainingRequestResponseDto> HrFileAsync(
+        ActorContext actor, int requestId, string? comment, CancellationToken cancellationToken);
 }

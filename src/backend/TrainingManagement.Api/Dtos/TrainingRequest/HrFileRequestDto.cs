@@ -1,7 +1,7 @@
 namespace TrainingManagement.Api.Dtos.TrainingRequest;
 
-public class ApproveRequestDto
+public class HrFileRequestDto
 {
-    /// <summary>审批意见，可空。</summary>
+    /// <summary>HR 备案意见，可空。</summary>
     public string? Comment { get; set; }
 }
