@@ -1,209 +1,281 @@
-﻿using TrainingManagement.Api.Dtos.TrainingRequest;
+using TrainingManagement.Api.Common.Enums;
+using TrainingManagement.Api.Common.Exceptions;
+using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Dtos.TrainingRequest;
 using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
 using TrainingManagement.Api.Services.Interfaces;
 
-namespace TrainingManagement.Api.Services.Implementations
+namespace TrainingManagement.Api.Services.Implementations;
+
+public sealed class TrainingRequestService : ITrainingRequestService
 {
-    public class TrainingRequestService: ITrainingRequestService
+    private const int MaxPageSize = 100;
+    private const int DefaultPageSize = 20;
+
+    private readonly ITrainingRequestRepository _repository;
+
+    // TODO(跨模块): 组织/课程/黑名单模块的公开 Service 合入后,
+    // 将仓库层的 GetEmployeeGateAsync / GetCourseGateAsync 门禁查询替换为对应 Service 契约调用。
+    public TrainingRequestService(ITrainingRequestRepository repository)
     {
-        private readonly ITrainingRequestRepository _repository;
-        // 等待以下服务接口实现后取消注释
-        // private readonly IEmployeeService _employeeService;
-        // private readonly ICourseService _courseService;
-        // private readonly IBlacklistService _blacklistService;
+        _repository = repository;
+    }
 
-        public TrainingRequestService(
-            ITrainingRequestRepository repository
-            // 等待以下服务接口实现后取消注释
-            // IEmployeeService employeeService,
-            // ICourseService courseService,
-            // IBlacklistService blacklistService
-        )
+    public async Task<TrainingRequestResponseDto> SubmitRequestAsync(
+        int employeeId, CreateTrainingRequestDto dto, CancellationToken cancellationToken)
+    {
+        var employee = await _repository.GetEmployeeGateAsync(employeeId, cancellationToken);
+        if (!employee.Exists)
         {
-            _repository = repository;
-            // 等待以下服务接口实现后取消注释
-            // _employeeService = employeeService;
-            // _courseService = courseService;
-            // _blacklistService = blacklistService;
+            throw new NotFoundApiException("员工不存在。");
         }
 
-        public async Task<TrainingRequest> SubmitRequestAsync(int employeeId, CreateTrainingRequestDto dto)
+        if (!string.Equals(employee.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase))
         {
-            // TODO: 等待其他模块服务接口实现后，取消注释以下校验代码，已预留位置，功能暂不启用
-            /*
-            // 1. 检查员工是否在职
-            var employee = await _employeeService.GetByIdAsync(employeeId);
-            if (employee == null || employee.Status != "ACTIVE")
-            {
-                throw new InvalidOperationException("员工不存在或已离职，无法提交申请。");
-            }
-
-            // 2. 检查课程是否存在且已发布
-            var course = await _courseService.GetByIdAsync(dto.CourseId);
-            if (course == null)
-            {
-                throw new InvalidOperationException("课程不存在。");
-            }
-            if (course.Status != "PUBLISHED")
-            {
-                throw new InvalidOperationException("课程尚未发布，无法申请。");
-            }
-
-            // 3. 检查课程是否已开始
-            if (course.StartAt <= DateTime.Now)
-            {
-                throw new InvalidOperationException("课程已开始，无法申请。");
-            }
-
-            // 4. 检查员工是否在黑名单中
-            if (await _blacklistService.IsInBlacklistAsync(employeeId))
-            {
-                throw new InvalidOperationException("您当前在黑名单中，无法申请培训。");
-            }
-            */
-
-            // 原有校验         
-            // 5. 检查是否有待处理的申请（防止重复提交）
-            var exists = await _repository.ExistsPendingRequestAsync(employeeId, dto.CourseId);
-            if (exists)
-            {
-                throw new InvalidOperationException("您已提交过该课程的申请，请勿重复提交。");
-            }
-
-            // 6. 创建申请实体
-            var request = new TrainingRequest
-            {
-                EmployeeId = employeeId,
-                CourseId = dto.CourseId,
-                RequestReason = dto.RequestReason,
-                Status = "PENDING"  // 新申请默认待审批
-            };
-
-            // 7. 插入数据库
-            var newId = await _repository.InsertAsync(request);
-            request.Id = newId;
-
-            return request;
+            throw new BusinessException("员工当前不在职,无法提交培训申请。");
         }
 
-        public async Task<(List<TrainingRequest> Items, int Total)> GetMyRequestsAsync(int employeeId, TrainingRequestQueryDto query)
+        var course = await _repository.GetCourseGateAsync(dto.CourseId, cancellationToken);
+        if (!course.Exists)
         {
-            // 直接调用 Repository，强制按当前员工 ID 筛选
-            return await _repository.GetListAsync(
-                query.Status,
-                employeeId,  // 强制使用当前登录员工 ID
-                query.CourseId,
-                query.Page,
-                query.PageSize
-            );
+            throw new NotFoundApiException("课程不存在。");
         }
 
-        public async Task<(List<TrainingRequest> Items, int Total)> GetAllRequestsAsync(TrainingRequestQueryDto query)
+        if (!string.Equals(course.Status, "PUBLISHED", StringComparison.OrdinalIgnoreCase))
         {
-            // 直接调用 Repository，所有筛选条件由客户端传入
-            return await _repository.GetListAsync(
-                query.Status,
-                query.EmployeeId,
-                query.CourseId,
-                query.Page,
-                query.PageSize
-            );
+            throw new BusinessException("课程尚未发布,无法申请。");
         }
 
-        public async Task<TrainingRequest?> GetRequestByIdAsync(int id)
+        if (course.StartAt.HasValue && course.StartAt.Value <= DateTime.Now)
         {
-            return await _repository.GetByIdAsync(id);
+            throw new BusinessException("课程已开始或结束,无法申请。");
         }
 
-        public async Task<bool> DeptApproveAsync(int requestId, int approverId, string? comment)
+        if (await _repository.ExistsActiveRequestAsync(employeeId, dto.CourseId, cancellationToken))
         {
-            // 查询申请
-            var request = await _repository.GetByIdAsync(requestId);
-            if (request == null)
-            {
-                throw new InvalidOperationException("申请不存在。");
-            }
-
-            // 业务校验：只有 PENDING 状态才能审批
-            if (request.Status != "PENDING")
-            {
-                throw new InvalidOperationException($"当前状态为 {request.Status}，无法进行审批操作。");
-            }
-
-            // TODO: 等待员工服务接口，补充主管部门范围校验
-            /*
-            // 检查审批人是否属于申请人的部门
-            var approver = await _employeeService.GetByIdAsync(approverId);
-            var applicant = await _employeeService.GetByIdAsync(request.EmployeeId);
-            if (approver == null || applicant == null || approver.DeptId != applicant.DeptId)
-            {
-                throw new InvalidOperationException("您只能审批本部门员工的申请。");
-            }
-            */
-
-            // 更新状态
-            return await _repository.UpdateStatusAsync(requestId, "DEPT_APPROVED", approverId, comment);
+            throw new ConflictApiException("您已提交过该课程的申请,请勿重复提交。");
         }
 
-        public async Task<bool> DeptRejectAsync(int requestId, int approverId, string? comment)
+        var request = new TrainingRequest
         {
-            // 查询申请
-            var request = await _repository.GetByIdAsync(requestId);
-            if (request == null)
+            EmployeeId = employeeId,
+            CourseId = dto.CourseId,
+            RequestReason = dto.RequestReason,
+            Status = TrainingRequestStatusText.Pending,
+        };
+
+        var newId = await _repository.InsertAsync(request, cancellationToken);
+        var created = await _repository.GetByIdAsync(newId, cancellationToken)
+            ?? throw new BusinessException("申请创建失败,请重试。");
+
+        return MapToDto(created);
+    }
+
+    public Task<PagedResult<TrainingRequestResponseDto>> GetMyRequestsAsync(
+        int employeeId, TrainingRequestQueryDto query, CancellationToken cancellationToken)
+    {
+        return SearchAsync(
+            query.Status,
+            employeeId,
+            query.CourseId,
+            deptId: null,
+            query,
+            cancellationToken);
+    }
+
+    public async Task<PagedResult<TrainingRequestResponseDto>> GetAllRequestsAsync(
+        ActorContext actor, TrainingRequestQueryDto query, CancellationToken cancellationToken)
+    {
+        // 数据范围:主管只看本部门;HR/管理员可跨部门。
+        int? deptId = null;
+        if (actor.IsManager && !actor.IsAdmin && !actor.IsHr)
+        {
+            var managerDeptId = await _repository.GetEmployeeDeptIdAsync(actor.EmployeeId, cancellationToken);
+            if (!managerDeptId.HasValue)
             {
-                throw new InvalidOperationException("申请不存在。");
+                throw new ForbiddenApiException("无法确定您所属的部门,无法查询申请。");
             }
 
-            // 业务校验：只有 PENDING 状态才能驳回
-            if (request.Status != "PENDING")
-            {
-                throw new InvalidOperationException($"当前状态为 {request.Status}，无法进行驳回操作。");
-            }
-
-            // TODO: 等待员工服务接口，补充主管部门范围校验
-            /*
-            // 检查审批人是否属于申请人的部门
-            var approver = await _employeeService.GetByIdAsync(approverId);
-            var applicant = await _employeeService.GetByIdAsync(request.EmployeeId);
-            if (approver == null || applicant == null || approver.DeptId != applicant.DeptId)
-            {
-                throw new InvalidOperationException("您只能审批本部门员工的申请。");
-            }
-            */
-
-            // 更新状态
-            return await _repository.UpdateStatusAsync(requestId, "DEPT_REJECTED", approverId, comment);
+            deptId = managerDeptId;
         }
 
-        public async Task<bool> HrFileAsync(int requestId, int hrId)
+        return await SearchAsync(
+            query.Status,
+            query.EmployeeId,
+            query.CourseId,
+            deptId,
+            query,
+            cancellationToken);
+    }
+
+    public async Task<TrainingRequestResponseDto> GetRequestByIdAsync(
+        ActorContext actor, int id, CancellationToken cancellationToken)
+    {
+        var request = await GetRequestOrThrowAsync(id, cancellationToken);
+
+        await EnsureCanViewAsync(actor, request, cancellationToken);
+
+        return MapToDto(request);
+    }
+
+    public Task<TrainingRequestResponseDto> DeptApproveAsync(
+        ActorContext actor, int requestId, string? comment, CancellationToken cancellationToken)
+    {
+        return ApproveAsync(actor, requestId, comment, TrainingRequestStatusText.DeptApproved, cancellationToken);
+    }
+
+    public Task<TrainingRequestResponseDto> DeptRejectAsync(
+        ActorContext actor, int requestId, string? comment, CancellationToken cancellationToken)
+    {
+        return ApproveAsync(actor, requestId, comment, TrainingRequestStatusText.DeptRejected, cancellationToken);
+    }
+
+    public async Task<TrainingRequestResponseDto> HrFileAsync(
+        ActorContext actor, int requestId, string? comment, CancellationToken cancellationToken)
+    {
+        var request = await GetRequestOrThrowAsync(requestId, cancellationToken);
+
+        if (!string.Equals(request.Status, TrainingRequestStatusText.DeptApproved, StringComparison.Ordinal))
         {
-            // 查询申请
-            var request = await _repository.GetByIdAsync(requestId);
-            if (request == null)
-            {
-                throw new InvalidOperationException("申请不存在。");
-            }
-
-            // 业务校验：只有 DEPT_APPROVED 状态才能备案
-            if (request.Status != "DEPT_APPROVED")
-            {
-                throw new InvalidOperationException($"当前状态为 {request.Status}，无法进行备案操作。");
-            }
-
-            // TODO: 等待员工服务接口，补充主管部门范围校验
-            /*
-            // 检查审批人是否属于申请人的部门
-            var approver = await _employeeService.GetByIdAsync(approverId);
-            var applicant = await _employeeService.GetByIdAsync(request.EmployeeId);
-            if (approver == null || applicant == null || approver.DeptId != applicant.DeptId)
-            {
-                throw new InvalidOperationException("您只能审批本部门员工的申请。");
-            }
-            */
-
-            // 更新状态
-            return await _repository.UpdateStatusAsync(requestId, "HR_FILED", hrId, null);
+            throw new BusinessException($"当前状态为 {request.Status},无法进行备案操作。");
         }
+
+        var updated = await _repository.UpdateStatusAsync(
+            requestId,
+            TrainingRequestStatusText.DeptApproved,
+            TrainingRequestStatusText.HrFiled,
+            actor.EmployeeId,
+            comment,
+            cancellationToken);
+
+        if (!updated)
+        {
+            throw new ConflictApiException("申请状态已被其他人变更,请刷新后重试。");
+        }
+
+        var filed = await GetRequestOrThrowAsync(requestId, cancellationToken);
+        return MapToDto(filed);
+    }
+
+    private async Task<TrainingRequestResponseDto> ApproveAsync(
+        ActorContext actor, int requestId, string? comment, string targetStatus, CancellationToken cancellationToken)
+    {
+        var request = await GetRequestOrThrowAsync(requestId, cancellationToken);
+
+        if (!string.Equals(request.Status, TrainingRequestStatusText.Pending, StringComparison.Ordinal))
+        {
+            var action = targetStatus == TrainingRequestStatusText.DeptApproved ? "审批" : "驳回";
+            throw new BusinessException($"当前状态为 {request.Status},无法进行{action}操作。");
+        }
+
+        // 数据范围:主管只能审批本部门员工的申请;管理员可代办(跳过部门校验)。
+        if (!actor.IsAdmin)
+        {
+            var managerDeptId = await _repository.GetEmployeeDeptIdAsync(actor.EmployeeId, cancellationToken);
+            if (managerDeptId != request.DeptId)
+            {
+                throw new ForbiddenApiException("您只能审批本部门员工的申请。");
+            }
+        }
+
+        var updated = await _repository.UpdateStatusAsync(
+            requestId,
+            TrainingRequestStatusText.Pending,
+            targetStatus,
+            actor.EmployeeId,
+            comment,
+            cancellationToken);
+
+        if (!updated)
+        {
+            throw new ConflictApiException("申请状态已被其他人变更,请刷新后重试。");
+        }
+
+        var after = await GetRequestOrThrowAsync(requestId, cancellationToken);
+        return MapToDto(after);
+    }
+
+    private async Task<TrainingRequest> GetRequestOrThrowAsync(int id, CancellationToken cancellationToken)
+    {
+        return await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new NotFoundApiException("申请不存在。");
+    }
+
+    private async Task EnsureCanViewAsync(ActorContext actor, TrainingRequest request, CancellationToken cancellationToken)
+    {
+        if (actor.IsAdmin || actor.IsHr)
+        {
+            return;
+        }
+
+        // 数据范围:主管只看本部门;普通员工只看本人。
+        if (actor.IsManager)
+        {
+            var managerDeptId = await _repository.GetEmployeeDeptIdAsync(actor.EmployeeId, cancellationToken);
+            if (managerDeptId != request.DeptId)
+            {
+                throw new ForbiddenApiException("您只能查看本部门员工的申请。");
+            }
+
+            return;
+        }
+
+        if (request.EmployeeId != actor.EmployeeId)
+        {
+            throw new ForbiddenApiException("您只能查看本人的申请。");
+        }
+    }
+
+    private async Task<PagedResult<TrainingRequestResponseDto>> SearchAsync(
+        string? status,
+        int? employeeId,
+        int? courseId,
+        int? deptId,
+        TrainingRequestQueryDto query,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrEmpty(status) && !TrainingRequestStatusText.IsValid(status))
+        {
+            throw new BusinessException("无效的申请状态筛选值。");
+        }
+
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1 ? DefaultPageSize : Math.Min(query.PageSize, MaxPageSize);
+
+        var (items, total) = await _repository.SearchAsync(
+            status, employeeId, courseId, deptId, page, pageSize, cancellationToken);
+
+        return new PagedResult<TrainingRequestResponseDto>
+        {
+            Items = items.Select(MapToDto).ToArray(),
+            Page = page,
+            PageSize = pageSize,
+            Total = total,
+        };
+    }
+
+    private static TrainingRequestResponseDto MapToDto(TrainingRequest entity)
+    {
+        return new TrainingRequestResponseDto
+        {
+            Id = entity.Id,
+            EmployeeId = entity.EmployeeId,
+            EmployeeName = entity.EmployeeName,
+            DeptId = entity.DeptId,
+            CourseId = entity.CourseId,
+            CourseName = entity.CourseName,
+            RequestReason = entity.RequestReason,
+            Status = entity.Status,
+            DeptApproverId = entity.DeptApproverId,
+            DeptApproverName = entity.DeptApproverName,
+            DeptApproveTime = entity.DeptApproveTime,
+            DeptApproveComment = entity.DeptApproveComment,
+            HrApproverId = entity.HrApproverId,
+            HrApproverName = entity.HrApproverName,
+            HrFileTime = entity.HrFileTime,
+            HrFileComment = entity.HrFileComment,
+            CreateTime = entity.CreateTime,
+        };
     }
 }
