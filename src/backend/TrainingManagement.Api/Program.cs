@@ -186,9 +186,11 @@ builder.Services.AddScoped<IDbConnectionFactory, OracleConnectionFactory>();
 builder.Services.AddScoped<IAuthRepository, OracleAuthRepository>();
 builder.Services.AddScoped<IRoleRepository, OracleRoleRepository>();
 builder.Services.AddScoped<IHealthRepository, OracleHealthRepository>();
+builder.Services.AddScoped<ITrainingRequestRepository, TrainingRequestRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IHealthService, HealthService>();
+builder.Services.AddScoped<ITrainingRequestService, TrainingRequestService>();
 
 var app = builder.Build();
 
