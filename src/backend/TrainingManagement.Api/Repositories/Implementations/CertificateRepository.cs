@@ -1,11 +1,12 @@
 using Dapper;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
+using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
 
 namespace TrainingManagement.Api.Repositories.Implementations;
-
 public sealed class CertificateRepository : ICertificateRepository
 {
     private readonly IDbConnectionFactory _connectionFactory;
@@ -15,82 +16,87 @@ public sealed class CertificateRepository : ICertificateRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<object> GetRegistrationByIdAsync(int registrationId)
+    public async Task<Registration?> GetRegistrationByIdAsync(int registrationId)
     {
         const string sql = """
-            SELECT REGISTRATION_ID, EMPLOYEE_ID, COURSE_ID, STATUS 
-            FROM TRAINING_REGISTRATIONS 
-            WHERE REGISTRATION_ID = :RegistrationId
+            SELECT REG_ID, EMP_ID, COURSE_ID, STATUS
+            FROM TRAINING_REGISTRATIONS
+            WHERE REG_ID = :RegId
             """;
-
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
-        return await connection.QueryFirstOrDefaultAsync(sql, new { RegistrationId = registrationId });
+        return await connection.QueryFirstOrDefaultAsync<Registration>(sql, new { RegId = registrationId });
     }
 
     public async Task<bool> ExistsByEmployeeAndCourseAsync(int employeeId, int courseId)
     {
         const string sql = """
-            SELECT COUNT(1) FROM TRAINING_CERTIFICATES 
-            WHERE EMPLOYEE_ID = :EmployeeId AND COURSE_ID = :CourseId AND STATUS = 'ACTIVE'
+            SELECT COUNT(1) FROM TRAINING_CERTIFICATES
+            WHERE EMP_ID = :EmpId AND COURSE_ID = :CourseId
             """;
-
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
-        var count = await connection.ExecuteScalarAsync<int>(sql, new { EmployeeId = employeeId, CourseId = courseId });
+        var count = await connection.ExecuteScalarAsync<int>(sql, new { EmpId = employeeId, CourseId = courseId });
         return count > 0;
     }
 
-    public async Task<int> CreateAsync(string certificateNo, int employeeId, int courseId, int registrationId)
+    public async Task<int> CreateAsync(string certificateNo, int employeeId, int courseId, int issuedByEmpId)
     {
         const string sql = """
-            INSERT INTO TRAINING_CERTIFICATES 
-                (CERTIFICATE_NO, EMPLOYEE_ID, COURSE_ID, REGISTRATION_ID, ISSUE_DATE, STATUS, NOTIFY_FLAG) 
-            VALUES 
-                (:CertificateNo, :EmployeeId, :CourseId, :RegistrationId, SYSDATE, 'ACTIVE', 'N')
-            RETURNING CERTIFICATE_ID INTO :CertificateId
+            INSERT INTO TRAINING_CERTIFICATES
+                (CERT_CODE, EMP_ID, COURSE_ID, ISSUE_DATE, ISSUED_BY_EMP_ID, NOTIFIED)
+            VALUES
+                (:CertCode, :EmpId, :CourseId, TRUNC(SYSDATE), :IssuedByEmpId, 'N')
+            RETURNING CERT_ID INTO :CertId
             """;
-
         var parameters = new DynamicParameters();
-        parameters.Add("CertificateNo", certificateNo);
-        parameters.Add("EmployeeId", employeeId);
+        parameters.Add("CertCode", certificateNo);
+        parameters.Add("EmpId", employeeId);
         parameters.Add("CourseId", courseId);
-        parameters.Add("RegistrationId", registrationId);
-        parameters.Add("CertificateId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parameters.Add("IssuedByEmpId", issuedByEmpId);
+        parameters.Add("CertId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         await connection.ExecuteAsync(sql, parameters);
-        return parameters.Get<int>("CertificateId");
+        return parameters.Get<int>("CertId");
     }
 
-    public async Task<object> GetByEmployeeIdAsync(int employeeId)
+    public async Task<IEnumerable<TrainingCertificate>> GetByEmployeeIdAsync(int employeeId)
     {
         const string sql = """
-            SELECT * FROM TRAINING_CERTIFICATES 
-            WHERE EMPLOYEE_ID = :EmployeeId 
+            SELECT CERT_ID AS CertId, EMP_ID AS EmpId, COURSE_ID AS CourseId,
+                   CERT_CODE AS CertCode, ISSUE_DATE AS IssueDate, EXPIRE_DATE AS ExpireDate,
+                   NOTIFIED AS Notified, NOTIFIED_AT AS NotifiedAt,
+                   ISSUED_BY_EMP_ID AS IssuedByEmpId, CREATED_AT AS CreatedAt
+            FROM TRAINING_CERTIFICATES
+            WHERE EMP_ID = :EmpId
             ORDER BY ISSUE_DATE DESC
             """;
-
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
-        return await connection.QueryAsync(sql, new { EmployeeId = employeeId });
+        return await connection.QueryAsync<TrainingCertificate>(sql, new { EmpId = employeeId });
     }
 
-    public async Task<object> GetByIdAsync(int id)
+    public async Task<TrainingCertificate?> GetByIdAsync(int id)
     {
         const string sql = """
-            SELECT * FROM TRAINING_CERTIFICATES WHERE CERTIFICATE_ID = :CertificateId
+            SELECT CERT_ID AS CertId, EMP_ID AS EmpId, COURSE_ID AS CourseId,
+                   CERT_CODE AS CertCode, ISSUE_DATE AS IssueDate, EXPIRE_DATE AS ExpireDate,
+                   NOTIFIED AS Notified, NOTIFIED_AT AS NotifiedAt,
+                   ISSUED_BY_EMP_ID AS IssuedByEmpId, CREATED_AT AS CreatedAt
+            FROM TRAINING_CERTIFICATES
+            WHERE CERT_ID = :CertId
             """;
-
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
-        return await connection.QueryFirstOrDefaultAsync(sql, new { CertificateId = id });
+        return await connection.QueryFirstOrDefaultAsync<TrainingCertificate>(sql, new { CertId = id });
     }
 
     public async Task<bool> UpdateNotifyFlagAsync(int id)
     {
         const string sql = """
-            UPDATE TRAINING_CERTIFICATES SET NOTIFY_FLAG = 'Y' WHERE CERTIFICATE_ID = :CertificateId
+            UPDATE TRAINING_CERTIFICATES
+            SET NOTIFIED = 'Y', NOTIFIED_AT = SYSTIMESTAMP
+            WHERE CERT_ID = :CertId
             """;
-
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
-        var rows = await connection.ExecuteAsync(sql, new { CertificateId = id });
+        var rows = await connection.ExecuteAsync(sql, new { CertId = id });
         return rows > 0;
     }
 }
