@@ -8,14 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- 成果评估模块需要的包（来自 feature/module-result） -->
-    <PackageReference Include="Dapper" Version="2.1.35" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.6.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-
-    <!-- 认证和基础架构需要的包（来自 develop） -->
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="Dapper" Version="2.1.79" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.29" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
 
 </Project>
