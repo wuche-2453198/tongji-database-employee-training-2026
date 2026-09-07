@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Ratings;
 using TrainingManagement.Api.Services.Interfaces;
 
