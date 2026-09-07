@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Tests;
 using TrainingManagement.Api.Services.Interfaces;
 
