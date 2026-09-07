@@ -19,23 +19,19 @@ public sealed class CertificatesController : ApiControllerBase
         _certificateService = certificateService;
     }
 
+    [Authorize(Roles = "HR,Admin")]
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<object>>> Generate([FromBody] GenerateCertificateRequest request)
+    public async Task<ActionResult<ApiResponse<CertificateResult>>> Generate([FromBody] GenerateCertificateRequest request)
     {
-        var result = await _certificateService.GenerateCertificateAsync(request);
+        var issuedBy = GetCurrentEmployeeId();
+        var result = await _certificateService.GenerateCertificateAsync(request, issuedBy);
         return OkResponse(result, "证书生成成功");
     }
 
     [HttpGet("my")]
-    public async Task<ActionResult<ApiResponse<object>>> GetMyCertificates()
+    public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetMyCertificates()
     {
-        var employeeIdClaim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
-    if (employeeIdClaim == null)
-    {
-        return Unauthorized(ApiResponse<bool>.Fail("无法获取用户ID", HttpContext.TraceIdentifier));
-    }
-
-        var employeeId = int.Parse(employeeIdClaim.Value);
+        var employeeId = GetCurrentEmployeeId();
         var result = await _certificateService.GetMyCertificatesAsync(employeeId);
         return OkResponse(result, "查询成功");
     }
@@ -47,10 +43,19 @@ public sealed class CertificatesController : ApiControllerBase
         return OkResponse(result, "查询成功");
     }
 
+    [Authorize(Roles = "HR,Admin")]
     [HttpPatch("{id}/notify")]
     public async Task<ActionResult<ApiResponse<bool>>> NotifyExpiry(int id)
     {
         var result = await _certificateService.MarkNotifiedAsync(id);
         return OkResponse(result, "提醒标记成功");
+    }
+
+    private int GetCurrentEmployeeId()
+    {
+        var claim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+        if (claim == null)
+            throw new UnauthorizedAccessException("无法获取用户ID");
+        return int.Parse(claim.Value);
     }
 }
