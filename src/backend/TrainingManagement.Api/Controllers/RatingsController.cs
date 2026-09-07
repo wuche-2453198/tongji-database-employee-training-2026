@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TrainingManagement.Api.Common;
@@ -6,9 +7,9 @@ using TrainingManagement.Api.Services.Interfaces;
 
 namespace TrainingManagement.Api.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class RatingsController : ApiControllerBase
+[Authorize]
+[Route("api/ratings")]
+public sealed class RatingsController : ApiControllerBase
 {
     private readonly IRatingService _ratingService;
 
