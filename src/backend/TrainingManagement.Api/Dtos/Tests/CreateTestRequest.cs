@@ -3,6 +3,6 @@ public class CreateTestRequest
 {
     public int EmployeeId { get; set; }
     public int CourseId { get; set; }
-    public string TestType { get; set; } // PRE / POST
-    public int Score { get; set; }       // 0-100
+    public string TestType { get; set; } = "";
+    public int Score { get; set; }
 }
