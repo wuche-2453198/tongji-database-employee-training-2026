@@ -2,7 +2,7 @@ namespace TrainingManagement.Api.Entities;
 public class TrainingCertificate
 {
     public int CertificateId { get; set; }
-    public string CertificateNo { get; set; }  // CERT-{yyyyMMdd}-{courseId}-{empId}
+    public string CertificateNo { get; set; } = "";
     public int EmployeeId { get; set; }
     public int CourseId { get; set; }
     public int RegistrationId { get; set; }
