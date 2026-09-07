@@ -7,28 +7,31 @@ namespace TrainingManagement.Api.Repositories.Implementations
 {
     public class CertificateRepository : ICertificateRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public CertificateRepository(IDbConnection connection)
+        public CertificateRepository(IDbConnectionFactory connectionFactory)
         {
-            _connection = connection;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<object> GetRegistrationByIdAsync(int registrationId)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = "SELECT REGISTRATION_ID, EMPLOYEE_ID, COURSE_ID, STATUS FROM TRAINING_REGISTRATIONS WHERE REGISTRATION_ID = :RegistrationId";
-            return await _connection.QueryFirstOrDefaultAsync(sql, new { RegistrationId = registrationId });
+            return await connection.QueryFirstOrDefaultAsync(sql, new { RegistrationId = registrationId });
         }
 
         public async Task<bool> ExistsByEmployeeAndCourseAsync(int employeeId, int courseId)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = "SELECT COUNT(1) FROM TRAINING_CERTIFICATES WHERE EMPLOYEE_ID = :EmployeeId AND COURSE_ID = :CourseId AND STATUS = 'ACTIVE'";
-            var count = await _connection.ExecuteScalarAsync<int>(sql, new { EmployeeId = employeeId, CourseId = courseId });
+            var count = await connection.ExecuteScalarAsync<int>(sql, new { EmployeeId = employeeId, CourseId = courseId });
             return count > 0;
         }
 
         public async Task<int> CreateAsync(string certificateNo, int employeeId, int courseId, int registrationId)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = @"INSERT INTO TRAINING_CERTIFICATES 
                         (CERTIFICATE_NO, EMPLOYEE_ID, COURSE_ID, REGISTRATION_ID, ISSUE_DATE, STATUS, NOTIFY_FLAG) 
                         VALUES (:CertificateNo, :EmployeeId, :CourseId, :RegistrationId, SYSDATE, 'ACTIVE', 'N')
@@ -41,26 +44,29 @@ namespace TrainingManagement.Api.Repositories.Implementations
             parameters.Add("RegistrationId", registrationId);
             parameters.Add("CertificateId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await _connection.ExecuteAsync(sql, parameters);
+            await connection.ExecuteAsync(sql, parameters);
             return parameters.Get<int>("CertificateId");
         }
 
         public async Task<object> GetByEmployeeIdAsync(int employeeId)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = "SELECT * FROM TRAINING_CERTIFICATES WHERE EMPLOYEE_ID = :EmployeeId ORDER BY ISSUE_DATE DESC";
-            return await _connection.QueryAsync(sql, new { EmployeeId = employeeId });
+            return await connection.QueryAsync(sql, new { EmployeeId = employeeId });
         }
 
         public async Task<object> GetByIdAsync(int id)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = "SELECT * FROM TRAINING_CERTIFICATES WHERE CERTIFICATE_ID = :CertificateId";
-            return await _connection.QueryFirstOrDefaultAsync(sql, new { CertificateId = id });
+            return await connection.QueryFirstOrDefaultAsync(sql, new { CertificateId = id });
         }
 
         public async Task<bool> UpdateNotifyFlagAsync(int id)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = "UPDATE TRAINING_CERTIFICATES SET NOTIFY_FLAG = 'Y' WHERE CERTIFICATE_ID = :CertificateId";
-            var result = await _connection.ExecuteAsync(sql, new { CertificateId = id });
+            var result = await connection.ExecuteAsync(sql, new { CertificateId = id });
             return result > 0;
         }
     }
