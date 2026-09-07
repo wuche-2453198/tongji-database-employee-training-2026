@@ -1,5 +1,6 @@
 using Dapper;
 using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using TrainingManagement.Api.Repositories.Interfaces;
 
@@ -22,7 +23,7 @@ public sealed class CertificateRepository : ICertificateRepository
             WHERE REGISTRATION_ID = :RegistrationId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         return await connection.QueryFirstOrDefaultAsync(sql, new { RegistrationId = registrationId });
     }
 
@@ -33,7 +34,7 @@ public sealed class CertificateRepository : ICertificateRepository
             WHERE EMPLOYEE_ID = :EmployeeId AND COURSE_ID = :CourseId AND STATUS = 'ACTIVE'
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         var count = await connection.ExecuteScalarAsync<int>(sql, new { EmployeeId = employeeId, CourseId = courseId });
         return count > 0;
     }
@@ -55,7 +56,7 @@ public sealed class CertificateRepository : ICertificateRepository
         parameters.Add("RegistrationId", registrationId);
         parameters.Add("CertificateId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         await connection.ExecuteAsync(sql, parameters);
         return parameters.Get<int>("CertificateId");
     }
@@ -68,7 +69,7 @@ public sealed class CertificateRepository : ICertificateRepository
             ORDER BY ISSUE_DATE DESC
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         return await connection.QueryAsync(sql, new { EmployeeId = employeeId });
     }
 
@@ -78,7 +79,7 @@ public sealed class CertificateRepository : ICertificateRepository
             SELECT * FROM TRAINING_CERTIFICATES WHERE CERTIFICATE_ID = :CertificateId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         return await connection.QueryFirstOrDefaultAsync(sql, new { CertificateId = id });
     }
 
@@ -88,7 +89,7 @@ public sealed class CertificateRepository : ICertificateRepository
             UPDATE TRAINING_CERTIFICATES SET NOTIFY_FLAG = 'Y' WHERE CERTIFICATE_ID = :CertificateId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         var rows = await connection.ExecuteAsync(sql, new { CertificateId = id });
         return rows > 0;
     }
