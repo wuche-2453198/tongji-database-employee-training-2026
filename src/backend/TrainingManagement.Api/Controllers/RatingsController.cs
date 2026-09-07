@@ -22,19 +22,13 @@ public sealed class RatingsController : ApiControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<bool>>> Create([FromBody] CreateRatingRequest request)
     {
-        var employeeIdClaim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
-    if (employeeIdClaim == null)
-     {
-        return Unauthorized(ApiResponse<bool>.Fail("无法获取用户ID", HttpContext.TraceIdentifier));
-    }
-
-        var employeeId = int.Parse(employeeIdClaim.Value);
+        var employeeId = GetCurrentEmployeeId();
         var result = await _ratingService.CreateRatingAsync(request, employeeId);
         return OkResponse(result, "评分成功");
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<object>>> GetList(
+    public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetList(
         [FromQuery] int? courseId,
         [FromQuery] int? trainerId,
         [FromQuery] int page = 1,
@@ -44,10 +38,20 @@ public sealed class RatingsController : ApiControllerBase
         return OkResponse(result, "查询成功");
     }
 
+    [Authorize(Roles = "HR,Admin")]
     [HttpPatch("{id}/verify")]
     public async Task<ActionResult<ApiResponse<bool>>> Verify(int id, [FromBody] string verifyComment)
     {
-        var result = await _ratingService.VerifyRatingAsync(id, verifyComment);
+        var hrId = GetCurrentEmployeeId();
+        var result = await _ratingService.VerifyRatingAsync(id, verifyComment, hrId);
         return OkResponse(result, "复核完成");
+    }
+
+    private int GetCurrentEmployeeId()
+    {
+        var claim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+        if (claim == null)
+            throw new UnauthorizedAccessException("无法获取用户ID");
+        return int.Parse(claim.Value);
     }
 }
