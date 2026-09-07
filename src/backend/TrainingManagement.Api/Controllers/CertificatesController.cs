@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Certificates;
 using TrainingManagement.Api.Services.Interfaces;
 
