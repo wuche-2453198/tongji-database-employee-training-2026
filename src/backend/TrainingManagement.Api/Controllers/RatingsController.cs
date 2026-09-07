@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Security.Claims;
 using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Ratings;
+using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Services.Interfaces;
 
 namespace TrainingManagement.Api.Controllers;
@@ -28,7 +30,7 @@ public sealed class RatingsController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetList(
+    public async Task<ActionResult<ApiResponse<IEnumerable<TrainerRating>>>> GetList(
         [FromQuery] int? courseId,
         [FromQuery] int? trainerId,
         [FromQuery] int page = 1,
