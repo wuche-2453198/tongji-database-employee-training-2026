@@ -1,34 +1,36 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Dtos.Tests;
 using TrainingManagement.Api.Services.Interfaces;
 
-namespace TrainingManagement.Api.Controllers
+namespace TrainingManagement.Api.Controllers;
+
+[Authorize]
+[Route("api/tests")]
+public sealed class TestsController : ApiControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class TestsController : ControllerBase
+    private readonly ITestService _testService;
+
+    public TestsController(ITestService testService)
     {
-        private readonly ITestService _testService;
+        _testService = testService;
+    }
 
-        public TestsController(ITestService testService)
-        {
-            _testService = testService;
-        }
+    [HttpPost]
+    public async Task<ActionResult<ApiResponse<bool>>> Create([FromBody] CreateTestRequest request)
+    {
+        var result = await _testService.CreateTestAsync(request);
+        return OkResponse(result, "成绩录入成功");
+    }
 
-        [HttpPost]
-        public async Task<ActionResult<ApiResponse<bool>>> Create([FromBody] CreateTestRequest request)
-        {
-            var result = await _testService.CreateTestAsync(request);
-            return Ok(ApiResponse<bool>.Success(result, "成绩录入成功"));
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<ApiResponse<object>>> GetList([FromQuery] int? employeeId, [FromQuery] int? courseId, [FromQuery] string? testType)
-        {
-            var result = await _testService.GetTestListAsync(employeeId, courseId, testType);
-            return Ok(ApiResponse<object>.Success(result, "查询成功"));
-        }
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<object>>> GetList(
+        [FromQuery] int? employeeId,
+        [FromQuery] int? courseId,
+        [FromQuery] string? testType)
+    {
+        var result = await _testService.GetTestListAsync(employeeId, courseId, testType);
+        return OkResponse(result, "查询成功");
     }
 }
