@@ -32,7 +32,7 @@ public sealed class CertificatesController : ApiControllerBase
         var employeeIdClaim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
         if (employeeIdClaim == null)
         {
-            return UnauthorizedResponse("无法获取用户ID");
+      return Unauthorized(ApiResponse<bool>.Fail("无法获取用户ID"));
         }
 
         var employeeId = int.Parse(employeeIdClaim.Value);
