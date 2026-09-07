@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Oracle.ManagedDataAccess.Core;
+using Oracle.ManagedDataAccess.Client;
 using TrainingManagement.Api.Common.Extensions;
 using TrainingManagement.Api.Common.Options;
 using TrainingManagement.Api.Common.Responses;
@@ -193,13 +193,6 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IHealthService, HealthService>();
 
 // ===== 成果评估模块：依赖注入 =====
-builder.Services.AddScoped<IDbConnection>(provider =>
-{
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("OracleConnection");
-    return new OracleConnection(connectionString);
-});
-
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 builder.Services.AddScoped<ITestRepository, TestRepository>();
 builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
@@ -214,7 +207,6 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Swagger
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
