@@ -1,4 +1,5 @@
 using Dapper;
+using System.Threading;
 using System.Threading.Tasks;
 using TrainingManagement.Api.Dtos.Ratings;
 using TrainingManagement.Api.Repositories.Interfaces;
@@ -23,7 +24,7 @@ public sealed class RatingRepository : IRatingRepository
                 (:EmployeeId, :CourseId, :TrainerId, :Score, :Comment, SYSDATE, 'PENDING')
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         var rows = await connection.ExecuteAsync(sql, new
         {
             EmployeeId = employeeId,
@@ -47,7 +48,7 @@ public sealed class RatingRepository : IRatingRepository
         if (trainerId.HasValue) sql += " AND TRAINER_ID = :TrainerId";
         sql += " ORDER BY RATING_ID DESC";
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         return await connection.QueryAsync(sql, new { CourseId = courseId, TrainerId = trainerId });
     }
 
@@ -58,7 +59,7 @@ public sealed class RatingRepository : IRatingRepository
             WHERE EMPLOYEE_ID = :EmployeeId AND COURSE_ID = :CourseId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         var count = await connection.ExecuteScalarAsync<int>(sql, new { EmployeeId = employeeId, CourseId = courseId });
         return count > 0;
     }
@@ -69,7 +70,7 @@ public sealed class RatingRepository : IRatingRepository
             SELECT * FROM TRAINER_RATINGS WHERE RATING_ID = :RatingId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         return await connection.QueryFirstOrDefaultAsync(sql, new { RatingId = ratingId });
     }
 
@@ -81,7 +82,7 @@ public sealed class RatingRepository : IRatingRepository
             WHERE RATING_ID = :RatingId
             """;
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync();
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         var rows = await connection.ExecuteAsync(sql, new { RatingId = ratingId, VerifyComment = verifyComment });
         return rows > 0;
     }
