@@ -13,13 +13,13 @@ public sealed class UpdateCourseRequest
         ErrorMessage = "课程类型只能是技术培训、管理培训、产品培训、营销培训")]
     public string CourseType { get; set; } = string.Empty;
 
-    [Range(typeof(decimal), "0.1", "9999", ErrorMessage = "学时必须大于0")]
+    [Range(typeof(decimal), "0.1", "999.9", ErrorMessage = "学时必须在0.1到999.9之间")]
     public decimal DurationHours { get; set; }
 
     [Range(1, long.MaxValue, ErrorMessage = "必须选择讲师")]
     public long TrainerId { get; set; }
 
-    [Range(1, int.MaxValue, ErrorMessage = "最大人数必须大于0")]
+    [Range(1, 999999, ErrorMessage = "最大人数必须在1到999999之间")]
     public int MaxStudents { get; set; }
 
     public DateTime StartAt { get; set; }

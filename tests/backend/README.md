@@ -6,7 +6,13 @@
 dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- --auth-http
 ```
 
-依赖已还原时可在 `-- --auth-http` 前加 `--no-restore`。省略 `--auth-http` 只运行 17 项 Service 测试。
+依赖已还原时可在 `-- --auth-http` 前加 `--no-restore`。省略 `--auth-http` 运行 20 项 Service 测试和 6 项 DTO 边界测试；包含 HTTP 综合测试时共 27 项。
+
+## Oracle 字段约束回归
+
+创建及更新 DTO 的电话长度限制为 20，课程学时为 0.1～999.9，最大人数为 1～999999，与 V001 中对应字段容量对齐。Service 同时拒绝越界学时/人数及已发布课程的空白地点；草稿空地点及未开始课程的合法地点修改仍允许。课程分页偏移采用 long 计算，避免大页码发生 int 溢出。
+
+2026-09-07 验证：修改前新增用例出现 8 项预期失败，修复后 27 项全部通过，build 0 警告、0 错误。HTTP 测试含 60 次权限请求。真库端口探测仍超时，以上结果不包含 Oracle 实库成功/失败路径。
 
 ## HTTP 登录与权限检查
 

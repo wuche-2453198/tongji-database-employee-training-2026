@@ -20,6 +20,54 @@ internal static class CourseServiceTests
         yield return ("Publish remains blocked without budget transaction", PublishRemainsBlockedAsync);
         yield return ("Capacity remaining seats never becomes negative", CapacityClampsRemainingSeatsAsync);
         yield return ("Missing course capacity remains null", MissingCapacityReturnsNullAsync);
+        yield return ("Course create and PUT reject Oracle numeric overflow", RejectsNumericOverflowAsync);
+        yield return ("Published course rejects blank location", PublishedRejectsBlankLocationAsync);
+        yield return ("Draft blank and future published nonblank locations remain editable", ValidLocationUpdatesAsync);
+    }
+
+    private static async Task RejectsNumericOverflowAsync()
+    {
+        foreach (var values in new[] { (1000m, 30), (4m, 1000000), (0.01m, 30) })
+        {
+            var repository = new FakeCourseRepository { Course = ValidCourse("DRAFT") };
+            var service = CreateService(repository);
+            var create = ValidCreateRequest();
+            create.DurationHours = values.Item1;
+            create.MaxStudents = values.Item2;
+            await TestAssert.ThrowsAsync<BusinessException>(
+                () => service.CreateAsync(create, CancellationToken.None), "Reject invalid create numeric bounds.");
+            var update = ValidUpdateRequest(repository.Course!);
+            update.DurationHours = values.Item1;
+            update.MaxStudents = values.Item2;
+            await TestAssert.ThrowsAsync<BusinessException>(
+                () => service.UpdateAsync(1, update, CancellationToken.None), "Reject invalid update numeric bounds.");
+            TestAssert.Equal(0, repository.UpdateCallCount, "Invalid edit must not write.");
+        }
+    }
+
+    private static async Task PublishedRejectsBlankLocationAsync()
+    {
+        var course = ValidCourse("PUBLISHED");
+        var repository = new FakeCourseRepository { Course = course };
+        var request = ValidUpdateRequest(course);
+        request.Location = "   ";
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => CreateService(repository).UpdateAsync(course.CourseId, request, CancellationToken.None),
+            "Published course must retain a location required by the database constraint.");
+        TestAssert.Equal(0, repository.UpdateCallCount, "Blank published location must not write.");
+    }
+
+    private static async Task ValidLocationUpdatesAsync()
+    {
+        foreach (var values in new[] { ("DRAFT", "   "), ("PUBLISHED", "培训室 B") })
+        {
+            var course = ValidCourse(values.Item1);
+            var repository = new FakeCourseRepository { Course = course };
+            var request = ValidUpdateRequest(course);
+            request.Location = values.Item2;
+            await CreateService(repository).UpdateAsync(course.CourseId, request, CancellationToken.None);
+            TestAssert.Equal(1, repository.UpdateCallCount, "Valid location edit must be written.");
+        }
     }
 
     private static async Task CreateDefaultsToDraftAsync()

@@ -334,16 +334,16 @@ public sealed class CourseService : ICourseService
                 "课程类型只能是技术培训、管理培训、产品培训、营销培训。");
         }
 
-        if (durationHours <= 0)
+        if (durationHours < 0.1m || durationHours > 999.9m)
         {
             throw new BusinessException(
-                "学时必须大于0。");
+                "学时必须在0.1到999.9之间。");
         }
 
-        if (maxStudents <= 0)
+        if (maxStudents < 1 || maxStudents > 999999)
         {
             throw new BusinessException(
-                "最大人数必须大于0。");
+                "最大人数必须在1到999999之间。");
         }
 
         if (startAt >= endAt)
@@ -418,6 +418,11 @@ public sealed class CourseService : ICourseService
         TrainingCourse oldCourse,
         UpdateCourseRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Location))
+        {
+            throw new BusinessException("已发布课程的地点不能为空。");
+        }
+
         if (!EqualsIgnoreTrim(
                 oldCourse.CourseName,
                 request.CourseName)

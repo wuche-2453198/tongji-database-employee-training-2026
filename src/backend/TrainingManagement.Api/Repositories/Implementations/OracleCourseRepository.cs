@@ -121,7 +121,7 @@ public sealed class OracleCourseRepository : ICourseRepository
 
         parameters.Add(
             "Offset",
-            (query.Page - 1) * query.PageSize);
+            ((long)query.Page - 1) * query.PageSize);
 
         parameters.Add(
             "PageSize",

@@ -14,7 +14,7 @@ public sealed class CreateTrainerRequest
     [MaxLength(100)]
     public string? Company { get; set; }
 
-    [MaxLength(30)]
+    [MaxLength(20)]
     public string? Phone { get; set; }
 
     [MaxLength(100)]

@@ -2,8 +2,11 @@
 @token = replace-with-hr-or-admin-token
 @draftCourseId = replace-with-dedicated-draft-course-id
 @publishedCourseId = replace-with-dedicated-published-course-id
-@trainerId = 1
-@deptId = 1
+@trainerId = replace-with-existing-test-trainer-id
+@deptId = replace-with-existing-department-id
+# Set future dates before running, in local Asia/Shanghai time.
+@startAt = replace-with-future-start-ISO-datetime
+@endAt = replace-with-later-end-ISO-datetime
 
 ### List courses
 GET {{baseUrl}}/api/courses?page=1&pageSize=20
@@ -21,8 +24,8 @@ Content-Type: application/json
   "durationHours": 4.0,
   "trainerId": {{trainerId}},
   "maxStudents": 30,
-  "startAt": "2026-09-01T09:00:00",
-  "endAt": "2026-09-01T13:00:00",
+  "startAt": "{{startAt}}",
+  "endAt": "{{endAt}}",
   "location": "培训室 A",
   "budgetAmount": 3000.00,
   "deptId": {{deptId}},

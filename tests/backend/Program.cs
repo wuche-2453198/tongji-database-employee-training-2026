@@ -3,6 +3,7 @@ using TrainingManagement.Api.ModuleTests;
 var tests = CourseServiceTests
     .GetTests()
     .Concat(TrainerServiceTests.GetTests())
+    .Concat(RequestValidationTests.GetTests())
     .ToArray();
 
 if (args.Contains("--auth-http"))
