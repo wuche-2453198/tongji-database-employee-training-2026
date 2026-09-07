@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Security.Claims;
 using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Tests;
+using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Services.Interfaces;
 
 namespace TrainingManagement.Api.Controllers;
@@ -29,7 +31,7 @@ public sealed class TestsController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetList(
+    public async Task<ActionResult<ApiResponse<IEnumerable<TrainingTest>>>> GetList(
         [FromQuery] int? employeeId,
         [FromQuery] int? courseId,
         [FromQuery] string? testType)
