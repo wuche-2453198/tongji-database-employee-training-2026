@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Tests;
 using TrainingManagement.Api.Services.Interfaces;
 
