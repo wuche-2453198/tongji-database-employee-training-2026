@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Security.Claims;
 using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Certificates;
+using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Services.Interfaces;
 
 namespace TrainingManagement.Api.Controllers;
@@ -29,7 +31,7 @@ public sealed class CertificatesController : ApiControllerBase
     }
 
     [HttpGet("my")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetMyCertificates()
+    public async Task<ActionResult<ApiResponse<IEnumerable<TrainingCertificate>>>> GetMyCertificates()
     {
         var employeeId = GetCurrentEmployeeId();
         var result = await _certificateService.GetMyCertificatesAsync(employeeId);
@@ -37,7 +39,7 @@ public sealed class CertificatesController : ApiControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetById(int id)
+    public async Task<ActionResult<ApiResponse<TrainingCertificate>>> GetById(int id)
     {
         var result = await _certificateService.GetCertificateByIdAsync(id);
         return OkResponse(result, "查询成功");
