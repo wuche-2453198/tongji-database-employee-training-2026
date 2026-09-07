@@ -8,20 +8,21 @@ namespace TrainingManagement.Api.Repositories.Implementations
 {
     public class TestRepository : ITestRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public TestRepository(IDbConnection connection)
+        public TestRepository(IDbConnectionFactory connectionFactory)
         {
-            _connection = connection;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<bool> CreateAsync(CreateTestRequest request)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = @"INSERT INTO TRAINING_TESTS 
                         (EMPLOYEE_ID, COURSE_ID, TEST_TYPE, SCORE, TEST_DATE) 
                         VALUES (:EmployeeId, :CourseId, :TestType, :Score, SYSDATE)";
 
-            var result = await _connection.ExecuteAsync(sql, new
+            var result = await connection.ExecuteAsync(sql, new
             {
                 request.EmployeeId,
                 request.CourseId,
@@ -34,11 +35,12 @@ namespace TrainingManagement.Api.Repositories.Implementations
 
         public async Task<bool> UpdateScoreAsync(CreateTestRequest request)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = @"UPDATE TRAINING_TESTS 
                         SET SCORE = :Score, TEST_DATE = SYSDATE 
                         WHERE EMPLOYEE_ID = :EmployeeId AND COURSE_ID = :CourseId AND TEST_TYPE = :TestType";
 
-            var result = await _connection.ExecuteAsync(sql, new
+            var result = await connection.ExecuteAsync(sql, new
             {
                 request.EmployeeId,
                 request.CourseId,
@@ -51,20 +53,22 @@ namespace TrainingManagement.Api.Repositories.Implementations
 
         public async Task<bool> ExistsByEmployeeCourseAndTypeAsync(int employeeId, int courseId, string testType)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = "SELECT COUNT(1) FROM TRAINING_TESTS WHERE EMPLOYEE_ID = :EmployeeId AND COURSE_ID = :CourseId AND TEST_TYPE = :TestType";
-            var count = await _connection.ExecuteScalarAsync<int>(sql, new { EmployeeId = employeeId, CourseId = courseId, TestType = testType });
+            var count = await connection.ExecuteScalarAsync<int>(sql, new { EmployeeId = employeeId, CourseId = courseId, TestType = testType });
             return count > 0;
         }
 
         public async Task<object> GetListAsync(int? employeeId, int? courseId, string? testType)
         {
+            using var connection = _connectionFactory.CreateConnection();
             var sql = "SELECT * FROM TRAINING_TESTS WHERE 1=1";
             if (employeeId.HasValue) sql += " AND EMPLOYEE_ID = :EmployeeId";
             if (courseId.HasValue) sql += " AND COURSE_ID = :CourseId";
             if (!string.IsNullOrEmpty(testType)) sql += " AND TEST_TYPE = :TestType";
             sql += " ORDER BY TEST_ID DESC";
 
-            var result = await _connection.QueryAsync(sql, new { EmployeeId = employeeId, CourseId = courseId, TestType = testType });
+            var result = await connection.QueryAsync(sql, new { EmployeeId = employeeId, CourseId = courseId, TestType = testType });
             return result;
         }
     }
