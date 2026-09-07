@@ -23,10 +23,10 @@ public sealed class RatingsController : ApiControllerBase
     public async Task<ActionResult<ApiResponse<bool>>> Create([FromBody] CreateRatingRequest request)
     {
         var employeeIdClaim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
-        if (employeeIdClaim == null)
-        {
-            return Unauthorized(ApiResponse<bool>.Fail("无法获取用户ID"));
-        }
+    if (employeeIdClaim == null)
+     {
+        return Unauthorized(ApiResponse<bool>.Fail("无法获取用户ID", HttpContext.TraceIdentifier));
+    }
 
         var employeeId = int.Parse(employeeIdClaim.Value);
         var result = await _ratingService.CreateRatingAsync(request, employeeId);
