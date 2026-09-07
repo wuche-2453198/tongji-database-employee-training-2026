@@ -5,7 +5,7 @@ namespace TrainingManagement.Api.Repositories.Interfaces;
 
 public interface ITrainerRepository
 {
-    Task<IReadOnlyList<Trainer>> GetAllAsync(
+    Task<(IReadOnlyList<Trainer> Items, long Total)> GetAllAsync(
         TrainerQuery query,
         CancellationToken cancellationToken);
 

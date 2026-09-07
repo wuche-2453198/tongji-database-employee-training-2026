@@ -116,6 +116,21 @@ internal static class HttpAuthorizationTests
                 TestAssert.Equal(user.Item2, meDocument.RootElement.GetProperty("data").GetProperty("empId").GetInt64(), "Current-user employee ID.");
                 foreach (var endpoint in endpoints)
                     await CheckStatus(endpoint.Item1, endpoint.Item2, token, user.Item4 ? endpoint.Item3 : endpoint.Item4);
+                if (user.Item4)
+                {
+                    foreach (var query in new[] { "page=0", "pageSize=0", "pageSize=101" })
+                        await CheckStatus("GET", "/api/trainers?" + query, token, 400);
+                    using var pagedRequest = new HttpRequestMessage(HttpMethod.Get, "/api/trainers?page=2&pageSize=7");
+                    pagedRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    using var paged = await client.SendAsync(pagedRequest);
+                    TestAssert.Equal(HttpStatusCode.OK, paged.StatusCode, "Trainer paged HTTP response.");
+                    using var pageDocument = JsonDocument.Parse(await paged.Content.ReadAsStringAsync());
+                    var page = pageDocument.RootElement.GetProperty("data");
+                    TestAssert.Equal(2, page.GetProperty("page").GetInt32(), "HTTP page metadata.");
+                    TestAssert.Equal(7, page.GetProperty("pageSize").GetInt32(), "HTTP page size metadata.");
+                    TestAssert.Equal(0L, page.GetProperty("total").GetInt64(), "Unconfigured database has no rows; this is not an Oracle test.");
+                    TestAssert.Equal(JsonValueKind.Array, page.GetProperty("items").ValueKind, "Trainer list uses data.items.");
+                }
                 Console.WriteLine($"PASS HTTP {user.Item3}: login, ID {user.Item2}, JWT, /me, 10 endpoints");
             }
 
@@ -125,6 +140,13 @@ internal static class HttpAuthorizationTests
                 TestAssert.Equal<long?>(9876, principal.GetEmployeeId(), "Read employee ID from either supported claim.");
             }
             Console.WriteLine("PASS HTTP no token / invalid token: 20 checks; role matrix: 40 checks");
+            using var swagger = await client.GetAsync("/swagger/v1/swagger.json");
+            TestAssert.Equal(HttpStatusCode.OK, swagger.StatusCode, "OpenAPI generation.");
+            using var swaggerDocument = JsonDocument.Parse(await swagger.Content.ReadAsStringAsync());
+            var schemas = swaggerDocument.RootElement.GetProperty("components").GetProperty("schemas");
+            TestAssert.True(schemas.GetProperty("CloseCourseResponse").GetProperty("properties").TryGetProperty("closed", out _), "Typed close schema.");
+            TestAssert.True(schemas.GetProperty("PublishCourseResponse").GetProperty("properties").TryGetProperty("published", out _), "Typed publish schema.");
+            Console.WriteLine("PASS HTTP trainer pagination: 8 checks; typed action OpenAPI schemas");
         }
         finally
         {

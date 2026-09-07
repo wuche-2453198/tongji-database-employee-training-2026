@@ -10,6 +10,10 @@ internal static class CourseServiceTests
     public static IEnumerable<(string Name, Func<Task> Run)> GetTests()
     {
         yield return ("Course create defaults to DRAFT", CreateDefaultsToDraftAsync);
+        yield return ("Course create and PUT reject missing departments", MissingDepartmentAsync);
+        yield return ("Published course freezes every protected field", FrozenFieldsAsync);
+        yield return ("Course terminal and missing states reject writes", InvalidStatesAsync);
+        yield return ("Capacity reports empty partial and full courses", CapacityCountsAsync);
         yield return ("Course PUT carries the previously read status", UpdateCarriesExpectedStatusAsync);
         yield return ("Course PUT reports a concurrent status change", UpdateConflictAsync);
         yield return ("Published course freezes trainer", PublishedCourseFreezesTrainerAsync);
@@ -42,6 +46,64 @@ internal static class CourseServiceTests
             await TestAssert.ThrowsAsync<BusinessException>(
                 () => service.UpdateAsync(1, update, CancellationToken.None), "Reject invalid update numeric bounds.");
             TestAssert.Equal(0, repository.UpdateCallCount, "Invalid edit must not write.");
+        }
+    }
+
+    private static async Task MissingDepartmentAsync()
+    {
+        var repo = new FakeCourseRepository { Course = ValidCourse("DRAFT"), DepartmentExistsResult = false };
+        var service = CreateService(repo);
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.CreateAsync(ValidCreateRequest(), CancellationToken.None), "Unknown department must fail before insert.");
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.UpdateAsync(1, ValidUpdateRequest(repo.Course!), CancellationToken.None), "Unknown department must fail before update.");
+        TestAssert.Equal(0, repo.UpdateCallCount, "Unknown department must not write.");
+    }
+
+    private static async Task FrozenFieldsAsync()
+    {
+        foreach (var mutate in new Action<UpdateCourseRequest>[]
+        {
+            r => r.CourseName += "changed", r => r.CourseType = "管理培训",
+            r => r.TrainerId++, r => r.DeptId++, r => r.StartAt = r.StartAt.AddMinutes(1),
+            r => r.EndAt = r.EndAt.AddMinutes(1), r => r.MaxStudents++,
+            r => r.DurationHours++, r => r.BudgetAmount++
+        })
+        {
+            var repo = new FakeCourseRepository { Course = ValidCourse("PUBLISHED") };
+            var request = ValidUpdateRequest(repo.Course);
+            mutate(request);
+            await TestAssert.ThrowsAsync<BusinessException>(
+                () => CreateService(repo).UpdateAsync(1, request, CancellationToken.None), "Frozen field must reject edit.");
+            TestAssert.Equal(0, repo.UpdateCallCount, "Frozen field edit must not write.");
+        }
+    }
+
+    private static async Task InvalidStatesAsync()
+    {
+        foreach (var status in new[] { "DRAFT", "CLOSED" })
+        {
+            var repo = new FakeCourseRepository { Course = ValidCourse(status) };
+            await TestAssert.ThrowsAsync<BusinessException>(
+                () => CreateService(repo).CloseAsync(1, CancellationToken.None), "Only PUBLISHED may close.");
+            TestAssert.True(repo.LastStatusNewStatus is null, "Rejected close must not write.");
+        }
+        var closed = new FakeCourseRepository { Course = ValidCourse("CLOSED") };
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => CreateService(closed).UpdateAsync(1, ValidUpdateRequest(closed.Course), CancellationToken.None), "CLOSED is terminal.");
+        var missing = CreateService(new FakeCourseRepository());
+        await TestAssert.ThrowsAsync<NotFoundApiException>(() => missing.CloseAsync(999, CancellationToken.None), "Missing close is 404.");
+        await TestAssert.ThrowsAsync<NotFoundApiException>(() => missing.PublishAsync(999, CancellationToken.None), "Missing publish is 404.");
+    }
+
+    private static async Task CapacityCountsAsync()
+    {
+        foreach (var count in new[] { 0, 7, 20 })
+        {
+            var repo = new FakeCourseRepository { Capacity = (20, count) };
+            var result = await CreateService(repo).GetCapacityAsync(1, CancellationToken.None);
+            TestAssert.Equal(20 - count, result!.Value.RemainingSeats, "Capacity subtraction must be exact.");
+            TestAssert.Equal(count, result.Value.ValidRegistrationCount, "Retain valid count.");
         }
     }
 

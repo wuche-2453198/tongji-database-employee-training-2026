@@ -9,9 +9,9 @@ namespace TrainingManagement.Api.Services.Implementations;
 
 public sealed class CourseService : ICourseService
 {
-    private const string DraftStatus = "DRAFT";
-    private const string PublishedStatus = "PUBLISHED";
-    private const string ClosedStatus = "CLOSED";
+    private const string DraftStatus = TrainingManagement.Api.Common.Enums.CourseStatusText.Draft;
+    private const string PublishedStatus = TrainingManagement.Api.Common.Enums.CourseStatusText.Published;
+    private const string ClosedStatus = TrainingManagement.Api.Common.Enums.CourseStatusText.Closed;
 
     private static readonly string[] CourseTypes =
     [
@@ -289,6 +289,8 @@ public sealed class CourseService : ICourseService
         await CheckTrainerExistsAsync(
             request.TrainerId,
             cancellationToken);
+
+        await CheckDepartmentExistsAsync(request.DeptId, cancellationToken);
     }
 
     private async Task CheckUpdateRequestAsync(
@@ -309,6 +311,8 @@ public sealed class CourseService : ICourseService
         await CheckTrainerExistsAsync(
             request.TrainerId,
             cancellationToken);
+
+        await CheckDepartmentExistsAsync(request.DeptId, cancellationToken);
     }
 
     private static void CheckBasicFields(
@@ -383,6 +387,14 @@ public sealed class CourseService : ICourseService
         {
             throw new BusinessException(
                 "绑定的讲师不存在。");
+        }
+    }
+
+    private async Task CheckDepartmentExistsAsync(long deptId, CancellationToken cancellationToken)
+    {
+        if (!await _courseRepository.DepartmentExistsAsync(deptId, cancellationToken))
+        {
+            throw new BusinessException("绑定的主办部门不存在。");
         }
     }
 

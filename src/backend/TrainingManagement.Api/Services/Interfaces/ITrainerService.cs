@@ -1,10 +1,12 @@
 ﻿using TrainingManagement.Api.Dtos.Trainer;
 
+using TrainingManagement.Api.Common.Responses;
+
 namespace TrainingManagement.Api.Services.Interfaces;
 
 public interface ITrainerService
 {
-    Task<IReadOnlyCollection<TrainerResponse>> GetAllAsync(
+    Task<PagedResult<TrainerResponse>> GetAllAsync(
         TrainerQuery query,
         CancellationToken cancellationToken);
 

@@ -5,6 +5,8 @@ namespace TrainingManagement.Api.Repositories.Interfaces;
 
 public interface ICourseRepository
 {
+    Task<bool> DepartmentExistsAsync(long deptId, CancellationToken cancellationToken);
+
     Task<(IReadOnlyList<TrainingCourse> Items, long Total)> GetAllAsync(
         CourseQuery query,
         CancellationToken cancellationToken);

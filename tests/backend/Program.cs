@@ -4,6 +4,7 @@ var tests = CourseServiceTests
     .GetTests()
     .Concat(TrainerServiceTests.GetTests())
     .Concat(RequestValidationTests.GetTests())
+    .Concat(RepositoryContractTests.GetTests())
     .ToArray();
 
 if (args.Contains("--auth-http"))

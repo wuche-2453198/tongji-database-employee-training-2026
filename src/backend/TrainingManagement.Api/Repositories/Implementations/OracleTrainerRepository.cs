@@ -15,13 +15,13 @@ public sealed class OracleTrainerRepository : ITrainerRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IReadOnlyList<Trainer>> GetAllAsync(
+    public async Task<(IReadOnlyList<Trainer> Items, long Total)> GetAllAsync(
         TrainerQuery query,
         CancellationToken cancellationToken)
     {
         if (!_connectionFactory.IsConfigured)
         {
-            return Array.Empty<Trainer>();
+            return (Array.Empty<Trainer>(), 0);
         }
 
         var conditions = new List<string>();
@@ -61,7 +61,13 @@ public sealed class OracleTrainerRepository : ITrainerRepository
             ? string.Empty
             : "WHERE " + string.Join(" AND ", conditions);
 
-        var sql = $"""
+        var countSql = $"""
+            SELECT COUNT(1)
+            FROM TRAINERS
+            {whereSql}
+            """;
+
+        var querySql = $"""
             SELECT
                 TRAINER_ID AS "TrainerId",
                 TRAINER_NAME AS "TrainerName",
@@ -76,19 +82,35 @@ public sealed class OracleTrainerRepository : ITrainerRepository
             FROM TRAINERS
             {whereSql}
             ORDER BY TRAINER_ID DESC
+            OFFSET :Offset ROWS
+            FETCH NEXT :PageSize ROWS ONLY
             """;
 
         await using var connection =
             await _connectionFactory.CreateOpenConnectionAsync(
                 cancellationToken);
 
-        var trainers = await connection.QueryAsync<Trainer>(
+        var total = await connection.ExecuteScalarAsync<long>(
             new CommandDefinition(
-                sql,
+                countSql,
                 parameters,
                 cancellationToken: cancellationToken));
 
-        return trainers.ToArray();
+        parameters.Add(
+            "Offset",
+            ((long)query.Page - 1) * query.PageSize);
+
+        parameters.Add(
+            "PageSize",
+            query.PageSize);
+
+        var trainers = await connection.QueryAsync<Trainer>(
+            new CommandDefinition(
+                querySql,
+                parameters,
+                cancellationToken: cancellationToken));
+
+        return (trainers.ToArray(), total);
     }
 
     public async Task<Trainer?> GetByIdAsync(

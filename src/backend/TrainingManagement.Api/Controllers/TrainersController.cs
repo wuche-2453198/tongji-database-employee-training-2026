@@ -21,15 +21,16 @@ public sealed class TrainersController : ApiControllerBase
 
     [HttpGet]
     [ProducesResponseType(
-        typeof(ApiResponse<IReadOnlyCollection<TrainerResponse>>),
+        typeof(ApiResponse<PagedResult<TrainerResponse>>),
         StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
         StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
         StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<TrainerResponse>>>> GetAll(
+    public async Task<ActionResult<ApiResponse<PagedResult<TrainerResponse>>>> GetAll(
         [FromQuery] TrainerQuery query,
         CancellationToken cancellationToken)
     {

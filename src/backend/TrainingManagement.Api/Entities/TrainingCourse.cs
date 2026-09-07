@@ -2,41 +2,41 @@ namespace TrainingManagement.Api.Entities;
 
 public sealed class TrainingCourse
 {
-    public long CourseId { get; init; }
+    public long CourseId { get; set; }
 
-    public string CourseName { get; init; } = string.Empty;
+    public string CourseName { get; set; } = string.Empty;
 
-    public string CourseType { get; init; } = string.Empty;
+    public string CourseType { get; set; } = string.Empty;
 
-    public decimal DurationHours { get; init; }
+    public decimal DurationHours { get; set; }
 
-    public long? TrainerId { get; init; }
+    public long? TrainerId { get; set; }
 
-    public string? TrainerName { get; init; }
+    public string? TrainerName { get; set; }
 
-    public int MaxStudents { get; init; }
+    public int MaxStudents { get; set; }
 
-    public DateTime? StartAt { get; init; }
+    public DateTime? StartAt { get; set; }
 
-    public DateTime? EndAt { get; init; }
+    public DateTime? EndAt { get; set; }
 
-    public string? Location { get; init; }
+    public string? Location { get; set; }
 
-    public string CourseStatus { get; init; } = string.Empty;
+    public string CourseStatus { get; set; } = string.Empty;
 
-    public decimal BudgetAmount { get; init; }
+    public decimal BudgetAmount { get; set; }
 
-    public long? DeptId { get; init; }
+    public long? DeptId { get; set; }
 
-    public string? DeptName { get; init; }
+    public string? DeptName { get; set; }
 
-    public string? PreTestUrl { get; init; }
+    public string? PreTestUrl { get; set; }
 
-    public string? PostTestUrl { get; init; }
+    public string? PostTestUrl { get; set; }
 
-    public string? MaterialUrl { get; init; }
+    public string? MaterialUrl { get; set; }
 
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; init; }
+    public DateTime? UpdatedAt { get; set; }
 }

@@ -1,0 +1,60 @@
+@baseUrl = http://localhost:5156
+@token = replace-with-hr-or-admin-token
+@trainerId = replace-with-dedicated-test-trainer-id
+
+### Default list: expect 200, data.items/page/pageSize/total (defaults 1 and 20)
+GET {{baseUrl}}/api/trainers
+Authorization: Bearer {{token}}
+
+### Filtered second page: count must cover all matching trainers
+GET {{baseUrl}}/api/trainers?company=同济&isInternal=Y&page=2&pageSize=2
+Authorization: Bearer {{token}}
+
+### Invalid page: expect 400
+GET {{baseUrl}}/api/trainers?page=0
+Authorization: Bearer {{token}}
+
+### Invalid page size: expect 400
+GET {{baseUrl}}/api/trainers?pageSize=101
+Authorization: Bearer {{token}}
+
+### Unknown trainer: expect 404
+GET {{baseUrl}}/api/trainers/-1
+Authorization: Bearer {{token}}
+
+### Create dedicated test data only: expect 201, save returned trainerId
+POST {{baseUrl}}/api/trainers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "trainerName": "课程模块专用测试讲师",
+  "title": "讲师",
+  "company": "同济",
+  "phone": "13800000000",
+  "email": "course-test@example.com",
+  "starLevel": 3.0,
+  "isInternal": "Y"
+}
+
+### Update ONLY the dedicated trainer: expect 200, re-read to verify
+PUT {{baseUrl}}/api/trainers/{{trainerId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "trainerName": "课程模块专用测试讲师",
+  "title": "高级讲师",
+  "company": "同济",
+  "phone": "13800000000",
+  "email": "course-test@example.com",
+  "starLevel": 4.5,
+  "isInternal": "Y"
+}
+
+### Verify saved fields: expect 200
+GET {{baseUrl}}/api/trainers/{{trainerId}}
+Authorization: Bearer {{token}}
+
+### No token: expect 401
+GET {{baseUrl}}/api/trainers

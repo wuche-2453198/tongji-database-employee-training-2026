@@ -6,7 +6,29 @@
 dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- --auth-http
 ```
 
-依赖已还原时可在 `-- --auth-http` 前加 `--no-restore`。省略 `--auth-http` 运行 20 项 Service 测试和 6 项 DTO 边界测试；包含 HTTP 综合测试时共 27 项。
+依赖已还原时可在 `-- --auth-http` 前加 `--no-restore`。当前测试清单包含 27 项 Service、7 项 DTO 边界、5 项 Repository 命令/映射测试；加上 HTTP 综合测试共 40 项。清单数量不表示这些测试已全部通过，当前验证状态见下节。
+
+讲师列表与课程列表统一返回 `PagedResult<T>`，支持 `Page`（默认 1）和 `PageSize`（默认 20，最大 100）；分页边界和总数元数据包含在 Service 回归测试中。
+
+前端需要从统一响应的 `data.items` 读取讲师数组，同时读取 `data.page`、`data.pageSize` 和 `data.total`；旧的直接把 `data` 当数组的调用需要适配。
+
+## 当前复核状态（尚未提交）
+
+- 历史 29 项测试通过不覆盖本轮后续修改。
+- 本轮新增用例先运行 34 项：33 通过，1 失败，复现课程创建未拒绝不存在部门的问题。
+- 随后已添加 Create/PUT 共用的部门存在性校验；仓储只读 `DEPARTMENTS_TRAINING`，不维护预算。预检不代替数据库外键或并发删除场景的真库测试。
+- 模拟讲师仓储已补过滤、排序和分页；增加冻结字段、终态、缺失记录、容量及 HTTP 分页/Swagger 检查。
+- 新增 RepositoryContractTests 使用真实 Repository 和 Dapper，搭配记录命令及合成结果行，检查分页参数、条件 UPDATE、数字/空值映射和输出 ID。它不执行 Oracle SQL，不证明服务器端语法、锁或回滚行为。
+- 修改后的完整复跑被自动审批用量限制阻止，尚无本轮最终 build / 40 项通过结果，不能作为验收通过记录。
+- 本轮 GitHub fetch 失败（连接重置 / TLS EOF），本地仍未同步缓存中较新的 develop；提交前需恢复验证并完成集成检查。
+
+待运行：
+
+```powershell
+dotnet build src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj -warnaserror
+dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- --auth-http
+git diff --check
+```
 
 ## Oracle 字段约束回归
 

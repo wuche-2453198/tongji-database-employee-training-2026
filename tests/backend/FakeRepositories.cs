@@ -15,6 +15,11 @@ internal sealed class FakeCourseRepository : ICourseRepository
 
     public long CreatedId { get; set; } = 100;
 
+    public bool DepartmentExistsResult { get; set; } = true;
+
+    public Task<bool> DepartmentExistsAsync(long deptId, CancellationToken cancellationToken)
+        => Task.FromResult(DepartmentExistsResult);
+
     public (int MaxStudents, int ValidRegistrationCount)? Capacity { get; set; }
 
     public TrainingCourse? LastUpdatedCourse { get; private set; }
@@ -141,6 +146,8 @@ internal sealed class FakeTrainerRepository : ITrainerRepository
 {
     public Trainer? Trainer { get; set; }
 
+    public IReadOnlyList<Trainer>? Trainers { get; set; }
+
     public bool ExistsResult { get; set; } = true;
 
     public bool UpdateResult { get; set; } = true;
@@ -151,17 +158,22 @@ internal sealed class FakeTrainerRepository : ITrainerRepository
 
     public TrainerQuery? LastQuery { get; private set; }
 
-    public Task<IReadOnlyList<Trainer>> GetAllAsync(
+    public Task<(IReadOnlyList<Trainer> Items, long Total)> GetAllAsync(
         TrainerQuery query,
         CancellationToken cancellationToken)
     {
         LastQuery = query;
 
-        IReadOnlyList<Trainer> trainers = Trainer is null
+        var filtered = (Trainers ?? (Trainer is null ? Array.Empty<Trainer>() : new[] { Trainer }))
+            .Where(t => query.TrainerName is null || t.TrainerName.Contains(query.TrainerName))
+            .Where(t => query.Company is null || (t.Company?.Contains(query.Company) ?? false))
+            .Where(t => query.IsInternal is null || t.IsInternal == query.IsInternal)
+            .OrderByDescending(t => t.TrainerId).ToArray();
+        var offset = ((long)query.Page - 1) * query.PageSize;
+        IReadOnlyList<Trainer> items = offset >= filtered.Length
             ? Array.Empty<Trainer>()
-            : new[] { Trainer };
-
-        return Task.FromResult(trainers);
+            : filtered.Skip((int)offset).Take(query.PageSize).ToArray();
+        return Task.FromResult((items, (long)filtered.Length));
     }
 
     public Task<Trainer?> GetByIdAsync(

@@ -4,6 +4,8 @@ using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
 using TrainingManagement.Api.Services.Interfaces;
 
+using TrainingManagement.Api.Common.Responses;
+
 namespace TrainingManagement.Api.Services.Implementations;
 
 public sealed class TrainerService : ITrainerService
@@ -15,7 +17,7 @@ public sealed class TrainerService : ITrainerService
         _trainerRepository = trainerRepository;
     }
 
-    public async Task<IReadOnlyCollection<TrainerResponse>> GetAllAsync(
+    public async Task<PagedResult<TrainerResponse>> GetAllAsync(
         TrainerQuery query,
         CancellationToken cancellationToken)
     {
@@ -23,16 +25,20 @@ public sealed class TrainerService : ITrainerService
         {
             TrainerName = TrimToNull(query.TrainerName),
             Company = TrimToNull(query.Company),
-            IsInternal = TrimToNull(query.IsInternal)?.ToUpperInvariant()
+            IsInternal = TrimToNull(query.IsInternal)?.ToUpperInvariant(),
+            Page = query.Page,
+            PageSize = query.PageSize
         };
 
-        var trainers = await _trainerRepository.GetAllAsync(
+        var result = await _trainerRepository.GetAllAsync(
             normalizedQuery,
             cancellationToken);
 
-        return trainers
-            .Select(ToResponse)
-            .ToArray();
+        return new PagedResult<TrainerResponse>(
+            result.Items.Select(ToResponse).ToArray(),
+            normalizedQuery.Page,
+            normalizedQuery.PageSize,
+            result.Total);
     }
 
     public async Task<TrainerResponse?> GetByIdAsync(

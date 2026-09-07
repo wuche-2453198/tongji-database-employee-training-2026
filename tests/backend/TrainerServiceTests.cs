@@ -14,6 +14,9 @@ internal static class TrainerServiceTests
         yield return ("Trainer PUT rejects star level outside 1 to 5", UpdateRejectsStarLevelAsync);
         yield return ("Trainer PUT rejects invalid internal flag", UpdateRejectsInternalFlagAsync);
         yield return ("Trainer query trims and normalizes filters", QueryNormalizesFiltersAsync);
+        yield return ("Trainer query preserves pagination metadata", QueryPreservesPaginationAsync);
+        yield return ("Trainer query filters and pages without losing total", FilteredPagesAsync);
+        yield return ("Trainer PUT detects a deleted row", DeletedTrainerAsync);
         yield return ("Trainer create DTO defaults to 3 stars", CreateRequestDefaultsToThreeStarsAsync);
     }
 
@@ -132,6 +135,60 @@ internal static class TrainerServiceTests
             "N",
             repository.LastQuery?.IsInternal,
             "Internal filter must be normalized to uppercase.");
+    }
+
+    private static async Task QueryPreservesPaginationAsync()
+    {
+        var repository = new FakeTrainerRepository
+        {
+            Trainer = ValidTrainer()
+        };
+        var service = new TrainerService(repository);
+
+        var result = await service.GetAllAsync(
+            new TrainerQuery
+            {
+                Page = 3,
+                PageSize = 7
+            },
+            CancellationToken.None);
+
+        TestAssert.Equal(3, result.Page, "Trainer page must be preserved.");
+        TestAssert.Equal(7, result.PageSize, "Trainer page size must be preserved.");
+        TestAssert.Equal(1L, result.Total, "Trainer total must come from repository.");
+        TestAssert.Equal(3, repository.LastQuery?.Page, "Repository must receive the page.");
+        TestAssert.Equal(7, repository.LastQuery?.PageSize, "Repository must receive the page size.");
+        TestAssert.Equal(0, result.Items.Count, "Page beyond total must be empty.");
+    }
+
+    private static async Task FilteredPagesAsync()
+    {
+        var rows = Enumerable.Range(1, 6).Select(i => new Trainer
+        {
+            TrainerId = i, TrainerName = "李老师" + i,
+            Company = i == 6 ? "其他" : "同济大学", IsInternal = i == 5 ? "N" : "Y"
+        }).ToArray();
+        var service = new TrainerService(new FakeTrainerRepository { Trainers = rows });
+        var result = await service.GetAllAsync(new TrainerQuery
+        {
+            TrainerName = " 李老师 ", Company = " 同济 ", IsInternal = " y ", Page = 2, PageSize = 2
+        }, CancellationToken.None);
+        TestAssert.Equal(4L, result.Total, "Total must count all matching rows.");
+        TestAssert.True(result.Items.Select(t => t.TrainerId).SequenceEqual(new long[] { 2, 1 }), "Second page must retain descending order and filters.");
+        var empty = await service.GetAllAsync(new TrainerQuery { TrainerName = "不存在" }, CancellationToken.None);
+        TestAssert.Equal(0L, empty.Total, "No matches have zero total.");
+        var large = await service.GetAllAsync(new TrainerQuery { Page = int.MaxValue, PageSize = 100 }, CancellationToken.None);
+        TestAssert.Equal(0, large.Items.Count, "Large offset must not wrap to first page.");
+        var defaults = await service.GetAllAsync(new TrainerQuery(), CancellationToken.None);
+        TestAssert.Equal(1, defaults.Page, "Default page.");
+        TestAssert.Equal(20, defaults.PageSize, "Default page size.");
+    }
+
+    private static async Task DeletedTrainerAsync()
+    {
+        var service = new TrainerService(new FakeTrainerRepository { Trainer = ValidTrainer(), UpdateResult = false });
+        await TestAssert.ThrowsAsync<NotFoundApiException>(
+            () => service.UpdateAsync(1, ValidUpdateRequest(), CancellationToken.None), "Deleted row must not report successful PUT.");
     }
 
     private static Task CreateRequestDefaultsToThreeStarsAsync()

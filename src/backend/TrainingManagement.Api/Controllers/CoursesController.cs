@@ -23,6 +23,7 @@ public sealed class CoursesController : ApiControllerBase
     [ProducesResponseType(
         typeof(ApiResponse<PagedResult<CourseResponse>>),
         StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
         StatusCodes.Status401Unauthorized)]
@@ -127,7 +128,7 @@ public sealed class CoursesController : ApiControllerBase
     [HttpPatch("{id:long}/publish")]
     [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(
-        typeof(ApiResponse<object>),
+        typeof(ApiResponse<PublishCourseResponse>),
         StatusCodes.Status200OK)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
@@ -144,7 +145,7 @@ public sealed class CoursesController : ApiControllerBase
     [ProducesResponseType(
         typeof(ApiResponse<object>),
         StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<object>>> Publish(
+    public async Task<ActionResult<ApiResponse<PublishCourseResponse>>> Publish(
         long id,
         CancellationToken cancellationToken)
     {
@@ -152,14 +153,14 @@ public sealed class CoursesController : ApiControllerBase
             id,
             cancellationToken);
 
-        return OkResponse<object>(
-            new { published = true });
+        return OkResponse(
+            new PublishCourseResponse());
     }
 
     [HttpPatch("{id:long}/close")]
     [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(
-        typeof(ApiResponse<object>),
+        typeof(ApiResponse<CloseCourseResponse>),
         StatusCodes.Status200OK)]
     [ProducesResponseType(
         typeof(ApiResponse<object>),
@@ -176,7 +177,7 @@ public sealed class CoursesController : ApiControllerBase
     [ProducesResponseType(
         typeof(ApiResponse<object>),
         StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<object>>> Close(
+    public async Task<ActionResult<ApiResponse<CloseCourseResponse>>> Close(
         long id,
         CancellationToken cancellationToken)
     {
@@ -184,7 +185,7 @@ public sealed class CoursesController : ApiControllerBase
             id,
             cancellationToken);
 
-        return OkResponse<object>(
-            new { closed = true });
+        return OkResponse(
+            new CloseCourseResponse());
     }
 }

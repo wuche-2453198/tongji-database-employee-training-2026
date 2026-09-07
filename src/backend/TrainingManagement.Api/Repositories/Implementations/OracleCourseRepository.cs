@@ -188,6 +188,20 @@ public sealed class OracleCourseRepository : ICourseRepository
                 cancellationToken: cancellationToken));
     }
 
+    // Read-only integration gate; replace with the organization module's service when available.
+    public async Task<bool> DepartmentExistsAsync(long deptId, CancellationToken cancellationToken)
+    {
+        if (!_connectionFactory.IsConfigured)
+        {
+            return false;
+        }
+
+        const string sql = "SELECT COUNT(1) FROM DEPARTMENTS_TRAINING WHERE DEPT_ID = :DeptId";
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        return await connection.ExecuteScalarAsync<long>(new CommandDefinition(
+            sql, new { DeptId = deptId }, cancellationToken: cancellationToken)) > 0;
+    }
+
     public async Task<long> CreateAsync(
         TrainingCourse course,
         CancellationToken cancellationToken)
@@ -444,8 +458,8 @@ public sealed class OracleCourseRepository : ICourseRepository
 
     private sealed class CourseCapacityRecord
     {
-        public int MaxStudents { get; init; }
+        public int MaxStudents { get; set; }
 
-        public int ValidRegistrationCount { get; init; }
+        public int ValidRegistrationCount { get; set; }
     }
 }

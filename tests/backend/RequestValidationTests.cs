@@ -8,6 +8,16 @@ internal static class RequestValidationTests
 {
     public static IEnumerable<(string Name, Func<Task> Run)> GetTests()
     {
+        yield return ("TrainerQuery pagination matches common bounds", () =>
+        {
+            var query = new TrainerQuery();
+            Check(query, "Page", 1, true);
+            Check(query, "Page", 0, false);
+            Check(query, "PageSize", 100, true);
+            Check(query, "PageSize", 101, false);
+            return Task.CompletedTask;
+        });
+
         foreach (var request in new object[] { new CreateTrainerRequest(), new UpdateTrainerRequest() })
         {
             yield return ($"{request.GetType().Name} phone matches Oracle length", () =>
