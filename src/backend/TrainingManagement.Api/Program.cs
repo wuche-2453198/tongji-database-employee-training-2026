@@ -1,9 +1,11 @@
+using System.Data;
 using System.Text;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Oracle.ManagedDataAccess.Client;
 using TrainingManagement.Api.Common.Extensions;
 using TrainingManagement.Api.Common.Options;
 using TrainingManagement.Api.Common.Responses;
@@ -198,6 +200,14 @@ builder.Services.AddScoped<IHealthService, HealthService>();
 builder.Services.AddScoped<ITrainingRequestService, TrainingRequestService>();
 builder.Services.AddScoped<ITrainerService, TrainerService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
+
+// ===== 成果评估模块：依赖注入 =====
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+builder.Services.AddScoped<ITestRepository, TestRepository>();
+builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
+builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<ITestService, TestService>();
+builder.Services.AddScoped<ICertificateService, CertificateService>();
 
 var app = builder.Build();
 

@@ -22,3 +22,17 @@ public sealed class CourseGate
 
     public DateTime? StartAt { get; set; }
 }
+
+/// <summary>
+/// 成果评估模块使用的课程门禁数据(训后测试配置与起止时间)。
+/// </summary>
+public sealed class ResultCourseGate
+{
+    public bool Exists { get; set; }
+
+    public string? PostTestUrl { get; set; }
+
+    public DateTime? StartAt { get; set; }
+
+    public DateTime? EndAt { get; set; }
+}
