@@ -63,8 +63,7 @@ public sealed class DepartmentTrainingService : IDepartmentTrainingService
         {
             DeptName = request.DeptName,
             AnnualBudget = request.AnnualBudget,
-            UsedBudget = 0,
-            RemainBudget = request.AnnualBudget // 初始时剩余=年度预算
+            UsedBudget = 0
         };
 
         // 保存到数据库
@@ -108,8 +107,6 @@ public sealed class DepartmentTrainingService : IDepartmentTrainingService
                 throw new BusinessException("年度培训预算不能为负数");
             }
             existing.AnnualBudget = request.AnnualBudget.Value;
-            // 剩余预算自动重新计算
-            existing.RemainBudget = existing.AnnualBudget - existing.UsedBudget;
         }
 
         // 保存更新

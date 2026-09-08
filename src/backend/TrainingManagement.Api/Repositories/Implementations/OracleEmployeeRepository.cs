@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Organization;
 using TrainingManagement.Api.Entities;
@@ -189,38 +190,60 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
             throw new InvalidOperationException("Database connection is not configured.");
         }
 
-        const string sql = @"
-            INSERT INTO EMPLOYEES (
-                EMP_ID,
-                LOGIN_NAME,
-                PASSWORD_HASH,
-                EMP_NAME,
-                DEPT_NAME,
-                POSITION,
-                EMAIL,
-                PHONE,
-                HIRE_DATE,
-                STATUS,
-                CREATED_AT
-            ) VALUES (
-                SEQ_EMPLOYEES.NEXTVAL,
-                :LoginName,
-                :PasswordHash,
-                :EmpName,
-                :DeptName,
-                :Position,
-                :Email,
-                :Phone,
-                :HireDate,
-                :Status,
-                :CreatedAt
-            )
-            RETURNING EMP_ID INTO :EmpId";
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
 
-        var parameters = new DynamicParameters(employee);
+        // 根据部门名称获取部门ID
+        const string getDeptIdSql = "SELECT DEPT_ID FROM DEPARTMENTS_TRAINING WHERE DEPT_NAME = :DeptName";
+        var deptId = await connection.ExecuteScalarAsync<long?>(
+            new CommandDefinition(getDeptIdSql, new { DeptName = employee.DeptName }, cancellationToken: cancellationToken));
+
+        if (!deptId.HasValue)
+        {
+            throw new BusinessException($"部门 '{employee.DeptName}' 不存在");
+        }
+
+        // 插入员工，使用DEPT_ID
+        const string sql = @"
+        INSERT INTO EMPLOYEES (
+            EMP_ID,
+            LOGIN_NAME,
+            PASSWORD_HASH,
+            EMP_NAME,
+            DEPT_ID,
+            POSITION,
+            EMAIL,
+            PHONE,
+            HIRE_DATE,
+            STATUS,
+            CREATED_AT
+        ) VALUES (
+            (SELECT NVL(MAX(EMP_ID), 0) + 1 FROM EMPLOYEES),
+            :LoginName,
+            :PasswordHash,
+            :EmpName,
+            :DeptId,
+            :Position,
+            :Email,
+            :Phone,
+            :HireDate,
+            :Status,
+            :CreatedAt
+        )
+        RETURNING EMP_ID INTO :EmpId";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("LoginName", employee.LoginName);
+        parameters.Add("PasswordHash", employee.PasswordHash);
+        parameters.Add("EmpName", employee.EmpName);
+        parameters.Add("DeptId", deptId.Value);
+        parameters.Add("Position", employee.Position);
+        parameters.Add("Email", employee.Email);
+        parameters.Add("Phone", employee.Phone);
+        parameters.Add("HireDate", employee.HireDate);
+        parameters.Add("Status", employee.Status);
+        parameters.Add("CreatedAt", employee.CreatedAt);
         parameters.Add("EmpId", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
 
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         await connection.ExecuteAsync(
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
 
@@ -236,20 +259,72 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
             return false;
         }
 
-        const string sql = @"
-            UPDATE EMPLOYEES SET
-                EMP_NAME = :EmpName,
-                DEPT_NAME = :DeptName,
-                POSITION = :Position,
-                EMAIL = :Email,
-                PHONE = :Phone,
-                HIRE_DATE = :HireDate,
-                STATUS = :Status
-            WHERE EMP_ID = :EmpId";
-
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+
+        var setClauses = new List<string>();
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(employee.EmpName))
+        {
+            setClauses.Add("EMP_NAME = :EmpName");
+            parameters.Add("EmpName", employee.EmpName);
+        }
+
+        if (!string.IsNullOrWhiteSpace(employee.DeptName))
+        {
+            // 部门名称转部门ID
+            const string getDeptIdSql = "SELECT DEPT_ID FROM DEPARTMENTS_TRAINING WHERE DEPT_NAME = :DeptName";
+            var deptId = await connection.ExecuteScalarAsync<long?>(
+                new CommandDefinition(getDeptIdSql, new { DeptName = employee.DeptName }, cancellationToken: cancellationToken));
+            if (!deptId.HasValue)
+            {
+                throw new BusinessException($"部门 '{employee.DeptName}' 不存在");
+            }
+            setClauses.Add("DEPT_ID = :DeptId");
+            parameters.Add("DeptId", deptId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(employee.Position))
+        {
+            setClauses.Add("POSITION = :Position");
+            parameters.Add("Position", employee.Position);
+        }
+
+        if (!string.IsNullOrWhiteSpace(employee.Email))
+        {
+            setClauses.Add("EMAIL = :Email");
+            parameters.Add("Email", employee.Email);
+        }
+
+        if (!string.IsNullOrWhiteSpace(employee.Phone))
+        {
+            setClauses.Add("PHONE = :Phone");
+            parameters.Add("Phone", employee.Phone);
+        }
+
+        if (employee.HireDate != default)
+        {
+            setClauses.Add("HIRE_DATE = :HireDate");
+            parameters.Add("HireDate", employee.HireDate);
+        }
+
+        // 只有当Status不为空时才更新
+        if (!string.IsNullOrWhiteSpace(employee.Status))
+        {
+            setClauses.Add("STATUS = :Status");
+            parameters.Add("Status", employee.Status);
+        }
+
+        if (setClauses.Count == 0)
+        {
+            return true;
+        }
+
+        var sql = $"UPDATE EMPLOYEES SET {string.Join(", ", setClauses)} WHERE EMP_ID = :EmpId";
+        parameters.Add("EmpId", employee.EmpId);
+
         var affected = await connection.ExecuteAsync(
-            new CommandDefinition(sql, employee, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
         return affected > 0;
     }
 

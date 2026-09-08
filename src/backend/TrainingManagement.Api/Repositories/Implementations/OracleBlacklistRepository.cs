@@ -214,7 +214,7 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 END_AT,
                 STATUS
             ) VALUES (
-                SEQ_BLACKLIST.NEXTVAL,
+                (SELECT NVL(MAX(BLACK_ID), 0) + 1 FROM BLACKLIST),
                 :EmpId,
                 :Reason,
                 :StartDate,

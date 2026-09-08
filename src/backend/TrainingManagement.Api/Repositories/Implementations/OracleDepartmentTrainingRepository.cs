@@ -202,14 +202,12 @@ public sealed class OracleDepartmentTrainingRepository : IDepartmentTrainingRepo
                 DEPT_ID,
                 DEPT_NAME,
                 ANNUAL_BUDGET,
-                USED_BUDGET,
-                REMAIN_BUDGET
+                USED_BUDGET
             ) VALUES (
-                SEQ_DEPARTMENTS_TRAINING.NEXTVAL,
+                (SELECT NVL(MAX(DEPT_ID), 0) + 1 FROM DEPARTMENTS_TRAINING),
                 :DeptName,
                 :AnnualBudget,
-                0,
-                :AnnualBudget
+                0
             )
             RETURNING DEPT_ID INTO :DeptId";
 
@@ -222,7 +220,6 @@ public sealed class OracleDepartmentTrainingRepository : IDepartmentTrainingRepo
 
         var newDeptId = parameters.Get<long>("DeptId");
         entity.DeptId = newDeptId;
-        entity.RemainBudget = entity.AnnualBudget; // 初始时剩余=年度预算
         return entity;
     }
 
@@ -236,8 +233,7 @@ public sealed class OracleDepartmentTrainingRepository : IDepartmentTrainingRepo
         const string sql = @"
             UPDATE DEPARTMENTS_TRAINING SET
                 DEPT_NAME = :DeptName,
-                ANNUAL_BUDGET = :AnnualBudget,
-                REMAIN_BUDGET = :AnnualBudget - USED_BUDGET
+                ANNUAL_BUDGET = :AnnualBudget
             WHERE DEPT_ID = :DeptId";
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
