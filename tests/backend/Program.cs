@@ -3,6 +3,7 @@ using TrainingManagement.Api.ModuleTests;
 var tests = CourseServiceTests
     .GetTests()
     .Concat(TrainerServiceTests.GetTests())
+    .Concat(ResultModuleTests.GetTests())
     .Concat(RequestValidationTests.GetTests())
     .Concat(RepositoryContractTests.GetTests())
     .ToArray();

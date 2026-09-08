@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Security.Claims;
-using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common.Exceptions;
+using TrainingManagement.Api.Common.Extensions;
 using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Common.Security;
 using TrainingManagement.Api.Dtos.Certificates;
+using TrainingManagement.Api.Dtos.TrainingRequest;
 using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Services.Interfaces;
 
@@ -21,13 +23,14 @@ public sealed class CertificatesController : ApiControllerBase
         _certificateService = certificateService;
     }
 
-    [Authorize(Roles = "HR,Admin")]
+    [Authorize(Roles = RoleCodes.Hr + "," + RoleCodes.Admin)]
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<CertificateResult>>> Generate([FromBody] GenerateCertificateRequest request)
+    public async Task<ActionResult<ApiResponse<CertificateResult>>> Generate(
+        [FromBody] GenerateCertificateRequest request)
     {
         var issuedBy = GetCurrentEmployeeId();
         var result = await _certificateService.GenerateCertificateAsync(request, issuedBy);
-        return OkResponse(result, "证书生成成功");
+        return CreatedResponse(nameof(GetById), new { id = result.CertificateId }, result, "证书生成成功");
     }
 
     [HttpGet("my")]
@@ -38,15 +41,16 @@ public sealed class CertificatesController : ApiControllerBase
         return OkResponse(result, "查询成功");
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<ApiResponse<TrainingCertificate>>> GetById(int id)
     {
-        var result = await _certificateService.GetCertificateByIdAsync(id);
+        var actor = GetActor();
+        var result = await _certificateService.GetCertificateByIdAsync(actor, id);
         return OkResponse(result, "查询成功");
     }
 
-    [Authorize(Roles = "HR,Admin")]
-    [HttpPatch("{id}/notify")]
+    [Authorize(Roles = RoleCodes.Hr + "," + RoleCodes.Admin)]
+    [HttpPatch("{id:int}/notify")]
     public async Task<ActionResult<ApiResponse<bool>>> NotifyExpiry(int id)
     {
         var result = await _certificateService.MarkNotifiedAsync(id);
@@ -55,9 +59,15 @@ public sealed class CertificatesController : ApiControllerBase
 
     private int GetCurrentEmployeeId()
     {
-        var claim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
-        if (claim == null)
-            throw new UnauthorizedAccessException("无法获取用户ID");
-        return int.Parse(claim.Value);
+        var employeeId = User.GetEmployeeId()
+            ?? throw new UnauthorizedApiException("无法获取当前用户身份。");
+        return (int)employeeId;
+    }
+
+    private ActorContext GetActor()
+    {
+        var employeeId = GetCurrentEmployeeId();
+        var roles = User.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToArray();
+        return new ActorContext(employeeId, roles);
     }
 }

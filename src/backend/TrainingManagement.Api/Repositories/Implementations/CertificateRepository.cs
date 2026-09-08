@@ -99,4 +99,32 @@ public sealed class CertificateRepository : ICertificateRepository
         var rows = await connection.ExecuteAsync(sql, new { CertId = id });
         return rows > 0;
     }
+
+    public async Task<ResultCourseGate> GetCourseGateAsync(int courseId)
+    {
+        const string sql = """
+            SELECT POST_TEST_URL AS "PostTestUrl", START_AT AS "StartAt", END_AT AS "EndAt"
+            FROM TRAINING_COURSES
+            WHERE COURSE_ID = :CourseId
+            """;
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
+        var gate = await connection.QueryFirstOrDefaultAsync<ResultCourseGate>(sql, new { CourseId = courseId });
+        if (gate is null)
+        {
+            return new ResultCourseGate { Exists = false };
+        }
+
+        gate.Exists = true;
+        return gate;
+    }
+
+    public async Task<decimal?> GetPostTestScoreAsync(int employeeId, int courseId)
+    {
+        const string sql = """
+            SELECT SCORE FROM TRAINING_TESTS
+            WHERE EMP_ID = :EmpId AND COURSE_ID = :CourseId AND TEST_TYPE = 'POST'
+            """;
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
+        return await connection.ExecuteScalarAsync<decimal?>(sql, new { EmpId = employeeId, CourseId = courseId });
+    }
 }

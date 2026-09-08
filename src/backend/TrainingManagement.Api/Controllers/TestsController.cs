@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Security.Claims;
-using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common.Exceptions;
+using TrainingManagement.Api.Common.Extensions;
 using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Common.Security;
 using TrainingManagement.Api.Dtos.Tests;
+using TrainingManagement.Api.Dtos.TrainingRequest;
 using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Services.Interfaces;
 
@@ -21,7 +23,7 @@ public sealed class TestsController : ApiControllerBase
         _testService = testService;
     }
 
-    [Authorize(Roles = "HR,Admin")]
+    [Authorize(Roles = RoleCodes.Hr + "," + RoleCodes.Admin)]
     [HttpPost]
     public async Task<ActionResult<ApiResponse<bool>>> Create([FromBody] CreateTestRequest request)
     {
@@ -31,20 +33,55 @@ public sealed class TestsController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<IEnumerable<TrainingTest>>>> GetList(
+    public async Task<ActionResult<ApiResponse<PagedResult<TrainingTest>>>> GetList(
         [FromQuery] int? employeeId,
         [FromQuery] int? courseId,
-        [FromQuery] string? testType)
+        [FromQuery] string? testType,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
-        var result = await _testService.GetTestListAsync(employeeId, courseId, testType);
+        var actor = GetActor();
+
+        // 越权防护:普通员工只能查看本人成绩;HR/管理员可查任意员工。
+        var currentEmployeeId = GetCurrentEmployeeId();
+        if (!actor.IsAdmin && !actor.IsHr)
+        {
+            employeeId = currentEmployeeId;
+        }
+
+        var result = await _testService.GetTestListAsync(employeeId, courseId, testType, page, pageSize);
+        return OkResponse(result, "查询成功");
+    }
+
+    /// <summary>查询某员工某课程的 PRE/POST 成绩与提升值。</summary>
+    [HttpGet("improvement")]
+    public async Task<ActionResult<ApiResponse<TestImprovementResponse>>> GetImprovement(
+        [FromQuery] int employeeId,
+        [FromQuery] int courseId)
+    {
+        var actor = GetActor();
+
+        var currentEmployeeId = GetCurrentEmployeeId();
+        if (!actor.IsAdmin && !actor.IsHr)
+        {
+            employeeId = currentEmployeeId;
+        }
+
+        var result = await _testService.GetImprovementAsync(employeeId, courseId);
         return OkResponse(result, "查询成功");
     }
 
     private int GetCurrentEmployeeId()
     {
-        var claim = User.FindFirst("emp_id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
-        if (claim == null)
-            throw new UnauthorizedAccessException("无法获取用户ID");
-        return int.Parse(claim.Value);
+        var employeeId = User.GetEmployeeId()
+            ?? throw new UnauthorizedApiException("无法获取当前用户身份。");
+        return (int)employeeId;
+    }
+
+    private ActorContext GetActor()
+    {
+        var employeeId = GetCurrentEmployeeId();
+        var roles = User.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToArray();
+        return new ActorContext(employeeId, roles);
     }
 }
