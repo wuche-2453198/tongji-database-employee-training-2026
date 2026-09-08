@@ -103,6 +103,6 @@ Oracle 种子测试账号：
 - 各模块可根据已通过的 DDL、状态枚举、角色权限和业务决策立即开发；规划中的 API/DTO 为建议，最终以验收时的 Swagger/OpenAPI、测试和文档为准。
 - 所有数据库变更必须提交迁移脚本；前端不得直连 Oracle。
 - 不提交真实密码、私钥、Token、连接串、构建产物或个人本地配置。
-- PR 合并前执行 `./scripts/verify-project-structure.sh`，并满足对应模块的测试和审查要求。
+- PR 合并前执行 `./scripts/verify-project-structure.sh`，并满足对应模块的测试要求。
 
 具体启动顺序以 [第 0 阶段任务看板](document/01-项目管理/第0阶段任务看板.md) 为准。
