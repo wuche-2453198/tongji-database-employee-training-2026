@@ -4,7 +4,7 @@
 
 1. 启动后端:`dotnet run --project src/backend/TrainingManagement.Api`(默认 http://localhost:5156)。
 2. 在 `tests/api/auth.http` 中分别用 `employee`、`manager`、`rdmgr`、`hr`、`admin` 登录
-   (种子密码见 `database/oracle/README.md`),把五个 token 粘贴进 `training-requests.http` 顶部变量。
+   (账号清单见 `database/oracle/seed/S001__roles_and_accounts.sql`、`S002__basic_data.sql`,统一使用种子测试密码),把五个 token 粘贴进 `training-requests.http` 顶部变量。
 3. 确认课程 ID:执行
    `SELECT COURSE_ID, COURSE_NAME, COURSE_STATUS, START_AT FROM TRAINING_COURSES ORDER BY COURSE_ID;`
    按注释更新 `@courseDraftId` / `@courseStartedId` / `@courseFutureId`。
