@@ -182,15 +182,22 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
+
 builder.Services.AddScoped<IDbConnectionFactory, OracleConnectionFactory>();
+
 builder.Services.AddScoped<IAuthRepository, OracleAuthRepository>();
 builder.Services.AddScoped<IRoleRepository, OracleRoleRepository>();
 builder.Services.AddScoped<IHealthRepository, OracleHealthRepository>();
 builder.Services.AddScoped<ITrainingRequestRepository, OracleTrainingRequestRepository>();
+builder.Services.AddScoped<ITrainerRepository, OracleTrainerRepository>();
+builder.Services.AddScoped<ICourseRepository, OracleCourseRepository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IHealthService, HealthService>();
 builder.Services.AddScoped<ITrainingRequestService, TrainingRequestService>();
+builder.Services.AddScoped<ITrainerService, TrainerService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
 
 var app = builder.Build();
 
