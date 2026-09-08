@@ -1,0 +1,241 @@
+@baseUrl = http://localhost:5156
+# 首先在 tests/api/auth.http 中分别以 employee / manager / rdmgr / hr / admin 登录,
+# 把获取到的 token 粘贴到下面各变量。
+@employeeToken = <employee_token>
+@managerToken = <manager_token_控制中心主管>
+@rdmgrToken = <rdmgr_token_研发部主管>
+@hrToken = <hr_token>
+@adminToken = <admin_token>
+
+# 课程 ID 以库中实际数据为准(identity 自增,种子重跑后会变化),先执行:
+#   SELECT COURSE_ID, COURSE_NAME, COURSE_STATUS, START_AT FROM TRAINING_COURSES ORDER BY COURSE_ID;
+# 26 = 2026 微服务架构演进(DRAFT) | 27 = C# Web API 最佳实践(PUBLISHED,已开课)
+# 29 = 用户体验驱动的产品设计(PUBLISHED,未来开课,2026-09-07 测试时已发布)
+@courseDraftId = 26
+@courseStartedId = 27
+@courseFutureId = 29
+@requestId = <replace_with_real_request_id>
+@otherDeptRequestId = <dev01 的 HR_FILED 申请ID>
+
+### ============================================================
+### 1. 提交申请:校验规则(B1)
+### ============================================================
+
+### 1.1 员工对 DRAFT 课程提交申请 → 400 课程尚未发布,无法申请。
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseDraftId}},
+  "requestReason": "DRAFT 课程应当被拒绝"
+}
+
+### 1.2 员工对不存在的课程提交申请 → 404 课程不存在。
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": 99999,
+  "requestReason": "不存在的课程应当被拒绝"
+}
+
+### 1.3 员工对已开课的已发布课程提交申请 → 400 课程已开始或结束,无法申请。
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseStartedId}},
+  "requestReason": "已开始课程应当被拒绝"
+}
+
+### 1.4 员工对未来开课的已发布课程提交申请 → 201,PENDING
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseFutureId}},
+  "requestReason": "希望通过 B2B 销售实战培训提升客户谈判能力"
+}
+
+### 1.5 重复提交同课程(含 PENDING/DEPT_APPROVED/HR_FILED)→ 409
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseFutureId}},
+  "requestReason": "重复提交应当被拒绝"
+}
+
+### 1.6 缺少申请理由 → 400(模型校验)
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseFutureId}}
+}
+
+### ============================================================
+### 2. 查询与数据范围(B2)
+### ============================================================
+
+### 2.1 员工查看本人申请 → 200,仅本人数据
+GET {{baseUrl}}/api/training-requests/my?page=1&pageSize=10
+Authorization: Bearer {{employeeToken}}
+
+### 2.2 员工查看本人详情 → 200
+GET {{baseUrl}}/api/training-requests/{{requestId}}
+Authorization: Bearer {{employeeToken}}
+
+### 2.3 员工查看他人详情(研发部 dev01 的申请)→ 403
+GET {{baseUrl}}/api/training-requests/{{otherDeptRequestId}}
+Authorization: Bearer {{employeeToken}}
+
+### 2.4 员工访问主管查询接口 → 403(角色不足)
+GET {{baseUrl}}/api/training-requests?page=1&pageSize=10
+Authorization: Bearer {{employeeToken}}
+
+### 2.5 控制中心主管查询 → 200,仅本部门(公司外训控制中心)申请
+GET {{baseUrl}}/api/training-requests?page=1&pageSize=10
+Authorization: Bearer {{managerToken}}
+
+### 2.6 研发部主管查询 → 200,仅研发部申请(不应出现控制中心的申请)
+GET {{baseUrl}}/api/training-requests?page=1&pageSize=10
+Authorization: Bearer {{rdmgrToken}}
+
+### 2.7 研发部主管查看控制中心申请详情 → 403(跨部门)
+GET {{baseUrl}}/api/training-requests/{{requestId}}
+Authorization: Bearer {{rdmgrToken}}
+
+### 2.8 HR 查询 → 200,跨部门全部申请
+GET {{baseUrl}}/api/training-requests?page=1&pageSize=10
+Authorization: Bearer {{hrToken}}
+
+### 2.9 管理员查询 → 200,跨部门全部申请
+GET {{baseUrl}}/api/training-requests?page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### 2.10 按状态筛选:非法状态值 → 400
+GET {{baseUrl}}/api/training-requests?status=NOT_A_STATUS
+Authorization: Bearer {{hrToken}}
+
+### ============================================================
+### 3. 主管审批与越权(B2)
+### ============================================================
+
+### 3.1 研发部主管审批控制中心申请 → 403(只能审批本部门)
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/dept-approve
+Authorization: Bearer {{rdmgrToken}}
+Content-Type: application/json
+
+{
+  "comment": "跨部门审批应当被拒绝"
+}
+
+### 3.2 控制中心主管审批本部门申请 → 200,DEPT_APPROVED
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/dept-approve
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "批准,注意协调项目排期"
+}
+
+### 3.3 主管重复审批 → 400(当前状态为 DEPT_APPROVED)
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/dept-approve
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "重复审批应当被拒绝"
+}
+
+### 3.4 主管驳回已批准的申请 → 400(状态机禁止)
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/dept-reject
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "驳回已批准申请应当被拒绝"
+}
+
+### 3.5 审批不存在的申请 → 404
+PATCH {{baseUrl}}/api/training-requests/99999/dept-approve
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "不存在的申请"
+}
+
+### 3.6 管理员代办审批另一条 PENDING 申请 → 200
+# 先用 employeeToken 对另一门已发布课程提交申请,把返回的 id 填入 @adminProxyRequestId
+@adminProxyRequestId = <replace_with_real_request_id>
+PATCH {{baseUrl}}/api/training-requests/{{adminProxyRequestId}}/dept-approve
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "comment": "管理员代办审批"
+}
+
+### ============================================================
+### 4. HR 备案(B3)
+### ============================================================
+
+### 4.1 HR 对 PENDING 申请直接备案 → 400(仅 DEPT_APPROVED 可备案,禁止跳步)
+# 把 @pendingRequestId 替换为一条尚未审批的申请 ID
+@pendingRequestId = <replace_with_real_request_id>
+PATCH {{baseUrl}}/api/training-requests/{{pendingRequestId}}/hr-file
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "comment": "跳步备案应当被拒绝"
+}
+
+### 4.2 HR 备案已批准的申请 → 200,返回 HrFileComment
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/hr-file
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "comment": "备案通过,已纳入 2026 年度培训计划"
+}
+
+### 4.3 HR 重复备案 → 400(当前状态为 HR_FILED)
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/hr-file
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "comment": "重复备案应当被拒绝"
+}
+
+### 4.4 备案后再次提交同课程申请 → 409(HR_FILED 仍占用资格)
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseFutureId}},
+  "requestReason": "备案后重复申请应当被拒绝"
+}
+
+### ============================================================
+### 5. 认证
+### ============================================================
+
+### 5.1 无 Token 提交申请 → 401
+POST {{baseUrl}}/api/training-requests
+Content-Type: application/json
+
+{
+  "courseId": {{courseFutureId}},
+  "requestReason": "无Token应当被拒绝"
+}
