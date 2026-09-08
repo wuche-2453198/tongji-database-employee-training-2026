@@ -117,6 +117,7 @@ public sealed class RegistrationsController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = RoleCodes.Employee)]
     [ProducesResponseType(
         typeof(ApiResponse<RegistrationResponse>),
         StatusCodes.Status201Created)]
