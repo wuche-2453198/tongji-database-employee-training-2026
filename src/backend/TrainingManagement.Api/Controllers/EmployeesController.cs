@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Common.Security;
 using TrainingManagement.Api.Dtos.Organization;
 using TrainingManagement.Api.Services.Interfaces;
 
@@ -20,6 +21,7 @@ public sealed class EmployeesController : ApiControllerBase
 
     // 分页查询员工列表
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<EmployeeResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<PagedResult<EmployeeResponse>>>> GetEmployees(
@@ -32,6 +34,7 @@ public sealed class EmployeesController : ApiControllerBase
 
     // 根据ID获取员工详情
     [HttpGet("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<EmployeeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -49,6 +52,7 @@ public sealed class EmployeesController : ApiControllerBase
 
     // 新增员工
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<EmployeeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -62,6 +66,7 @@ public sealed class EmployeesController : ApiControllerBase
 
     // 修改员工信息
     [HttpPut("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<EmployeeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -77,6 +82,7 @@ public sealed class EmployeesController : ApiControllerBase
 
     // 删除员工（软删除，状态改为离职）
     [HttpDelete("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

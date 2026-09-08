@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Common.Security;
 using TrainingManagement.Api.Dtos.Organization;
 using TrainingManagement.Api.Services.Interfaces;
 
@@ -20,6 +21,7 @@ public sealed class DepartmentTrainingController : ApiControllerBase
 
     // 分页查询部门培训预算列表
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<DepartmentTrainingResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<PagedResult<DepartmentTrainingResponse>>>> GetList(
@@ -32,6 +34,7 @@ public sealed class DepartmentTrainingController : ApiControllerBase
 
     // 根据ID获取部门培训预算详情
     [HttpGet("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<DepartmentTrainingResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -49,6 +52,7 @@ public sealed class DepartmentTrainingController : ApiControllerBase
 
     // 新增部门培训预算
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<DepartmentTrainingResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -62,6 +66,7 @@ public sealed class DepartmentTrainingController : ApiControllerBase
 
     // 修改部门培训预算
     [HttpPut("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<DepartmentTrainingResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -77,6 +82,7 @@ public sealed class DepartmentTrainingController : ApiControllerBase
 
     // 删除部门培训预算
     [HttpDelete("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

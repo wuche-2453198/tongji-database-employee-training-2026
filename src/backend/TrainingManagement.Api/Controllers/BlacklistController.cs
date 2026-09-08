@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Common.Security;
 using TrainingManagement.Api.Dtos.Organization;
 using TrainingManagement.Api.Services.Interfaces;
 
@@ -20,6 +21,7 @@ public sealed class BlacklistController : ApiControllerBase
 
     // 分页查询黑名单列表
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<BlacklistResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<PagedResult<BlacklistResponse>>>> GetList(
@@ -32,6 +34,7 @@ public sealed class BlacklistController : ApiControllerBase
 
     // 根据ID获取黑名单记录详情
     [HttpGet("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<BlacklistResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -49,6 +52,7 @@ public sealed class BlacklistController : ApiControllerBase
 
     // 新增黑名单记录
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<BlacklistResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -62,6 +66,7 @@ public sealed class BlacklistController : ApiControllerBase
 
     // 修改黑名单记录
     [HttpPut("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<BlacklistResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -77,6 +82,7 @@ public sealed class BlacklistController : ApiControllerBase
 
     // 删除黑名单记录
     [HttpDelete("{id:long}")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

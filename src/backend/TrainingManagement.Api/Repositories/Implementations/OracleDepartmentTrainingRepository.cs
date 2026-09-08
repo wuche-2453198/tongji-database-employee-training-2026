@@ -199,12 +199,10 @@ public sealed class OracleDepartmentTrainingRepository : IDepartmentTrainingRepo
 
         const string sql = @"
             INSERT INTO DEPARTMENTS_TRAINING (
-                DEPT_ID,
                 DEPT_NAME,
                 ANNUAL_BUDGET,
                 USED_BUDGET
             ) VALUES (
-                (SELECT NVL(MAX(DEPT_ID), 0) + 1 FROM DEPARTMENTS_TRAINING),
                 :DeptName,
                 :AnnualBudget,
                 0

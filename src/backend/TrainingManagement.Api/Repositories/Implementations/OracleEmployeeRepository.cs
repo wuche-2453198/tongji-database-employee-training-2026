@@ -71,6 +71,7 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
         var countSql = $@"
             SELECT COUNT(*)
             FROM EMPLOYEES e
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
             {whereClause}";
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -205,7 +206,6 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
         // 插入员工，使用DEPT_ID
         const string sql = @"
         INSERT INTO EMPLOYEES (
-            EMP_ID,
             LOGIN_NAME,
             PASSWORD_HASH,
             EMP_NAME,
@@ -217,7 +217,6 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
             STATUS,
             CREATED_AT
         ) VALUES (
-            (SELECT NVL(MAX(EMP_ID), 0) + 1 FROM EMPLOYEES),
             :LoginName,
             :PasswordHash,
             :EmpName,

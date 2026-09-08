@@ -207,14 +207,12 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
 
         const string sql = @"
             INSERT INTO BLACKLIST (
-                BLACK_ID,
                 EMP_ID,
                 REASON,
                 START_AT,
                 END_AT,
                 STATUS
             ) VALUES (
-                (SELECT NVL(MAX(BLACK_ID), 0) + 1 FROM BLACKLIST),
                 :EmpId,
                 :Reason,
                 :StartDate,
