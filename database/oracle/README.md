@@ -68,33 +68,19 @@ database/oracle/
 
 > Migrations (V001 - V003) loaded, ECS & oracle fundamentals configured.
 
-#### Proposed Task Board Changes:
+#### Outcome
 
-P0-08 : Change status to DONE.
-P0-11 : Change status to DONE.
-
-#### Proposed Risk Ledger changes:
-
-R-001 : Change current status from OPEN to CLOSED. 
-
-#### Proposed Decision Logs changes:
-
-* D-004 : Change status from PROPOSED to ACCEPTED.  
-* D-005: Change status from PROPOSED to ACCEPTED.  
-* D-006 (迁移账号 TRAINING_OWNER / 运行账号 TRAINING_APP): Change status from PROPOSED to ACCEPTED.  
+* `V001`~`V003` executed successfully on the cloud instance; database setup task (P0-08, P0-11) completed.
+* Decisions D-004, D-005 and D-006 accepted (Oracle version/charset, identity primary keys, `TRAINING_OWNER` / `TRAINING_APP` split).
 
 
 ### Jul 17
 
 > Seeds (S001 - S003) planted, correctness verified with test commands and the verification query.
 
-#### Proposed Task Board Changes:
+#### Outcome
 
-* DB-06: Change status to DONE.
-* DB-07: Change status to DONE.
-* T03: Change status to DONE.
-
-> Stage 1 closed with T02 & T03 completed.
+* Seed data (`S001`~`S003`) executed and verified with test commands and the verification query; database baseline completed.
 
 
 ### Jul 22

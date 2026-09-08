@@ -9,7 +9,7 @@
 3. `TRAINING_REQUESTS` 的审批人与 HR 备案人改存员工 ID，不存姓名字符串；姓名由查询关联得到。
 4. `TRAINING_REGISTRATIONS` 增加 `REQUEST_ID`，使“已备案申请”成为可追溯的报名依据。
 5. `TRAINING_ATTENDANCE` 是签到时间、迟到分钟、扣减学时的唯一事实来源；报名表不重复保存签到时间和是否迟到。
-6. E-R 文本中的“课程与讲师 N:M”与现有字段不一致。本期以 `TRAINING_COURSES.TRAINER_ID` 作为唯一主讲师，评分按该主讲师进行；不新增 `COURSE_TRAINERS`，避免第 0 阶段无边界扩表。
+6. E-R 文本中的“课程与讲师 N:M”与现有字段不一致。本期以 `TRAINING_COURSES.TRAINER_ID` 作为唯一主讲师，评分按该主讲师进行；不新增 `COURSE_TRAINERS`，避免无边界扩表。
 7. `REMAIN_BUDGET` 不允许由页面或多个服务分别写入，改为 `ANNUAL_BUDGET - USED_BUDGET` 虚拟列。
 8. `ROLES.PERMISSIONS` 不保存未被系统解析的 JSON。首期固定四种角色，权限策略由后端策略/特性统一维护；表仅存角色编码和名称。
 
@@ -405,6 +405,6 @@ END;
 
 ### 4.4 备份与验证
 
-- D3、D8、D12、D14 强制集成前保留可恢复 baseline；D14 生成 `demo-ready`。
+- 每次大联调前保留可恢复 baseline；最终集成版本生成 `demo-ready`。
 - `S001__verification.sql` 至少检查 13 表计数、孤儿外键、重复活跃申请/报名、预算透支、分数越界和重复证书。
-- 从空 Schema 执行迁移和种子的完整日志是 D2 退出条件；恢复演练成功是 D14 退出条件。
+- 从空 Schema 执行迁移和种子的完整日志是数据库就绪条件；恢复演练成功是发布前条件。

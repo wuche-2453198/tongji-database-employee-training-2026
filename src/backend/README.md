@@ -2,7 +2,7 @@
 
 维护协调人：王天宇。
 
-第 0 阶段交付：`.NET 8` Web API 工程、Swagger、Dapper Oracle 连接、统一响应/错误/分页、JWT 认证、角色策略、`/api/health`、`/api/health/db` 和一个可复用的模块模板。
+交付内容：`.NET 8` Web API 工程、Swagger、Dapper Oracle 连接、统一响应/错误/分页、JWT 认证、角色策略、`/api/health`、`/api/health/db` 和一个可复用的模块模板。
 
 实现规范见 [技术架构与开发规范](../../document/02-技术设计/技术架构与开发规范.md)。数据库连接、Schema 和迁移顺序见 [Oracle 数据库设计与 DDL](../../document/02-技术设计/Oracle数据库设计与DDL.md)。
 
@@ -169,3 +169,28 @@ GET /api/health/db
   "traceId": "string"
 }
 ```
+
+## 核心枚举
+
+| 业务 | 后端枚举 | 取值 |
+| --- | --- | --- |
+| 员工状态 | `EmployeeStatus` | `ACTIVE`、`RESIGNED` |
+| 课程状态 | `CourseStatus` | `DRAFT`、`PUBLISHED`、`CLOSED` |
+| 申请状态 | `TrainingRequestStatus` | `PENDING`、`DEPT_APPROVED`、`DEPT_REJECTED`、`HR_FILED` |
+| 报名状态 | `RegistrationStatus` | `REGISTERED`、`SIGNED_IN`、`ABSENT`、`COMPLETED`、`CANCELED` |
+| 测试类型 | `TestType` | `PRE`、`POST` |
+| 是否值 | `YesNo` | `Y`、`N` |
+| 黑名单状态 | `BlacklistStatus` | `ACTIVE`、`RELEASED` |
+
+数据库和接口统一存英文枚举，中文展示由前端集中映射。数据库中的角色代码和中文角色名由后端归一化为稳定代码：`员工` -> `EMPLOYEE`，`MANAGER`/`部门主管` -> `DEPT_MANAGER`，`HR` -> `HR`，`管理员` -> `ADMIN`。
+
+## 角色与权限
+
+| 角色代码 | 说明 | 主要权限 |
+| --- | --- | --- |
+| `EMPLOYEE` | 员工 | 查看课程、提交申请、报名、评分、查看证书 |
+| `DEPT_MANAGER` | 部门主管 | 员工只读、课程只读、本部门申请审批 |
+| `HR` | HR | HR 备案、签到管理、评分复核、测试成绩、证书管理 |
+| `ADMIN` | 管理员 | 员工、部门、黑名单、课程等后台维护 |
+
+权限最终由后端的策略和授权特性裁决，前端菜单只做展示控制。

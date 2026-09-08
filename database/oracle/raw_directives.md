@@ -21,4 +21,4 @@ samples/
 
 执行顺序严格为 `V001 -> V002 -> V003 -> S001 -> S002 -> S003 -> verification`。每次强制联调前建立 baseline，演示前建立 demo-ready；任何云端改动都必须先有对应脚本并保存执行日志。
 
-当前阶段尚未提交实际 SQL。钮培源在第 0 阶段完成空 Schema 验证后，将上述文件加入对应目录。
+上述脚本已提交到 `migrations/`、`seed/` 和 `samples/`，并在云库空 Schema 按顺序执行验证通过。
