@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:5156
+@hrToken = replace-with-hr-or-admin-token
+@regId = replace-with-registered-registration-id
+
+### Normal sign in (HR/admin, server time, SCAN)
+POST {{baseUrl}}/api/registrations/{{regId}}/signin
+Authorization: Bearer {{hrToken}}
+
+### Sign in again, expected 409
+POST {{baseUrl}}/api/registrations/{{regId}}/signin
+Authorization: Bearer {{hrToken}}
+
+### Manual make-up sign in (HR/admin, MANUAL, remark required)
+POST {{baseUrl}}/api/attendance/manual
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "regId": {{regId}},
+  "signinTime": "2026-08-27T09:30:00+08:00",
+  "remark": "补签，会议冲突"
+}
+
+### Manual sign in without remark, expected 400
+POST {{baseUrl}}/api/attendance/manual
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "regId": {{regId}},
+  "remark": ""
+}
+
+### Mark absent after course end (only REGISTERED, HR/admin)
+PATCH {{baseUrl}}/api/registrations/{{regId}}/absent
+Authorization: Bearer {{hrToken}}
+
+### Complete training after course end (only SIGNED_IN, HR/admin)
+PATCH {{baseUrl}}/api/registrations/{{regId}}/complete
+Authorization: Bearer {{hrToken}}

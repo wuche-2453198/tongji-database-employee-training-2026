@@ -193,6 +193,11 @@ builder.Services.AddScoped<IHealthRepository, OracleHealthRepository>();
 builder.Services.AddScoped<ITrainingRequestRepository, OracleTrainingRequestRepository>();
 builder.Services.AddScoped<ITrainerRepository, OracleTrainerRepository>();
 builder.Services.AddScoped<ICourseRepository, OracleCourseRepository>();
+builder.Services.AddScoped<IRegistrationRepository, OracleRegistrationRepository>();
+builder.Services.AddScoped<IAttendanceRepository, OracleAttendanceRepository>();
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+builder.Services.AddScoped<ITestRepository, TestRepository>();
+builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -200,11 +205,8 @@ builder.Services.AddScoped<IHealthService, HealthService>();
 builder.Services.AddScoped<ITrainingRequestService, TrainingRequestService>();
 builder.Services.AddScoped<ITrainerService, TrainerService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
-
-// ===== 成果评估模块：依赖注入 =====
-builder.Services.AddScoped<IRatingRepository, RatingRepository>();
-builder.Services.AddScoped<ITestRepository, TestRepository>();
-builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
