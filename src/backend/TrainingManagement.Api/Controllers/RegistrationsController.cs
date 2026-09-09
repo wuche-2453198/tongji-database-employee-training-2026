@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Common.Security;
+using TrainingManagement.Api.Dtos.Attendance;
 using TrainingManagement.Api.Dtos.Registration;
 using TrainingManagement.Api.Services.Interfaces;
 
@@ -14,10 +15,15 @@ public sealed class RegistrationsController : ApiControllerBase
 {
     private readonly IRegistrationService _registrationService;
 
+    private readonly IAttendanceService _attendanceService;
+
     public RegistrationsController(
-        IRegistrationService registrationService)
+        IRegistrationService registrationService,
+        IAttendanceService attendanceService)
     {
         _registrationService = registrationService;
+
+        _attendanceService = attendanceService;
     }
 
     [HttpGet("my")]
@@ -151,6 +157,37 @@ public sealed class RegistrationsController : ApiControllerBase
             registration);
     }
 
+    [HttpPost("{id:long}/signin")]
+    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
+    [ProducesResponseType(
+        typeof(ApiResponse<AttendanceResponse>),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(ApiResponse<object>),
+        StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(
+        typeof(ApiResponse<object>),
+        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ApiResponse<object>),
+        StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(
+        typeof(ApiResponse<object>),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ApiResponse<object>),
+        StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ApiResponse<AttendanceResponse>>> SignIn(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var attendance = await _attendanceService.SignInAsync(
+            id,
+            User,
+            cancellationToken);
+
+        return OkResponse(attendance);
+    }
     [HttpPatch("{id:long}/cancel")]
     [ProducesResponseType(
         typeof(ApiResponse<RegistrationResponse>),

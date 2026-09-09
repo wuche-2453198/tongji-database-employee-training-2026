@@ -568,35 +568,70 @@ public sealed class OracleRegistrationRepository : IRegistrationRepository
             return new RegistrationSummaryRecord();
         }
 
-        const string sql = """
+        const string countSql = """
             SELECT
-                COUNT(1) AS "Total",
+                NVL(COUNT(1), 0) AS "Total",
                 NVL(SUM(CASE WHEN STATUS = 'REGISTERED' THEN 1 ELSE 0 END), 0) AS "Registered",
                 NVL(SUM(CASE WHEN STATUS = 'SIGNED_IN' THEN 1 ELSE 0 END), 0) AS "SignedIn",
                 NVL(SUM(CASE WHEN STATUS = 'ABSENT' THEN 1 ELSE 0 END), 0) AS "Absent",
                 NVL(SUM(CASE WHEN STATUS = 'COMPLETED' THEN 1 ELSE 0 END), 0) AS "Completed",
-                NVL(SUM(CASE WHEN STATUS = 'CANCELED' THEN 1 ELSE 0 END), 0) AS "Canceled",
-                (
-                    SELECT MAX_STUDENTS
-                    FROM TRAINING_COURSES
-                    WHERE COURSE_ID = :CourseId
-                ) AS "MaxStudents"
+                NVL(SUM(CASE WHEN STATUS = 'CANCELED' THEN 1 ELSE 0 END), 0) AS "Canceled"
             FROM TRAINING_REGISTRATIONS
             WHERE (:CourseId IS NULL OR COURSE_ID = :CourseId)
+            """;
+
+        const string maxStudentsSql = """
+            SELECT MAX_STUDENTS
+            FROM TRAINING_COURSES
+            WHERE COURSE_ID = :CourseId
             """;
 
         await using var connection =
             await _connectionFactory.CreateOpenConnectionAsync(
                 cancellationToken);
 
-        return await connection.QuerySingleAsync<RegistrationSummaryRecord>(
+        var counts = await connection.QuerySingleAsync<RegistrationCountSummary>(
             new CommandDefinition(
-                sql,
+                countSql,
                 new
                 {
                     CourseId = courseId
                 },
                 cancellationToken: cancellationToken));
+
+        int? maxStudents = null;
+        if (courseId.HasValue)
+        {
+            maxStudents = await connection.ExecuteScalarAsync<int?>(
+                new CommandDefinition(
+                    maxStudentsSql,
+                    new
+                    {
+                        CourseId = courseId.Value
+                    },
+                    cancellationToken: cancellationToken));
+        }
+
+        return new RegistrationSummaryRecord
+        {
+            Total = counts.Total,
+            Registered = counts.Registered,
+            SignedIn = counts.SignedIn,
+            Absent = counts.Absent,
+            Completed = counts.Completed,
+            Canceled = counts.Canceled,
+            MaxStudents = maxStudents
+        };
+    }
+
+    private sealed class RegistrationCountSummary
+    {
+        public long Total { get; set; }
+        public long Registered { get; set; }
+        public long SignedIn { get; set; }
+        public long Absent { get; set; }
+        public long Completed { get; set; }
+        public long Canceled { get; set; }
     }
 
     private static (string WhereSql, DynamicParameters Parameters) BuildConditions(
