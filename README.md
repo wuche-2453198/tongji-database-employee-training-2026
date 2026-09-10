@@ -17,7 +17,7 @@
 
 ```text
 src/backend/                 ASP.NET Core API（王天宇协调）
-src/frontend/                Vue 3 前端（李司翰协调）
+src/frontend/                Vue 3 前端（李司翰、彭浩协调）
 database/oracle/             Oracle 迁移、种子、验证（钮培源）
 tests/backend/               后端测试
 tests/api/                   HTTP 主流程和失败用例（彭浩协调）
@@ -112,7 +112,6 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 | `POST` | `/api/attendance/manual` | HR/管理员 | 补签（MANUAL，备注必填，可指定签到时间） |
 
 报名状态枚举：`REGISTERED`、`SIGNED_IN`、`ABSENT`、`COMPLETED`、`CANCELED`；签到类型：`SCAN`、`MANUAL`。迟到扣减规则：实际学时 = 课程学时 - 按迟到分钟等比例折算并四舍五入到 0.5 小时的扣减（上限为课程学时）。
-
 
 Oracle 种子测试账号：
 
