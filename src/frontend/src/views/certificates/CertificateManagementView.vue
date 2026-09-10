@@ -176,9 +176,8 @@ onMounted(load)
     /><PageState
       v-else-if="state === 'no-result'"
       state="no-result"
-      secondary-label="清空筛选"
       compact
-      @secondary="sync({ employeeKeyword: '', keyword: '', page: 1 }, true)"
+      @primary="sync({ employeeKeyword: '', keyword: '', page: 1 }, true)"
     /><template v-else
       ><section class="business-list__section">
         <h2>待生成证书</h2>

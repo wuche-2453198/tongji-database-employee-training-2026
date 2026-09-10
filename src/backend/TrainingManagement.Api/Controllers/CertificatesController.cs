@@ -33,6 +33,24 @@ public sealed class CertificatesController : ApiControllerBase
         return CreatedResponse(nameof(GetById), new { id = result.CertificateId }, result, "证书生成成功");
     }
 
+    [Authorize(Roles = RoleCodes.Hr + "," + RoleCodes.Admin)]
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<PagedResult<TrainingCertificate>>>> GetList(
+        [FromQuery] CertificateQueryDto query)
+    {
+        var result = await _certificateService.GetManagedCertificatesAsync(query);
+        return OkResponse(result, "查询成功");
+    }
+
+    [Authorize(Roles = RoleCodes.Hr + "," + RoleCodes.Admin)]
+    [HttpGet("candidates")]
+    public async Task<ActionResult<ApiResponse<PagedResult<CertificateCandidate>>>> GetCandidates(
+        [FromQuery] CertificateQueryDto query)
+    {
+        var result = await _certificateService.GetCertificateCandidatesAsync(query);
+        return OkResponse(result, "查询成功");
+    }
+
     [HttpGet("my")]
     public async Task<ActionResult<ApiResponse<IEnumerable<TrainingCertificate>>>> GetMyCertificates()
     {
