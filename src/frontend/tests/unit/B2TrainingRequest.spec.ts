@@ -99,20 +99,21 @@ describe('B2 培训申请领域与 Mock 流程', () => {
 
   it('DTO 映射将未知状态安全降级并保留分页口径', () => {
     const dto: TrainingRequestDto = {
-      requestId: '5009',
+      id: '5009',
       courseId: '4001',
       courseName: '',
       employeeId: 1001,
       employeeName: '',
-      departmentName: '',
-      reason: '',
+      deptId: 10,
+      requestReason: '',
       status: 'FUTURE_STATUS',
-      submittedAt: '2026-08-23T10:00:00+08:00',
+      createTime: '2026-08-23T10:00:00+08:00',
     }
     expect(mapTrainingRequest(dto)).toMatchObject({
       id: '5009',
       courseName: '未命名课程',
       status: 'UNKNOWN',
+      submittedAt: '2026-08-23T10:00:00+08:00',
     })
     const envelope: ApiEnvelopeDto<PageDto<TrainingRequestDto>> = {
       success: true,
@@ -121,5 +122,41 @@ describe('B2 培训申请领域与 Mock 流程', () => {
     }
     expect(mapTrainingRequestPage(envelope)).toMatchObject({ page: 1, pageSize: 20, total: 1 })
     expect(() => domainError('REQUEST_NOT_FOUND')).not.toThrow()
+  })
+
+  it('历史别名字段仍可映射，后端 id 优先于 requestId', () => {
+    const legacy = mapTrainingRequest({
+      requestId: '5010',
+      courseId: '4001',
+      status: 'PENDING',
+      createdAt: '2026-08-23T10:00:00+08:00',
+      hrFilingComment: '旧字段意见',
+    })
+    expect(legacy).toMatchObject({
+      id: '5010',
+      submittedAt: '2026-08-23T10:00:00+08:00',
+      hrOpinion: '旧字段意见',
+    })
+
+    const both = mapTrainingRequest({
+      id: 5011,
+      requestId: '5010',
+      courseId: '4001',
+      status: 'PENDING',
+      hrFileComment: '后端意见',
+      hrFilingComment: '旧字段意见',
+    })
+    expect(both.id).toBe('5011')
+    expect(both.hrOpinion).toBe('后端意见')
+  })
+
+  it('缺少 id 与 requestId 时抛出契约异常，不生成 undefined 路由参数', () => {
+    let thrown: unknown
+    try {
+      mapTrainingRequest({ courseId: '4001', status: 'PENDING' })
+    } catch (error) {
+      thrown = error
+    }
+    expect(thrown).toMatchObject({ ui: { code: 'HTTP_CONTRACT_NOT_FROZEN' } })
   })
 })

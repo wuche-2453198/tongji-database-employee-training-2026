@@ -152,23 +152,26 @@ describe('整合分支真实 HTTP 适配器', () => {
         return response(config, {
           success: true,
           message: 'ok',
-          data: { requestId: 5001 },
+          data: { id: 5001, courseId: 4001, status: 'DEPT_APPROVED' },
         })
       }
       if (config.url === '/api/training-requests/5001') {
+        // 字段与后端 TrainingRequestResponseDto 的真实 JSON 一致：id/createTime/hrFileComment。
         return response(config, {
           success: true,
           message: 'ok',
           data: {
-            requestId: 5001,
+            id: 5001,
             courseId: 4001,
             courseName: '数据库实践',
             employeeId: 1,
             employeeName: '员工',
-            departmentName: '技术部',
+            deptId: 10,
             requestReason: '提升能力',
             status: 'DEPT_APPROVED',
-            createdAt: '2026-08-25T09:00:00+08:00',
+            createTime: '2026-08-25T09:00:00+08:00',
+            deptApproveComment: '同意',
+            hrFileComment: null,
           },
         })
       }
@@ -182,11 +185,59 @@ describe('整合分支真实 HTTP 适配器', () => {
     await expect(httpTrainingRequestService.approve('5001', '同意')).resolves.toMatchObject({
       id: '5001',
       status: 'DEPT_APPROVED',
+      submittedAt: '2026-08-25T09:00:00+08:00',
+      departmentOpinion: '同意',
     })
     expect(adapter.mock.calls.map(([config]) => config.url)).toEqual([
       '/api/training-requests/my',
       '/api/training-requests/5001/dept-approve',
       '/api/training-requests/5001',
+    ])
+    clearAccessToken()
+  })
+
+  it('HR 备案提交 Comment，并按后端 id/hrFileComment/createTime 字段映射', async () => {
+    const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
+      if (config.url === '/api/training-requests/5002/hr-file') {
+        expect(JSON.parse(String(config.data))).toEqual({ Comment: '材料齐全' })
+        return response(config, {
+          success: true,
+          message: 'ok',
+          data: { id: 5002, courseId: 4002, status: 'HR_FILED' },
+        })
+      }
+      if (config.url === '/api/training-requests/5002') {
+        return response(config, {
+          success: true,
+          message: 'ok',
+          data: {
+            id: 5002,
+            courseId: 4002,
+            courseName: '架构设计',
+            employeeId: 7,
+            employeeName: '员工乙',
+            deptId: 11,
+            requestReason: '项目需要',
+            status: 'HR_FILED',
+            createTime: '2026-08-26T09:00:00+08:00',
+            deptApproveComment: '同意',
+            hrFileComment: '材料齐全',
+          },
+        })
+      }
+      throw new Error(`unexpected request: ${config.url}`)
+    })
+    httpTransport.defaults.adapter = adapter
+
+    await expect(httpTrainingRequestService.file('5002', '材料齐全')).resolves.toMatchObject({
+      id: '5002',
+      status: 'HR_FILED',
+      submittedAt: '2026-08-26T09:00:00+08:00',
+      hrOpinion: '材料齐全',
+    })
+    expect(adapter.mock.calls.map(([config]) => config.url)).toEqual([
+      '/api/training-requests/5002/hr-file',
+      '/api/training-requests/5002',
     ])
     clearAccessToken()
   })

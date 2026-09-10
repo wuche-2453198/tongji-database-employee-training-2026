@@ -123,15 +123,21 @@ export interface RegistrationSummaryDto {
   remainingSeats?: number | null
 }
 
-/** TODO(API-Q-005/006/013): 申请字段和分页包络等待后端 OpenAPI 冻结。 */
+/**
+ * 申请响应 DTO。`id`/`createTime`/`deptApproveComment`/`hrFileComment` 是后端
+ * TrainingRequestResponseDto 的实际字段；`requestId`/`createdAt`/`hrFilingComment`
+ * 只作历史别名兼容，映射时后端字段优先。
+ */
 export interface TrainingRequestDto {
-  requestId: string | number
+  id?: string | number
+  requestId?: string | number
   courseId: string | number
   courseName?: string | null
   employeeId?: number
   empId?: number
   employeeName?: string | null
   empName?: string | null
+  deptId?: number | null
   departmentName?: string | null
   deptName?: string | null
   reason?: string | null
@@ -139,7 +145,9 @@ export interface TrainingRequestDto {
   status: string
   submittedAt?: string
   createdAt?: string
+  createTime?: string
   updatedAt?: string | null
   deptApproveComment?: string | null
+  hrFileComment?: string | null
   hrFilingComment?: string | null
 }

@@ -2,10 +2,13 @@ import { requestApi } from '@/api/client'
 import { fromEnvelopeFailure } from '@/api/error'
 import { mapTrainingRequest, mapTrainingRequestPage } from '@/api/mappers/training-request'
 import type { ApiEnvelopeDto, PageDto, TrainingRequestDto } from '@/api/transport'
+import { domainError } from '@/domains/errors'
 import type { TrainingRequestService } from '@/domains/training-request'
 
+/** 创建接口正常返回完整申请 DTO；仅当契约退回引用对象时才需要二次查询。 */
 interface RequestReferenceDto {
-  requestId: string | number
+  id?: string | number
+  requestId?: string | number
 }
 
 const unwrap = <T>(envelope: ApiEnvelopeDto<T>): T => {
@@ -38,7 +41,8 @@ const performAction = async (
   await requestApi<ApiEnvelopeDto<RequestReferenceDto>>({
     method: 'PATCH',
     url: `/api/training-requests/${encodeURIComponent(id)}/${action}`,
-    data: action === 'hr-file' ? {} : { Comment: opinion || null },
+    // 三个动作的请求体都是后端 ApproveRequestDto/HrFileRequestDto 的 Comment。
+    data: { Comment: opinion || null },
     signal,
     operation: 'write',
   })
@@ -56,7 +60,15 @@ export const httpTrainingRequestService: TrainingRequestService = {
     })
     const created = unwrap(envelope)
     if ('courseId' in created) return mapTrainingRequest(created)
-    return getRequest(String(created.requestId), options?.signal)
+
+    const rawId = created.id ?? created.requestId
+    if (rawId === undefined || rawId === null || rawId === '') {
+      throw domainError('HTTP_CONTRACT_NOT_FROZEN', {
+        message: '申请创建响应缺少 id 字段，无法查询申请详情。',
+      })
+    }
+
+    return getRequest(String(rawId), options?.signal)
   },
   async listMine(query, options) {
     const envelope = await requestApi<ApiEnvelopeDto<PageDto<TrainingRequestDto>>>({
@@ -117,7 +129,7 @@ export const httpTrainingRequestService: TrainingRequestService = {
   async reject(id, opinion, options) {
     return performAction(id, 'dept-reject', opinion, options?.signal)
   },
-  async file(id, _opinion, options) {
-    return performAction(id, 'hr-file', '', options?.signal)
+  async file(id, opinion, options) {
+    return performAction(id, 'hr-file', opinion, options?.signal)
   },
 }
