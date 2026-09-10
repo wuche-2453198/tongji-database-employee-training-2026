@@ -63,11 +63,64 @@ export interface CourseDetailDto extends CourseSummaryDto {
   }
 }
 
-export interface RegistrationReceiptDto {
-  regId: string
-  courseId: string
+export interface AttendanceDto {
+  attendId: number
+  regId: number
+  signinType: string
+  signedInAt: string
+  latenessMinutes: number
+  deductHours: number
+  remark?: string | null
+  createdAt: string
+}
+
+export interface RegistrationActionDto {
+  allowed: boolean
+  reason?: string | null
+}
+
+export interface RegistrationActionsDto {
+  cancel: RegistrationActionDto
+  signIn: RegistrationActionDto
+  complete: RegistrationActionDto
+  markAbsent: RegistrationActionDto
+}
+
+export interface RegistrationDto {
+  regId: number
+  requestId: number
+  empId: number
+  empName: string
+  deptId: number
+  deptName: string
+  courseId: number
+  courseName: string
+  courseType: string
+  durationHours: number
+  trainerName?: string | null
+  startAt?: string | null
+  endAt?: string | null
+  location?: string | null
+  courseStatus: string
+  maxStudents: number
   status: string
-  regDate: string
+  registeredAt: string
+  completedAt?: string | null
+  actualHours?: number | null
+  canceledAt?: string | null
+  cancelReason?: string | null
+  attendance?: AttendanceDto | null
+  actions: RegistrationActionsDto
+}
+
+export interface RegistrationSummaryDto {
+  total: number
+  registered: number
+  signedIn: number
+  absent: number
+  completed: number
+  canceled: number
+  remainingSeats?: number | null
 }
 
 /** TODO(API-Q-005/006/013): 申请字段和分页包络等待后端 OpenAPI 冻结。 */

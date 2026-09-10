@@ -91,7 +91,7 @@ function query(): RegistrationQuery {
     startDateTo: filters.dateRange[1],
     page: filters.page,
     pageSize: filters.pageSize,
-    sortBy: 'registeredAt',
+    sortBy: 'regDate',
     sortDirection: 'desc',
   }
 }
@@ -192,9 +192,9 @@ onMounted(load)
           type="daterange"
           value-format="YYYY-MM-DD"
           range-separator="至"
-          start-placeholder="报名开始日期"
-          end-placeholder="报名结束日期"
-          aria-label="报名日期" /></template></SearchPanel
+          start-placeholder="课程开始日期"
+          end-placeholder="课程结束日期"
+          aria-label="课程日期" /></template></SearchPanel
     ><PageState v-if="state === 'loading'" state="loading" /><PageState
       v-else-if="error?.kind === 'forbidden'"
       state="forbidden"

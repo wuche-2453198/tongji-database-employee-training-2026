@@ -101,7 +101,7 @@ function query(): RegistrationQuery {
     status: filters.status || undefined,
     page: filters.page,
     pageSize: filters.pageSize,
-    sortBy: 'registeredAt',
+    sortBy: 'regDate',
     sortDirection: 'desc',
   }
 }

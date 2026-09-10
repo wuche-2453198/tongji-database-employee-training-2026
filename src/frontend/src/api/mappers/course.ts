@@ -1,11 +1,5 @@
 import { fromEnvelopeFailure } from '@/api/error'
-import type {
-  ApiEnvelopeDto,
-  CourseDetailDto,
-  CourseSummaryDto,
-  PageDto,
-  RegistrationReceiptDto,
-} from '@/api/transport'
+import type { ApiEnvelopeDto, CourseDetailDto, CourseSummaryDto, PageDto } from '@/api/transport'
 import type { PageResult } from '@/types/api'
 import type {
   CourseActionEligibility,
@@ -13,7 +7,6 @@ import type {
   CourseStatus,
   CourseSummary,
   CourseType,
-  RegistrationReceipt,
 } from '@/types/course'
 
 const courseTypeLabels: Record<CourseType, string> = {
@@ -123,16 +116,4 @@ export function mapCoursePage(
 ): PageResult<CourseSummary> {
   if (!envelope.success || !envelope.data) throw fromEnvelopeFailure(envelope)
   return { ...envelope.data, items: envelope.data.items.map(mapCourseSummary) }
-}
-
-export function mapRegistrationReceipt(
-  envelope: ApiEnvelopeDto<RegistrationReceiptDto>,
-): RegistrationReceipt {
-  if (!envelope.success || !envelope.data) throw fromEnvelopeFailure(envelope)
-  return {
-    registrationId: envelope.data.regId,
-    courseId: envelope.data.courseId,
-    status: 'REGISTERED',
-    registeredAt: envelope.data.regDate,
-  }
 }

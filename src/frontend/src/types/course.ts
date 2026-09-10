@@ -11,10 +11,3 @@ export type {
 } from '@/domains/course'
 
 export type CourseListQuery = import('@/domains/course').CourseQuery
-
-export interface RegistrationReceipt {
-  registrationId: string
-  courseId: string
-  status: 'REGISTERED'
-  registeredAt: string
-}

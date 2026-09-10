@@ -1,4 +1,9 @@
-import type { Registration, RegistrationQuery, RegistrationService } from '@/domains/registration'
+import type {
+  Attendance,
+  Registration,
+  RegistrationQuery,
+  RegistrationService,
+} from '@/domains/registration'
 import { domainError } from '@/domains/errors'
 import { getMockActor, mockBusinessRepository } from '@/mocks/repositories/business-repository'
 import { createMockError, currentMockScenario, mockWait } from '@/mocks/scenarios'
@@ -38,9 +43,10 @@ function pageOf<T>(items: T[], query: RegistrationQuery) {
 
 function filterItems(query: RegistrationQuery, manage: boolean): Registration[] {
   const actor = getMockActor()
-  let items = mockBusinessRepository
-    .getState()
-    .registrations.filter((item) => (manage ? true : item.employeeId === actor.employeeId))
+  const state = mockBusinessRepository.getState()
+  let items = state.registrations.filter((item) =>
+    manage ? true : item.employeeId === actor.employeeId,
+  )
   const keyword = query.keyword?.trim().toLowerCase()
   const employeeKeyword = query.employeeKeyword?.trim().toLowerCase()
   if (keyword) items = items.filter((item) => item.courseName.toLowerCase().includes(keyword))
@@ -50,15 +56,34 @@ function filterItems(query: RegistrationQuery, manage: boolean): Registration[] 
         item.employeeName.toLowerCase().includes(employeeKeyword) ||
         String(item.employeeId).includes(employeeKeyword),
     )
-  if (query.departmentName)
-    items = items.filter((item) => item.departmentName === query.departmentName)
   if (query.courseId) items = items.filter((item) => item.courseId === query.courseId)
   if (query.status) items = items.filter((item) => item.status === query.status)
-  if (query.startDateFrom)
-    items = items.filter((item) => item.registeredAt.slice(0, 10) >= query.startDateFrom!)
-  if (query.startDateTo)
-    items = items.filter((item) => item.registeredAt.slice(0, 10) <= query.startDateTo!)
+  if (query.startDateFrom || query.startDateTo) {
+    const courseStartBy = new Map(
+      state.courses.map((course) => [course.id, course.startTime.slice(0, 10)]),
+    )
+    items = items.filter((item) => {
+      const start = courseStartBy.get(item.courseId)
+      if (!start) return false
+      if (query.startDateFrom && start < query.startDateFrom) return false
+      if (query.startDateTo && start > query.startDateTo) return false
+      return true
+    })
+  }
   return items.sort((left, right) => right.registeredAt.localeCompare(left.registeredAt))
+}
+
+function toMockAttendance(registration: Registration): Attendance {
+  return {
+    attendId: Number(registration.id),
+    regId: registration.id,
+    signinType: registration.signinMethod === 'MANUAL' ? 'MANUAL' : 'SCAN',
+    signedInAt: registration.signedInAt ?? registration.registeredAt,
+    latenessMinutes: 0,
+    deductHours: 0,
+    remark: registration.attendanceNote ?? null,
+    createdAt: registration.signedInAt ?? registration.registeredAt,
+  }
 }
 
 export function createMockRegistrationService(
@@ -163,34 +188,30 @@ export function createMockRegistrationService(
       return findRegistration(id)
     },
 
-    async getActionEligibility(id, options) {
-      await mockWait(options?.signal, 30)
-      const item = findRegistration(id)
-      const actor = getMockActor()
-      return [
-        {
-          action: 'cancel' as const,
-          allowed: actor.role === 'EMPLOYEE' && item.status === 'REGISTERED',
-          reason: item.status === 'REGISTERED' ? undefined : '当前状态不能取消报名。',
-        },
-        {
-          action: 'signin' as const,
-          allowed: canManage() && item.status === 'REGISTERED',
-          reason: item.status === 'REGISTERED' ? undefined : '当前状态不能签到。',
-        },
-        {
-          action: 'complete' as const,
-          allowed: canManage() && item.status === 'SIGNED_IN',
-          reason: item.status === 'SIGNED_IN' ? undefined : '需签到后才能完成培训。',
-        },
-      ]
-    },
-
     async listManage(query, options) {
       await mockWait(options?.signal, 50)
       throwQueryScenario(getScenario())
       if (!canManage()) throw domainError('REGISTRATION_FORBIDDEN')
       return pageOf(filterItems(query, true), query)
+    },
+
+    async summary(courseId, options) {
+      await mockWait(options?.signal, 30)
+      throwQueryScenario(getScenario())
+      if (!canManage()) throw domainError('REGISTRATION_FORBIDDEN')
+      const items = mockBusinessRepository
+        .getState()
+        .registrations.filter((item) => !courseId || item.courseId === courseId)
+      const count = (status: string) => items.filter((item) => item.status === status).length
+      return {
+        total: items.length,
+        registered: count('REGISTERED'),
+        signedIn: count('SIGNED_IN'),
+        absent: count('ABSENT'),
+        completed: count('COMPLETED'),
+        canceled: count('CANCELED'),
+        remainingSeats: null,
+      }
     },
 
     async cancel(id, options) {
@@ -211,16 +232,34 @@ export function createMockRegistrationService(
       if (!canManage()) throw domainError('REGISTRATION_FORBIDDEN')
       const item = findRegistration(id)
       if (item.status !== 'REGISTERED') throw domainError('ATTENDANCE_NOT_ALLOWED')
-      return update(
+      const next = await update(
         id,
-        (next) => {
-          next.status = 'SIGNED_IN'
-          next.signedInAt = '2026-08-23T09:06:00+08:00'
-          next.signinMethod = 'MANUAL'
-          next.attendanceNote = 'Mock人工签到'
+        (registration) => {
+          registration.status = 'SIGNED_IN'
+          registration.signedInAt = '2026-08-23T09:06:00+08:00'
+          registration.signinMethod = 'MANUAL'
+          registration.attendanceNote = 'Mock人工签到'
         },
         options,
       )
+      return toMockAttendance(next)
+    },
+
+    async manualSignIn(command, options) {
+      if (!canManage()) throw domainError('REGISTRATION_FORBIDDEN')
+      const item = findRegistration(command.regId)
+      if (item.status !== 'REGISTERED') throw domainError('ATTENDANCE_NOT_ALLOWED')
+      const next = await update(
+        command.regId,
+        (registration) => {
+          registration.status = 'SIGNED_IN'
+          registration.signedInAt = command.signinTime ?? '2026-08-23T09:06:00+08:00'
+          registration.signinMethod = 'MANUAL'
+          registration.attendanceNote = command.remark
+        },
+        options,
+      )
+      return toMockAttendance(next)
     },
 
     async markAbsent(id, options) {
