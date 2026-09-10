@@ -138,6 +138,71 @@ describe('整合分支真实 HTTP 适配器', () => {
     expect(result.items[0]).toMatchObject({ id: '4001', registeredCount: 3, remainingSeats: 17 })
   })
 
+  it('课程详情按后端状态与剩余名额派生资格，并在后端提供 eligibility 时以后端为准', async () => {
+    const published = {
+      courseId: 4001,
+      courseName: '数据库实践',
+      courseType: '技术培训',
+      trainerName: '讲师',
+      startAt: '2099-09-01T09:00:00+08:00',
+      endAt: '2099-09-01T17:00:00+08:00',
+      location: 'A101',
+      courseStatus: 'PUBLISHED',
+      maxStudents: 20,
+      registeredCount: 18,
+      remainingSeats: 2,
+    }
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, { success: true, message: 'ok', data: published })
+
+    const open = await httpCourseService.getCourse('4001')
+    expect(open).toMatchObject({ id: '4001', remainingSeats: 2 })
+    expect(open.eligibility.apply.allowed).toBe(true)
+    expect(open.eligibility.register.allowed).toBe(true)
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, {
+        success: true,
+        message: 'ok',
+        data: { ...published, registeredCount: 20, remainingSeats: 0 },
+      })
+    const full = await httpCourseService.getCourse('4001')
+    expect(full.eligibility.apply.allowed).toBe(true)
+    expect(full.eligibility.register.allowed).toBe(false)
+    expect(full.eligibility.register.reason).toContain('名额已满')
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, {
+        success: true,
+        message: 'ok',
+        data: { ...published, courseStatus: 'CLOSED' },
+      })
+    const closed = await httpCourseService.getCourse('4001')
+    expect(closed.eligibility.apply.allowed).toBe(false)
+    expect(closed.eligibility.register.allowed).toBe(false)
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, {
+        success: true,
+        message: 'ok',
+        data: {
+          ...published,
+          remainingSeats: 0,
+          eligibility: {
+            apply: { allowed: false, reason: '已有待审批申请' },
+            register: { allowed: true },
+          },
+        },
+      })
+    const backendWins = await httpCourseService.getCourse('4001')
+    expect(backendWins.eligibility.apply).toMatchObject({
+      allowed: false,
+      reason: '已有待审批申请',
+    })
+    expect(backendWins.eligibility.register.allowed).toBe(true)
+  })
+
   it('申请列表使用 /my 路径，主管审批使用 dept-approve 动作路径', async () => {
     const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
       if (config.url === '/api/training-requests/my') {

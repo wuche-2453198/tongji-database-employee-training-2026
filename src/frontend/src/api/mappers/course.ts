@@ -72,21 +72,59 @@ export function mapCourseSummary(dto: CourseSummaryDto): CourseSummary {
   }
 }
 
+/**
+ * 后端当前只返回课程状态与剩余名额，没有 eligibility 字段。
+ * 在既有字段上派生最小可用资格，最终裁决仍由写接口（申请/报名）负责。
+ */
+const deriveEligibility = (
+  summary: CourseSummary,
+  dto: CourseDetailDto,
+): CourseActionEligibility => {
+  const published = summary.status === 'PUBLISHED'
+  const startAt = Date.parse(summary.startTime || dto.startAt || '')
+  const notStarted = Number.isFinite(startAt) ? startAt > Date.now() : false
+  // 名额未知（后端未返回容量）时不阻止操作，由写接口做最终校验。
+  const hasSeats = summary.remainingSeats === null || summary.remainingSeats > 0
+
+  if (!published) {
+    const reason = summary.status === 'CLOSED' ? '课程已关闭，不能申请或报名。' : '课程尚未发布。'
+    return { apply: { allowed: false, reason }, register: { allowed: false, reason } }
+  }
+
+  if (!notStarted) {
+    return {
+      apply: { allowed: false, reason: '课程已开始，不能申请或报名。' },
+      register: { allowed: false, reason: '课程已开始，不能申请或报名。' },
+    }
+  }
+
+  return {
+    apply: { allowed: true },
+    register: hasSeats
+      ? { allowed: true }
+      : { allowed: false, reason: '课程名额已满，请等待名额释放。' },
+  }
+}
+
 export function mapCourseDetail(envelope: ApiEnvelopeDto<CourseDetailDto>): CourseDetail {
   if (!envelope.success || !envelope.data) throw fromEnvelopeFailure(envelope)
   const summary = mapCourseSummary(envelope.data)
-  const eligibility: CourseActionEligibility = {
-    apply: {
-      allowed: envelope.data.eligibility?.apply?.allowed === true,
-      reasonCode: envelope.data.eligibility?.apply?.reasonCode,
-      reason: envelope.data.eligibility?.apply?.reason,
-    },
-    register: {
-      allowed: envelope.data.eligibility?.register?.allowed === true,
-      reasonCode: envelope.data.eligibility?.register?.reasonCode,
-      reason: envelope.data.eligibility?.register?.reason,
-    },
-  }
+  const backendEligibility = envelope.data.eligibility
+  const derived = deriveEligibility(summary, envelope.data)
+  const eligibility: CourseActionEligibility = backendEligibility
+    ? {
+        apply: {
+          allowed: backendEligibility.apply?.allowed === true,
+          reasonCode: backendEligibility.apply?.reasonCode,
+          reason: backendEligibility.apply?.reason,
+        },
+        register: {
+          allowed: backendEligibility.register?.allowed === true,
+          reasonCode: backendEligibility.register?.reasonCode,
+          reason: backendEligibility.register?.reason,
+        },
+      }
+    : derived
   return {
     ...summary,
     description: envelope.data.description || '暂无课程介绍。',
