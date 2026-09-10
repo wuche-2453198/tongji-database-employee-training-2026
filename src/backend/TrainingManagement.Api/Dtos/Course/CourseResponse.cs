@@ -16,6 +16,10 @@ public sealed class CourseResponse
 
     public int MaxStudents { get; set; }
 
+    public int? RegisteredCount { get; set; }
+
+    public int? RemainingSeats { get; set; }
+
     public DateTime? StartAt { get; set; }
 
     public DateTime? EndAt { get; set; }

@@ -78,9 +78,25 @@ public sealed class CourseService : ICourseService
             courseId,
             cancellationToken);
 
-        return course is null
-            ? null
-            : ToResponse(course);
+        if (course is null)
+        {
+            return null;
+        }
+
+        var response = ToResponse(course);
+        var capacity = await _courseRepository.GetCapacityAsync(
+            courseId,
+            cancellationToken);
+
+        if (capacity.HasValue)
+        {
+            response.RegisteredCount = capacity.Value.ValidRegistrationCount;
+            response.RemainingSeats = Math.Max(
+                0,
+                capacity.Value.MaxStudents - capacity.Value.ValidRegistrationCount);
+        }
+
+        return response;
     }
 
     public async Task<CourseResponse> CreateAsync(
