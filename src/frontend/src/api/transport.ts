@@ -70,23 +70,17 @@ export interface RegistrationReceiptDto {
   regDate: string
 }
 
-/** TODO(API-Q-005/006/013): 申请字段和分页包络等待后端 OpenAPI 冻结。 */
+/** 培训申请后端 DTO；仅 transport、mapper 与 HTTP 适配器可使用。 */
 export interface TrainingRequestDto {
-  requestId: string | number
+  id: string | number
+  employeeId: number
+  employeeName?: string | null
+  deptId?: number | null
   courseId: string | number
   courseName?: string | null
-  employeeId?: number
-  empId?: number
-  employeeName?: string | null
-  empName?: string | null
-  departmentName?: string | null
-  deptName?: string | null
-  reason?: string | null
   requestReason?: string | null
-  status: string
-  submittedAt?: string
-  createdAt?: string
-  updatedAt?: string | null
+  status?: string | null
+  createTime?: string | null
   deptApproveComment?: string | null
-  hrFilingComment?: string | null
+  hrFileComment?: string | null
 }

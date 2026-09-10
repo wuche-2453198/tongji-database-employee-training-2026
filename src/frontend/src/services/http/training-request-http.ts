@@ -4,10 +4,6 @@ import { mapTrainingRequest, mapTrainingRequestPage } from '@/api/mappers/traini
 import type { ApiEnvelopeDto, PageDto, TrainingRequestDto } from '@/api/transport'
 import type { TrainingRequestService } from '@/domains/training-request'
 
-interface RequestReferenceDto {
-  requestId: string | number
-}
-
 const unwrap = <T>(envelope: ApiEnvelopeDto<T>): T => {
   if (!envelope.success || !envelope.data) throw fromEnvelopeFailure(envelope)
   return envelope.data
@@ -35,28 +31,26 @@ const performAction = async (
   opinion: string,
   signal?: AbortSignal,
 ) => {
-  await requestApi<ApiEnvelopeDto<RequestReferenceDto>>({
+  const envelope = await requestApi<ApiEnvelopeDto<TrainingRequestDto>>({
     method: 'PATCH',
     url: `/api/training-requests/${encodeURIComponent(id)}/${action}`,
-    data: action === 'hr-file' ? {} : { Comment: opinion || null },
+    data: { comment: opinion || null },
     signal,
     operation: 'write',
   })
-  return getRequest(id, signal)
+  return mapTrainingRequest(unwrap(envelope))
 }
 
 export const httpTrainingRequestService: TrainingRequestService = {
   async create(command, options) {
-    const envelope = await requestApi<ApiEnvelopeDto<RequestReferenceDto | TrainingRequestDto>>({
+    const envelope = await requestApi<ApiEnvelopeDto<TrainingRequestDto>>({
       method: 'POST',
       url: '/api/training-requests',
-      data: { CourseId: Number(command.courseId), RequestReason: command.reason },
+      data: { courseId: Number(command.courseId), requestReason: command.reason },
       signal: options?.signal,
       operation: 'write',
     })
-    const created = unwrap(envelope)
-    if ('courseId' in created) return mapTrainingRequest(created)
-    return getRequest(String(created.requestId), options?.signal)
+    return mapTrainingRequest(unwrap(envelope))
   },
   async listMine(query, options) {
     const envelope = await requestApi<ApiEnvelopeDto<PageDto<TrainingRequestDto>>>({
@@ -117,7 +111,7 @@ export const httpTrainingRequestService: TrainingRequestService = {
   async reject(id, opinion, options) {
     return performAction(id, 'dept-reject', opinion, options?.signal)
   },
-  async file(id, _opinion, options) {
-    return performAction(id, 'hr-file', '', options?.signal)
+  async file(id, opinion, options) {
+    return performAction(id, 'hr-file', opinion, options?.signal)
   },
 }

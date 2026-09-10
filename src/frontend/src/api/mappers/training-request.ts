@@ -10,23 +10,24 @@ const knownStatuses = new Set<TrainingRequestStatus>([
   'HR_FILED',
 ])
 
-const mapStatus = (value: string): TrainingRequestStatus =>
+const mapStatus = (value: string | null | undefined): TrainingRequestStatus =>
   knownStatuses.has(value as TrainingRequestStatus) ? (value as TrainingRequestStatus) : 'UNKNOWN'
 
 export function mapTrainingRequest(dto: TrainingRequestDto): TrainingRequest {
   return {
-    id: String(dto.requestId),
+    id: String(dto.id),
     courseId: String(dto.courseId),
     courseName: dto.courseName || '未命名课程',
-    employeeId: dto.employeeId ?? dto.empId ?? 0,
-    employeeName: dto.employeeName || dto.empName || '—',
-    departmentName: dto.departmentName || dto.deptName || '—',
-    reason: dto.reason || dto.requestReason || '',
+    employeeId: dto.employeeId,
+    employeeName: dto.employeeName || '—',
+    departmentName: '—',
+    departmentId: dto.deptId == null ? null : String(dto.deptId),
+    reason: dto.requestReason || '',
     status: mapStatus(dto.status),
-    submittedAt: dto.submittedAt || dto.createdAt || '',
-    updatedAt: dto.updatedAt ?? null,
+    submittedAt: dto.createTime || '',
+    updatedAt: null,
     departmentOpinion: dto.deptApproveComment ?? null,
-    hrOpinion: dto.hrFilingComment ?? null,
+    hrOpinion: dto.hrFileComment ?? null,
   }
 }
 

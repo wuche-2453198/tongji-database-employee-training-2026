@@ -99,19 +99,25 @@ describe('B2 培训申请领域与 Mock 流程', () => {
 
   it('DTO 映射将未知状态安全降级并保留分页口径', () => {
     const dto: TrainingRequestDto = {
-      requestId: '5009',
+      id: '5009',
       courseId: '4001',
       courseName: '',
       employeeId: 1001,
       employeeName: '',
-      departmentName: '',
-      reason: '',
+      deptId: 101,
+      requestReason: '',
       status: 'FUTURE_STATUS',
-      submittedAt: '2026-08-23T10:00:00+08:00',
+      createTime: '2026-08-23T10:00:00+08:00',
+      deptApproveComment: '部门意见',
+      hrFileComment: '备案意见',
     }
     expect(mapTrainingRequest(dto)).toMatchObject({
       id: '5009',
       courseName: '未命名课程',
+      departmentId: '101',
+      submittedAt: '2026-08-23T10:00:00+08:00',
+      departmentOpinion: '部门意见',
+      hrOpinion: '备案意见',
       status: 'UNKNOWN',
     })
     const envelope: ApiEnvelopeDto<PageDto<TrainingRequestDto>> = {

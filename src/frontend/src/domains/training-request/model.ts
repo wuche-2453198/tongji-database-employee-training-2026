@@ -14,6 +14,7 @@ export interface TrainingRequest {
   courseName: string
   employeeId: number
   employeeName: string
+  departmentId?: string | null
   departmentName: string
   reason: string
   status: TrainingRequestStatus

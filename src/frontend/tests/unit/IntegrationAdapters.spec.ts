@@ -138,7 +138,7 @@ describe('整合分支真实 HTTP 适配器', () => {
     expect(result.items[0]).toMatchObject({ id: '4001', registeredCount: 3, remainingSeats: 17 })
   })
 
-  it('申请列表使用 /my 路径，主管审批使用 dept-approve 动作路径', async () => {
+  it('培训申请使用后端 DTO 字段与动作路径', async () => {
     const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
       if (config.url === '/api/training-requests/my') {
         return response(config, {
@@ -147,28 +147,62 @@ describe('整合分支真实 HTTP 适配器', () => {
           data: { items: [], page: 1, pageSize: 20, total: 0 },
         })
       }
-      if (config.url === '/api/training-requests/5001/dept-approve') {
-        expect(JSON.parse(String(config.data))).toEqual({ Comment: '同意' })
-        return response(config, {
-          success: true,
-          message: 'ok',
-          data: { requestId: 5001 },
+      if (config.url === '/api/training-requests' && config.method === 'post') {
+        expect(JSON.parse(String(config.data))).toEqual({
+          courseId: 4001,
+          requestReason: '提升能力',
         })
-      }
-      if (config.url === '/api/training-requests/5001') {
         return response(config, {
           success: true,
           message: 'ok',
           data: {
-            requestId: 5001,
+            id: 5001,
             courseId: 4001,
             courseName: '数据库实践',
             employeeId: 1,
             employeeName: '员工',
-            departmentName: '技术部',
+            deptId: 101,
+            requestReason: '提升能力',
+            status: 'PENDING',
+            createTime: '2026-08-25T09:00:00+08:00',
+          },
+        })
+      }
+      if (config.url === '/api/training-requests/5001/dept-approve') {
+        expect(JSON.parse(String(config.data))).toEqual({ comment: '同意' })
+        return response(config, {
+          success: true,
+          message: 'ok',
+          data: {
+            id: 5001,
+            courseId: 4001,
+            courseName: '数据库实践',
+            employeeId: 1,
+            employeeName: '员工',
+            deptId: 101,
             requestReason: '提升能力',
             status: 'DEPT_APPROVED',
-            createdAt: '2026-08-25T09:00:00+08:00',
+            createTime: '2026-08-25T09:00:00+08:00',
+            deptApproveComment: '同意',
+          },
+        })
+      }
+      if (config.url === '/api/training-requests/5001/hr-file') {
+        expect(JSON.parse(String(config.data))).toEqual({ comment: '资料完整' })
+        return response(config, {
+          success: true,
+          message: 'ok',
+          data: {
+            id: 5001,
+            courseId: 4001,
+            courseName: '数据库实践',
+            employeeId: 1,
+            employeeName: '员工',
+            deptId: 101,
+            requestReason: '提升能力',
+            status: 'HR_FILED',
+            createTime: '2026-08-25T09:00:00+08:00',
+            hrFileComment: '资料完整',
           },
         })
       }
@@ -179,14 +213,24 @@ describe('整合分支真实 HTTP 适配器', () => {
     await expect(
       httpTrainingRequestService.listMine({ page: 1, pageSize: 20 }),
     ).resolves.toMatchObject({ total: 0 })
+    await expect(
+      httpTrainingRequestService.create({ courseId: '4001', reason: '提升能力' }),
+    ).resolves.toMatchObject({ id: '5001', departmentId: '101' })
     await expect(httpTrainingRequestService.approve('5001', '同意')).resolves.toMatchObject({
       id: '5001',
       status: 'DEPT_APPROVED',
+      departmentOpinion: '同意',
+    })
+    await expect(httpTrainingRequestService.file('5001', '资料完整')).resolves.toMatchObject({
+      id: '5001',
+      status: 'HR_FILED',
+      hrOpinion: '资料完整',
     })
     expect(adapter.mock.calls.map(([config]) => config.url)).toEqual([
       '/api/training-requests/my',
+      '/api/training-requests',
       '/api/training-requests/5001/dept-approve',
-      '/api/training-requests/5001',
+      '/api/training-requests/5001/hr-file',
     ])
     clearAccessToken()
   })

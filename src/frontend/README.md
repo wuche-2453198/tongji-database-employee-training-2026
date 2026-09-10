@@ -36,7 +36,7 @@ M5 API 边界验收页位于 `http://localhost:5173/api-boundary`，可切换正
 页面和 Store 只允许调用 `src/services/` 中的领域服务接口：
 
 - `src/types/` 保存页面可消费的领域模型与统一 `UiError`，不暴露后端字段名。
-- `src/api/transport.ts` 保存等待 OpenAPI 冻结的暂定传输类型。
+- `src/api/transport.ts` 保存后端传输类型；页面和 Store 不得直接使用这些字段。
 - `src/api/mappers/` 负责 DTO 到领域模型的映射及未知枚举兜底。
 - `src/api/client.ts` 集中 Base URL、10 秒超时、取消和查询最多一次有限重试。
 - `src/mocks/` 与 `src/services/http/` 实现相同服务接口，由 `VITE_USE_MOCK` 切换。
@@ -45,7 +45,7 @@ M5 API 边界验收页位于 `http://localhost:5173/api-boundary`，可切换正
 
 真实模式已按当前后端源码接入 `POST /api/auth/login`、`GET /api/auth/me`、本地 JWT 恢复、`Authorization: Bearer` 请求头以及并发401统一清理和登录回跳。角色使用后端 `ADMIN`、`HR`、`DEPT_MANAGER`、`EMPLOYEE`，权限码使用 `PermissionCodes.cs` 的点号格式。
 
-课程和培训申请已建立真实 HTTP 适配器；当前整合基线尚无这两个模块的后端 Controller，因此只能视为“按业务分支记录完成适配、等待 Swagger/真实环境验证”。报名、签到和证书继续以 Mock 模式验收；其 HTTP 适配器对未冻结能力明确返回阻塞错误，不伪造联调结果。
+课程真实读取路径为 `GET /api/courses` 与 `GET /api/courses/{id}`。培训申请已接入 `POST /api/training-requests`、`GET /api/training-requests/my`、`GET /api/training-requests/{id}`、`GET /api/training-requests` 及 `dept-approve`、`dept-reject`、`hr-file` 三个 `PATCH` 动作路径；创建和动作响应均通过 mapper 集中转换。课程和培训申请后端 Controller/DTO 已在当前基线，但仍只是“已接入、待真实环境验证”：尚未拿到运行中的 API、真实数据库和四角色测试账号，不能宣称真实接口联调完成。报名、签到和证书继续以 Mock 模式验收；其 HTTP 适配器对未冻结能力明确返回阻塞错误，不伪造联调结果。
 
 ## Mock 登录
 
