@@ -9,7 +9,10 @@ public interface ITestService
     Task<bool> CreateTestAsync(CreateTestRequest request, int recordedByEmpId);
 
     Task<PagedResult<TrainingTest>> GetTestListAsync(
-        int? employeeId, int? courseId, string? testType, int page, int pageSize);
+        int? employeeId, int? courseId, string? testType,
+        string? employeeName, string? courseName,
+        DateTime? startDateFrom, DateTime? startDateTo,
+        int page, int pageSize);
 
     Task<TestImprovementResponse> GetImprovementAsync(int employeeId, int courseId);
 }

@@ -57,11 +57,15 @@ public sealed class TestService : ITestService
     }
 
     public Task<PagedResult<TrainingTest>> GetTestListAsync(
-        int? employeeId, int? courseId, string? testType, int page, int pageSize)
+        int? employeeId, int? courseId, string? testType,
+        string? employeeName, string? courseName,
+        DateTime? startDateFrom, DateTime? startDateTo,
+        int page, int pageSize)
     {
         page = page < 1 ? 1 : page;
         pageSize = pageSize < 1 ? DefaultPageSize : Math.Min(pageSize, MaxPageSize);
-        return _testRepository.GetPagedListAsync(employeeId, courseId, testType, page, pageSize);
+        return _testRepository.GetPagedListAsync(
+            employeeId, courseId, testType, employeeName, courseName, startDateFrom, startDateTo, page, pageSize);
     }
 
     public async Task<TestImprovementResponse> GetImprovementAsync(int employeeId, int courseId)

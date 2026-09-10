@@ -68,24 +68,47 @@ public sealed class OracleTestRepository : ITestRepository
     }
 
     public async Task<PagedResult<TrainingTest>> GetPagedListAsync(
-        int? employeeId, int? courseId, string? testType, int page, int pageSize)
+        int? employeeId, int? courseId, string? testType,
+        string? employeeName, string? courseName,
+        DateTime? startDateFrom, DateTime? startDateTo,
+        int page, int pageSize)
     {
         var conditions = new List<string>();
         var parameters = new DynamicParameters();
         if (employeeId.HasValue)
         {
-            conditions.Add("EMP_ID = :EmpId");
+            conditions.Add("t.EMP_ID = :EmpId");
             parameters.Add("EmpId", employeeId.Value);
         }
         if (courseId.HasValue)
         {
-            conditions.Add("COURSE_ID = :CourseId");
+            conditions.Add("t.COURSE_ID = :CourseId");
             parameters.Add("CourseId", courseId.Value);
         }
         if (!string.IsNullOrEmpty(testType))
         {
-            conditions.Add("TEST_TYPE = :TestType");
+            conditions.Add("t.TEST_TYPE = :TestType");
             parameters.Add("TestType", testType);
+        }
+        if (!string.IsNullOrWhiteSpace(employeeName))
+        {
+            conditions.Add("e.EMP_NAME LIKE :EmployeeName");
+            parameters.Add("EmployeeName", $"%{employeeName}%");
+        }
+        if (!string.IsNullOrWhiteSpace(courseName))
+        {
+            conditions.Add("c.COURSE_NAME LIKE :CourseName");
+            parameters.Add("CourseName", $"%{courseName}%");
+        }
+        if (startDateFrom.HasValue)
+        {
+            conditions.Add("t.TESTED_AT >= :StartDateFrom");
+            parameters.Add("StartDateFrom", startDateFrom.Value);
+        }
+        if (startDateTo.HasValue)
+        {
+            conditions.Add("t.TESTED_AT <= :StartDateTo");
+            parameters.Add("StartDateTo", startDateTo.Value);
         }
 
         var where = conditions.Count > 0 ? "WHERE " + string.Join(" AND ", conditions) : string.Empty;
@@ -93,18 +116,25 @@ public sealed class OracleTestRepository : ITestRepository
         parameters.Add("PageSize", pageSize);
 
         var itemsSql = """
-            SELECT TEST_ID AS TestId, EMP_ID AS EmpId, COURSE_ID AS CourseId,
-                   TEST_TYPE AS TestType, SCORE AS Score, TESTED_AT AS TestDate,
-                   RECORDED_BY_EMP_ID AS RecordedByEmpId
-            FROM TRAINING_TESTS
+            SELECT t.TEST_ID AS TestId, t.EMP_ID AS EmpId, t.COURSE_ID AS CourseId,
+                   t.TEST_TYPE AS TestType, t.SCORE AS Score, t.TESTED_AT AS TestedAt,
+                   t.RECORDED_BY_EMP_ID AS RecordedByEmpId,
+                   e.EMP_NAME AS EmployeeName, c.COURSE_NAME AS CourseName
+            FROM TRAINING_TESTS t
+            LEFT JOIN EMPLOYEES e ON t.EMP_ID = e.EMP_ID
+            LEFT JOIN TRAINING_COURSES c ON t.COURSE_ID = c.COURSE_ID
             """ + $"""
 
             {where}
-            ORDER BY TEST_ID DESC
+            ORDER BY t.TESTED_AT DESC
             OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY
             """;
         var countSql = $"""
-            SELECT COUNT(1) FROM TRAINING_TESTS {where}
+            SELECT COUNT(1)
+            FROM TRAINING_TESTS t
+            LEFT JOIN EMPLOYEES e ON t.EMP_ID = e.EMP_ID
+            LEFT JOIN TRAINING_COURSES c ON t.COURSE_ID = c.COURSE_ID
+            {where}
             """;
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
