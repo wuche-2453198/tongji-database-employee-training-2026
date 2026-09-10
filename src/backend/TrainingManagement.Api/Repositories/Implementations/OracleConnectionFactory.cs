@@ -1,6 +1,7 @@
 using System.Data.Common;
 using Microsoft.Extensions.Options;
 using Oracle.ManagedDataAccess.Client;
+using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Common.Options;
 using TrainingManagement.Api.Repositories.Interfaces;
 
@@ -54,12 +55,25 @@ public sealed class OracleConnectionFactory : IDbConnectionFactory
     {
         if (!IsConfigured)
         {
-            throw new InvalidOperationException("Oracle connection string is not configured.");
+            throw new DatabaseUnavailableException("数据库连接串未配置，服务暂不可用。");
         }
 
         var connection = new OracleConnection(_connectionString);
-        await connection.OpenAsync(cancellationToken);
-        await SetCurrentSchemaAsync(connection, cancellationToken);
+
+        try
+        {
+            await connection.OpenAsync(cancellationToken);
+            await SetCurrentSchemaAsync(connection, cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            // 连接建立阶段的失败统一按"数据库不可达"处理（503），SQL 执行期错误仍为 500。
+            await connection.DisposeAsync();
+            throw new DatabaseUnavailableException(
+                "数据库暂时不可用，请稍后重试。",
+                exception);
+        }
+
         return connection;
     }
 

@@ -21,6 +21,21 @@ internal static class RepositoryContractTests
         yield return ("Course repository binds expected states and observes affected rows", ConditionalUpdatesAsync);
         yield return ("Course repository capacity mapping and department gate", CapacityAndDepartmentAsync);
         yield return ("Course and trainer inserts bind output IDs", InsertIdsAsync);
+        yield return ("Unconfigured database fails fast with the unified unavailable exception", UnavailableDatabaseAsync);
+    }
+
+    /// <summary>连接串为空时必须立刻抛出统一异常（中间件映射 503），而不是各仓储各自 500 或返回空数据。</summary>
+    private static Task UnavailableDatabaseAsync()
+    {
+        var factory = new OracleConnectionFactory(
+            Microsoft.Extensions.Options.Options.Create(new Common.Options.DatabaseOptions { OracleDb = "" }),
+            Microsoft.Extensions.Options.Options.Create(new Common.Options.OracleOptions { CurrentSchema = "TRAINING_OWNER" }));
+
+        TestAssert.True(!factory.IsConfigured, "Empty connection string must report as unconfigured.");
+
+        return TestAssert.ThrowsAsync<Common.Exceptions.DatabaseUnavailableException>(
+            () => factory.CreateOpenConnectionAsync(CancellationToken.None),
+            "Unconfigured database must fail fast with a unified exception.");
     }
 
     private static async Task TrainerPagingAsync()

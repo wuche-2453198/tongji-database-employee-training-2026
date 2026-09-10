@@ -35,6 +35,18 @@ public sealed class ExceptionHandlingMiddleware
                 exception.Message,
                 exception.Errors);
         }
+        catch (DatabaseUnavailableException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Database unavailable. TraceId: {TraceId}, Path: {Path}",
+                context.TraceIdentifier,
+                context.Request.Path);
+
+            await context.WriteErrorResponseAsync(
+                StatusCodes.Status503ServiceUnavailable,
+                exception.Message);
+        }
         catch (Exception exception)
         {
             _logger.LogError(
