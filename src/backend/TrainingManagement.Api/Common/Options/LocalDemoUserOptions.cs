@@ -1,5 +1,6 @@
 namespace TrainingManagement.Api.Common.Options;
 
+/// <summary>本地演示用户资料，仅用于显式开启演示认证的场景。</summary>
 public sealed class LocalDemoUserOptions
 {
     public long EmpId { get; init; }

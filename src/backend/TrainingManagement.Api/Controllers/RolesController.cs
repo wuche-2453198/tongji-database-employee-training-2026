@@ -13,11 +13,13 @@ public sealed class RolesController : ApiControllerBase
 {
     private readonly IRoleService _roleService;
 
+    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
     public RolesController(IRoleService roleService)
     {
         _roleService = roleService;
     }
 
+    /// <summary>返回角色及权限列表；控制器级策略限制为管理员访问。</summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<RoleResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

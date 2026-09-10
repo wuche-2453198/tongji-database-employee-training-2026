@@ -8,6 +8,7 @@ public class BusinessException : Exception
 
     public IReadOnlyCollection<ApiError> Errors { get; }
 
+    /// <summary>携带业务错误消息、HTTP 状态码和字段错误，交由异常中间件统一处理。</summary>
     public BusinessException(
         string message,
         int statusCode = StatusCodes.Status400BadRequest,

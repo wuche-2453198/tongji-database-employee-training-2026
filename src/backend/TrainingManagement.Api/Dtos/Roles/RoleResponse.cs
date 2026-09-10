@@ -1,5 +1,6 @@
 namespace TrainingManagement.Api.Dtos.Roles;
 
+/// <summary>角色查询接口的返回结构。</summary>
 public sealed class RoleResponse
 {
     public long RoleId { get; init; }

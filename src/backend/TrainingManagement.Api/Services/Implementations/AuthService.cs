@@ -18,6 +18,7 @@ public sealed class AuthService : IAuthService
     private readonly AuthOptions _authOptions;
     private readonly ILogger<AuthService> _logger;
 
+    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
     public AuthService(
         IAuthRepository authRepository,
         ITokenService tokenService,
@@ -30,6 +31,7 @@ public sealed class AuthService : IAuthService
         _logger = logger;
     }
 
+    /// <summary>验证登录信息；优先查数据库，显式开启演示账号后才尝试本地账号，成功时签发令牌。</summary>
     public async Task<LoginResponse> LoginAsync(
         LoginRequest request,
         CancellationToken cancellationToken)
@@ -55,6 +57,7 @@ public sealed class AuthService : IAuthService
         };
     }
 
+    /// <summary>从已认证身份提取员工编号，优先读取数据库；未找到记录时按配置尝试演示用户，最后使用令牌声明构造用户。</summary>
     public async Task<AuthUserResponse> GetCurrentUserAsync(
         ClaimsPrincipal principal,
         CancellationToken cancellationToken)
@@ -96,6 +99,7 @@ public sealed class AuthService : IAuthService
         return BuildUserFromClaims(principal, empId.Value);
     }
 
+    /// <summary>查询员工、校验密码并加载角色；凭据错误直接拒绝，数据库异常仅在允许回退时转为未找到用户。</summary>
     private async Task<AuthUserResponse?> FindDatabaseUserAsync(
         string identifier,
         string password,
@@ -133,12 +137,14 @@ public sealed class AuthService : IAuthService
         }
     }
 
+    /// <summary>仅当演示账号和数据库失败回退两个开关同时开启时，允许异常回退。</summary>
     private bool CanFallbackToLocalUsers()
     {
         return _authOptions.EnableLocalDemoUsers
             && _authOptions.FallbackToLocalUsersOnDatabaseFailure;
     }
 
+    /// <summary>使用 BCrypt 验证密码哈希；空哈希或盐格式错误均视为校验失败。</summary>
     private static bool VerifyPassword(string password, string passwordHash)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
@@ -156,6 +162,7 @@ public sealed class AuthService : IAuthService
         }
     }
 
+    /// <summary>按演示配置匹配账号和共用密码；开关关闭时不参与认证。</summary>
     private AuthUserResponse? FindLocalDemoUser(string identifier, string password)
     {
         if (!_authOptions.EnableLocalDemoUsers
@@ -173,6 +180,7 @@ public sealed class AuthService : IAuthService
         return user is null ? null : BuildLocalDemoUser(user);
     }
 
+    /// <summary>检查在职状态，组装用户资料、角色和去重权限；没有角色记录时使用员工默认角色。</summary>
     private static AuthUserResponse BuildUser(
         EmployeeAuthRecord employee,
         IReadOnlyCollection<RoleRecord> roleRecords)
@@ -215,6 +223,7 @@ public sealed class AuthService : IAuthService
         };
     }
 
+    /// <summary>统一角色代码并解析权限，兼容数据库中的 MANAGER 角色名称。</summary>
     private static AuthRoleResponse ToAuthRoleResponse(RoleRecord role)
     {
         var roleCode = RoleCodes.Normalize(string.IsNullOrWhiteSpace(role.RoleCode)
@@ -230,6 +239,7 @@ public sealed class AuthService : IAuthService
         };
     }
 
+    /// <summary>将本地演示配置转换为登录响应用户，不查询数据库。</summary>
     private static AuthUserResponse BuildLocalDemoUser(LocalDemoUserOptions user)
     {
         var roles = user.Roles.Count == 0
@@ -268,6 +278,7 @@ public sealed class AuthService : IAuthService
         };
     }
 
+    /// <summary>从令牌声明重建用户资料；此路径不重新核验数据库中的员工状态。</summary>
     private static AuthUserResponse BuildUserFromClaims(ClaimsPrincipal principal, long empId)
     {
         var roles = principal

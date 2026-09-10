@@ -11,11 +11,13 @@ public sealed class AuthController : ApiControllerBase
 {
     private readonly IAuthService _authService;
 
+    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
     public AuthController(IAuthService authService)
     {
         _authService = authService;
     }
 
+    /// <summary>接收匿名登录请求，交给认证服务验证后返回统一响应。</summary>
     [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType(typeof(ApiResponse<LoginResponse>), StatusCodes.Status200OK)]
@@ -29,6 +31,7 @@ public sealed class AuthController : ApiControllerBase
         return OkResponse(response);
     }
 
+    /// <summary>返回当前登录用户资料；访问前必须通过 JWT 身份认证。</summary>
     [Authorize]
     [HttpGet("me")]
     [ProducesResponseType(typeof(ApiResponse<AuthUserResponse>), StatusCodes.Status200OK)]
