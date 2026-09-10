@@ -131,6 +131,7 @@ internal static class RepositoryContractTests
         public int AffectedRows { get; set; } = 1;
         public bool IsConfigured => true;
         public Task<DbConnection> CreateOpenConnectionAsync(CancellationToken token) => Task.FromResult<DbConnection>(this);
+        public Task<IDbSession> BeginSessionAsync(CancellationToken token) => throw new NotSupportedException("契约测试不覆盖事务会话。");
         [AllowNull] public override string ConnectionString { get; set; } = "";
         public override string Database => "recorded";
         public override string DataSource => "recorded";
