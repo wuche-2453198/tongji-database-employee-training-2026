@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Common.Security;
 using TrainingManagement.Api.Dtos.Organization;
@@ -45,7 +46,7 @@ public sealed class EmployeesController : ApiControllerBase
         var result = await _employeeService.GetByIdAsync(id, cancellationToken);
         if (result is null)
         {
-            return NotFound();
+            throw new NotFoundApiException("员工不存在。");
         }
         return OkResponse(result);
     }

@@ -195,9 +195,9 @@ builder.Services.AddScoped<ITrainerRepository, OracleTrainerRepository>();
 builder.Services.AddScoped<ICourseRepository, OracleCourseRepository>();
 builder.Services.AddScoped<IRegistrationRepository, OracleRegistrationRepository>();
 builder.Services.AddScoped<IAttendanceRepository, OracleAttendanceRepository>();
-builder.Services.AddScoped<IRatingRepository, RatingRepository>();
-builder.Services.AddScoped<ITestRepository, TestRepository>();
-builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
+builder.Services.AddScoped<IRatingRepository, OracleRatingRepository>();
+builder.Services.AddScoped<ITestRepository, OracleTestRepository>();
+builder.Services.AddScoped<ICertificateRepository, OracleCertificateRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
