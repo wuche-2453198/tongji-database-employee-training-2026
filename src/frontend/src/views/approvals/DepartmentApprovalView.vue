@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/common/AppButton.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
@@ -17,9 +17,10 @@ import type {
   TrainingRequestStatus,
 } from '@/domains/training-request'
 import type { TableColumn } from '@/types/ui'
-import { compactListQuery } from '@/utils/list-route-state'
+import { compactListQuery, readPositiveQueryInteger, readQueryString } from '@/utils/list-route-state'
 
 const router = useRouter()
+const route = useRoute()
 const filters = reactive({
   employeeKeyword: '',
   keyword: '',
@@ -179,7 +180,28 @@ async function submit() {
     saving.value = false
   }
 }
-onMounted(load)
+function applyRouteQuery() {
+  const { query } = route
+  filters.employeeKeyword = readQueryString(query.employeeKeyword)
+  filters.keyword = readQueryString(query.keyword)
+  const status = readQueryString(query.status)
+  filters.status =
+    status === 'PENDING' ||
+    status === 'DEPT_APPROVED' ||
+    status === 'DEPT_REJECTED' ||
+    status === 'HR_FILED'
+      ? (status as TrainingRequestStatus)
+      : 'PENDING'
+  const from = readQueryString(query.startDateFrom)
+  const to = readQueryString(query.startDateTo)
+  filters.dateRange = from && to ? [from, to] : []
+  filters.page = readPositiveQueryInteger(query.page, 1)
+  filters.pageSize = readPositiveQueryInteger(query.pageSize, 20)
+}
+onMounted(() => {
+  applyRouteQuery()
+  load()
+})
 </script>
 
 <template>
@@ -254,9 +276,8 @@ onMounted(load)
     <PageState
       v-else-if="state === 'no-result'"
       state="no-result"
-      secondary-label="清空筛选"
       compact
-      @secondary="
+      @primary="
         sync({ employeeKeyword: '', keyword: '', status: 'PENDING', dateRange: [], page: 1 }, true)
       "
     />

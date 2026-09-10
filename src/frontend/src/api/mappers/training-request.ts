@@ -15,7 +15,7 @@ const mapStatus = (value: string): TrainingRequestStatus =>
 
 export function mapTrainingRequest(dto: TrainingRequestDto): TrainingRequest {
   return {
-    id: String(dto.requestId),
+    id: String(dto.id ?? dto.requestId),
     courseId: String(dto.courseId),
     courseName: dto.courseName || '未命名课程',
     employeeId: dto.employeeId ?? dto.empId ?? 0,
@@ -23,10 +23,10 @@ export function mapTrainingRequest(dto: TrainingRequestDto): TrainingRequest {
     departmentName: dto.departmentName || dto.deptName || '—',
     reason: dto.reason || dto.requestReason || '',
     status: mapStatus(dto.status),
-    submittedAt: dto.submittedAt || dto.createdAt || '',
+    submittedAt: dto.submittedAt || dto.createdAt || dto.createTime || '',
     updatedAt: dto.updatedAt ?? null,
     departmentOpinion: dto.deptApproveComment ?? null,
-    hrOpinion: dto.hrFilingComment ?? null,
+    hrOpinion: dto.hrFileComment ?? dto.hrFilingComment ?? null,
   }
 }
 

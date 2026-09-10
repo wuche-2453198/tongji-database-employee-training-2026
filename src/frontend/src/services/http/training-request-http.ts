@@ -15,6 +15,11 @@ const unwrap = <T>(envelope: ApiEnvelopeDto<T>): T => {
 
 const queryParams = (query: Parameters<TrainingRequestService['listMine']>[0]) => ({
   Status: query.status === 'UNKNOWN' ? undefined : query.status || undefined,
+  EmployeeName: query.employeeKeyword || undefined,
+  CourseName: query.keyword || undefined,
+  DepartmentName: query.departmentName || undefined,
+  StartDateFrom: query.startDateFrom || undefined,
+  StartDateTo: query.startDateTo || undefined,
   Page: query.page,
   PageSize: query.pageSize,
 })

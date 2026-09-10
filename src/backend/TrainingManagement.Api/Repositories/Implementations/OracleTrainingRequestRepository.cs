@@ -14,6 +14,7 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
             r.EMP_ID                  AS "EmployeeId",
             e.EMP_NAME                AS "EmployeeName",
             e.DEPT_ID                 AS "DeptId",
+            d.DEPT_NAME               AS "DepartmentName",
             r.COURSE_ID               AS "CourseId",
             c.COURSE_NAME             AS "CourseName",
             r.REASON                  AS "RequestReason",
@@ -29,6 +30,7 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
             r.HR_FILE_REMARK          AS "HrFileComment"
         FROM TRAINING_REQUESTS r
             LEFT JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d ON e.DEPT_ID = d.DEPT_ID
             LEFT JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
             LEFT JOIN EMPLOYEES a ON r.DEPT_APPROVER_EMP_ID = a.EMP_ID
             LEFT JOIN EMPLOYEES h ON r.HR_FILER_EMP_ID = h.EMP_ID
@@ -84,6 +86,11 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
         int? employeeId,
         int? courseId,
         int? deptId,
+        string? employeeName,
+        string? courseName,
+        string? departmentName,
+        DateTime? startDateFrom,
+        DateTime? startDateTo,
         int page,
         int pageSize,
         CancellationToken cancellationToken)
@@ -107,6 +114,36 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
         {
             conditions.Add("r.COURSE_ID = :CourseId");
             parameters.Add("CourseId", courseId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(employeeName))
+        {
+            conditions.Add("e.EMP_NAME LIKE :EmployeeName");
+            parameters.Add("EmployeeName", $"%{employeeName}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(courseName))
+        {
+            conditions.Add("c.COURSE_NAME LIKE :CourseName");
+            parameters.Add("CourseName", $"%{courseName}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(departmentName))
+        {
+            conditions.Add("d.DEPT_NAME LIKE :DepartmentName");
+            parameters.Add("DepartmentName", $"%{departmentName}%");
+        }
+
+        if (startDateFrom.HasValue)
+        {
+            conditions.Add("r.REQUESTED_AT >= :StartDateFrom");
+            parameters.Add("StartDateFrom", startDateFrom.Value);
+        }
+
+        if (startDateTo.HasValue)
+        {
+            conditions.Add("r.REQUESTED_AT <= :StartDateTo");
+            parameters.Add("StartDateTo", startDateTo.Value);
         }
 
         if (deptId.HasValue)
@@ -134,6 +171,9 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
         var countSql = $"""
             SELECT COUNT(*)
             FROM TRAINING_REQUESTS r
+            LEFT JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d ON e.DEPT_ID = d.DEPT_ID
+            LEFT JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
             {whereClause}
             """;
 
