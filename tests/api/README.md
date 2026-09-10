@@ -2,7 +2,7 @@
 
 维护协调人：彭浩。所有主路径和关键失败路径使用 `.http` 文件或导出的 Postman/Apifox 集合保存，保证他人可复现。
 
-## 当前文件状态（2026-09-09 盘点）
+## 当前文件状态（2026-09-10 盘点）
 
 | 文件 | 覆盖模块 | 状态 |
 | --- | --- | --- |
@@ -12,10 +12,10 @@
 | `trainers.http` | 讲师 CRUD | 已有 |
 | `training-requests.http` | 申请提交、查询范围、主管审批、HR 备案 | 已有（2026-09-09 由 `tests/backend/` 迁入） |
 | `training-requests.md` | 上述用例的准备步骤、预期结果与 REQ 对照 | 已有（同上迁入） |
-| `employees.http` | 员工、部门预算、黑名单 | **待补**（组织模块已合入 `develop`，用例尚未编写） |
+| `employees.http` | 员工、部门预算、黑名单 | 已有（2026-09-10 补齐） |
 | `registrations.http`、`attendance.http` | 报名、签到、缺勤、完成 | 已有（随报名签到模块合入 `develop`） |
-| `results.http` | 评分、测试、证书 | **待补** |
-| `demo-flow.http` | 四角色主链路端到端 | **待补** |
+| `results.http` | 评分、测试、证书 | 已有（2026-09-10 补齐） |
+| `demo-flow.http` | 四角色主链路端到端 | 已有（2026-09-10 补齐，含发布失败回滚与备案后报名路径） |
 
 `tests/api/` 只放可复现的 HTTP 用例及其说明；C# 单元/契约测试一律放在 `tests/backend/`，不要把 `.http` 或测试说明写进 `tests/backend/`。
 

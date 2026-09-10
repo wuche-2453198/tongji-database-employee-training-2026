@@ -1,0 +1,160 @@
+@baseUrl = http://localhost:5156
+@adminToken = replace-with-admin-token
+@managerToken = replace-with-dept-manager-token
+@hrToken = replace-with-hr-token
+@employeeToken = replace-with-employee-token
+
+# 四角色主链路：课程发布 -> 申请 -> 主管审批 -> HR 备案 -> 报名 -> 签到/完成 -> 评分/测试 -> 证书
+# 每一步都必须使用本轮新建的数据，不能直接复用种子里的历史流程。
+# 失败用例的期望见 tests/api/registrations.http、results.http 与 document/03-质量交付/测试联调与发布验收.md 第 5 节。
+
+### 1. 管理员登录
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "admin",
+  "password": "Password2026!"
+}
+
+### 2. 员工 / 主管 / HR 登录
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "employee",
+  "password": "Password2026!"
+}
+
+### 3. 管理员创建草稿课程（部门预算必须充足）
+POST {{baseUrl}}/api/courses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "courseName": "验收链路课程 2026",
+  "courseType": "技术培训",
+  "durationHours": 4,
+  "trainerId": 1,
+  "maxStudents": 10,
+  "startAt": "2026-12-01T09:00:00",
+  "endAt": "2026-12-01T13:00:00",
+  "location": "总部第一会议室",
+  "budgetAmount": 1000,
+  "deptId": 1
+}
+
+### 4. 管理员发布课程：预期 200，且部门 USED_BUDGET 同事务增加
+PATCH {{baseUrl}}/api/courses/{{courseId}}/publish
+Authorization: Bearer {{adminToken}}
+
+### 4b. 预算不足时发布：预期 409，且课程仍为 DRAFT
+# 先用 PUT 把部门年度预算调到低于课程预算，再重复第 4 步；失败后必须回滚课程状态。
+
+### 5. 员工提交培训申请，预期 201
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}},
+  "requestReason": "岗位需要，申请参加本次培训"
+}
+
+### 5b. 重复提交同一课程，预期 409
+POST {{baseUrl}}/api/training-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}},
+  "requestReason": "重复提交"
+}
+
+### 6. 本部门主管审批通过，预期 200
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/dept-approve
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "comment": "同意参加"
+}
+
+### 6b. 其他部门主管审批同一申请，预期 403
+# 用另一个部门的 DEPT_MANAGER 账号重复第 6 步。
+
+### 7. HR 备案，预期 200；备案意见写入 HR_FILE_REMARK
+PATCH {{baseUrl}}/api/training-requests/{{requestId}}/hr-file
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "comment": "材料齐全，同意备案"
+}
+
+### 8. 员工使用已备案申请报名，预期 201（客户端只提交 courseId，requestId 由服务端派生）
+POST {{baseUrl}}/api/registrations
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}}
+}
+
+### 8b. 重复有效报名，预期 409
+POST {{baseUrl}}/api/registrations
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}}
+}
+
+### 9. HR 签到，预期 200；迟到分钟与实际学时由服务端计算
+POST {{baseUrl}}/api/registrations/{{regId}}/signin
+Authorization: Bearer {{hrToken}}
+
+### 10. 课程结束后完成培训，预期 200（未签到报名不可完成）
+PATCH {{baseUrl}}/api/registrations/{{regId}}/complete
+Authorization: Bearer {{hrToken}}
+
+### 11. 员工评分，预期 200；未完成培训时预期 400
+POST {{baseUrl}}/api/ratings
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}},
+  "trainerId": 1,
+  "score": 5,
+  "ratingComment": "讲师讲解清晰"
+}
+
+### 12. HR 录入训前/训后测试，预期 200（PRE 需备案且开课前，POST 需课程结束后）
+POST {{baseUrl}}/api/tests
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "empId": {{employeeEmpId}},
+  "courseId": {{courseId}},
+  "testType": "POST",
+  "score": 85
+}
+
+### 13. HR 生成证书，预期 201；第二次生成预期 409
+POST {{baseUrl}}/api/certificates
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "registrationId": {{regId}}
+}
+
+### 14. 员工查询本人证书，预期 200 且只包含本人数据
+GET {{baseUrl}}/api/certificates/my
+Authorization: Bearer {{employeeToken}}
+
+### 15. 数据库核验
+# 执行 database/oracle/samples/S001__verification.sql，确认无孤儿外键、重复有效报名、
+# 预算透支（USED_BUDGET > ANNUAL_BUDGET）与重复证书。

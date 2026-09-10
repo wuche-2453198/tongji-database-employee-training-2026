@@ -1,0 +1,207 @@
+@baseUrl = http://localhost:5156
+@employeeToken = replace-with-employee-token
+@hrToken = replace-with-hr-or-admin-token
+@courseId = replace-with-completed-course-id
+@trainerId = replace-with-trainer-id
+@registrationId = replace-with-completed-registration-id
+@empId = replace-with-employee-id
+@ratingId = replace-with-rating-id
+@certId = replace-with-certificate-id
+
+### Login as employee
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "employee",
+  "password": "Password2026!"
+}
+
+### Login as HR
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "hr",
+  "password": "Password2026!"
+}
+
+### Rating list, expected 200
+GET {{baseUrl}}/api/ratings?courseId={{courseId}}&page=1&pageSize=20
+Authorization: Bearer {{employeeToken}}
+
+### Average rating for a course, expected 200
+GET {{baseUrl}}/api/ratings/average?courseId={{courseId}}
+Authorization: Bearer {{employeeToken}}
+
+### Create rating after COMPLETED training, expected 200
+POST {{baseUrl}}/api/ratings
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}},
+  "trainerId": {{trainerId}},
+  "score": 5,
+  "ratingComment": "内容实用"
+}
+
+### Duplicate rating for the same employee/course/trainer, expected 400 or 409
+POST {{baseUrl}}/api/ratings
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": {{courseId}},
+  "trainerId": {{trainerId}},
+  "score": 4
+}
+
+### Rating before COMPLETED training, expected 400 (use a REGISTERED course)
+POST {{baseUrl}}/api/ratings
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "courseId": 999999,
+  "trainerId": {{trainerId}},
+  "score": 5
+}
+
+### HR verify rating, expected 200
+PATCH {{baseUrl}}/api/ratings/{{ratingId}}/verify
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "verifyComment": "复核通过"
+}
+
+### Verify rating as employee, expected 403
+PATCH {{baseUrl}}/api/ratings/{{ratingId}}/verify
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "verifyComment": "越权复核"
+}
+
+### PRE test before course start (after HR filing), expected 200
+POST {{baseUrl}}/api/tests
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "empId": {{empId}},
+  "courseId": {{courseId}},
+  "testType": "PRE",
+  "score": 62
+}
+
+### POST test after course end, expected 200
+POST {{baseUrl}}/api/tests
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "empId": {{empId}},
+  "courseId": {{courseId}},
+  "testType": "POST",
+  "score": 88
+}
+
+### Duplicate PRE for the same employee/course, expected 400 or 409
+POST {{baseUrl}}/api/tests
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "empId": {{empId}},
+  "courseId": {{courseId}},
+  "testType": "PRE",
+  "score": 70
+}
+
+### Score out of range, expected 400
+POST {{baseUrl}}/api/tests
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "empId": {{empId}},
+  "courseId": {{courseId}},
+  "testType": "POST",
+  "score": 120
+}
+
+### Test list as employee, expected 200 and only own records
+GET {{baseUrl}}/api/tests?page=1&pageSize=20
+Authorization: Bearer {{employeeToken}}
+
+### Write test score as employee, expected 403
+POST {{baseUrl}}/api/tests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "empId": {{empId}},
+  "courseId": {{courseId}},
+  "testType": "POST",
+  "score": 90
+}
+
+### Improvement for one employee/course, expected 200
+GET {{baseUrl}}/api/tests/improvement?employeeId={{empId}}&courseId={{courseId}}
+Authorization: Bearer {{hrToken}}
+
+### Generate certificate from a COMPLETED registration, expected 201
+POST {{baseUrl}}/api/certificates
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "registrationId": {{registrationId}}
+}
+
+### Generate the same certificate again, expected 409
+POST {{baseUrl}}/api/certificates
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "registrationId": {{registrationId}}
+}
+
+### Generate certificate from a non-COMPLETED registration, expected 400 or 409
+POST {{baseUrl}}/api/certificates
+Authorization: Bearer {{hrToken}}
+Content-Type: application/json
+
+{
+  "registrationId": 999999
+}
+
+### Generate certificate as employee, expected 403
+POST {{baseUrl}}/api/certificates
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "registrationId": {{registrationId}}
+}
+
+### My certificates, expected 200
+GET {{baseUrl}}/api/certificates/my
+Authorization: Bearer {{employeeToken}}
+
+### Certificate detail, expected 200
+GET {{baseUrl}}/api/certificates/{{certId}}
+Authorization: Bearer {{employeeToken}}
+
+### Read another employee certificate as employee, expected 403 or 404
+GET {{baseUrl}}/api/certificates/{{certId}}
+Authorization: Bearer {{employeeToken}}
+
+### Mark expiry notification, expected 200; NOTIFIED=N and NOTIFIED_AT written
+PATCH {{baseUrl}}/api/certificates/{{certId}}/notify
+Authorization: Bearer {{hrToken}}

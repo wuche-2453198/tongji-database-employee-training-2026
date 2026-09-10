@@ -1,0 +1,118 @@
+@baseUrl = http://localhost:5156
+@adminToken = replace-with-admin-token
+@hrToken = replace-with-hr-or-admin-token
+@empId = replace-with-employee-id
+@deptId = replace-with-department-id
+@blacklistId = replace-with-blacklist-id
+
+### Login as admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "admin",
+  "password": "Password2026!"
+}
+
+### Login as HR
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "hr",
+  "password": "Password2026!"
+}
+
+### Employee list (HR/admin only), expected 200
+GET {{baseUrl}}/api/employees?page=1&pageSize=20
+Authorization: Bearer {{hrToken}}
+
+### Employee detail, expected 200
+GET {{baseUrl}}/api/employees/{{empId}}
+Authorization: Bearer {{hrToken}}
+
+### Employee list as employee, expected 403
+GET {{baseUrl}}/api/employees?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### Create employee (admin only), expected 201
+POST {{baseUrl}}/api/employees
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "loginName": "demo.new",
+  "empName": "新员工",
+  "deptName": "研发部",
+  "position": "工程师",
+  "email": "demo.new@example.com",
+  "phone": "13900000000",
+  "hireDate": "2026-09-01T00:00:00",
+  "password": "Demo@123"
+}
+
+### Update employee status to RESIGNED, expected 200
+PUT {{baseUrl}}/api/employees/{{empId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "RESIGNED"
+}
+
+### Soft delete employee (status becomes RESIGNED), expected 200
+DELETE {{baseUrl}}/api/employees/{{empId}}
+Authorization: Bearer {{adminToken}}
+
+### Department budget list (HR/admin only), expected 200
+GET {{baseUrl}}/api/department-trainings?page=1&pageSize=20
+Authorization: Bearer {{hrToken}}
+
+### Department budget detail, expected 200 with REMAIN_BUDGET computed by the database
+GET {{baseUrl}}/api/department-trainings/{{deptId}}
+Authorization: Bearer {{hrToken}}
+
+### Update annual budget (admin only), expected 200; USED_BUDGET must stay unchanged
+PUT {{baseUrl}}/api/department-trainings/{{deptId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "deptName": "研发部",
+  "annualBudget": 200000
+}
+
+### Blacklist list (HR/admin only), expected 200
+GET {{baseUrl}}/api/blacklists?page=1&pageSize=20
+Authorization: Bearer {{hrToken}}
+
+### Create blacklist entry (admin only), expected 201
+POST {{baseUrl}}/api/blacklists
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "empId": {{empId}},
+  "reason": "连续两次缺勤",
+  "startDate": "2026-09-01T00:00:00"
+}
+
+### Duplicate active blacklist for the same employee, expected 409
+POST {{baseUrl}}/api/blacklists
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "empId": {{empId}},
+  "reason": "重复生效记录",
+  "startDate": "2026-09-02T00:00:00"
+}
+
+### Release blacklist entry, expected 200 (writes END_AT)
+PUT {{baseUrl}}/api/blacklists/{{blacklistId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "RELEASED"
+}
