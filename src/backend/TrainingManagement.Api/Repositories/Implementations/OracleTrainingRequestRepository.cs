@@ -14,6 +14,7 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
             r.EMP_ID                  AS "EmployeeId",
             e.EMP_NAME                AS "EmployeeName",
             e.DEPT_ID                 AS "DeptId",
+            d.DEPT_NAME               AS "DeptName",
             r.COURSE_ID               AS "CourseId",
             c.COURSE_NAME             AS "CourseName",
             r.REASON                  AS "RequestReason",
@@ -29,6 +30,7 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
             r.HR_FILE_REMARK          AS "HrFileComment"
         FROM TRAINING_REQUESTS r
             LEFT JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d ON e.DEPT_ID = d.DEPT_ID
             LEFT JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
             LEFT JOIN EMPLOYEES a ON r.DEPT_APPROVER_EMP_ID = a.EMP_ID
             LEFT JOIN EMPLOYEES h ON r.HR_FILER_EMP_ID = h.EMP_ID
@@ -83,6 +85,7 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
         string? status,
         int? employeeId,
         int? courseId,
+        string? departmentName,
         int? deptId,
         int page,
         int pageSize,
@@ -107,6 +110,21 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
         {
             conditions.Add("r.COURSE_ID = :CourseId");
             parameters.Add("CourseId", courseId.Value);
+        }
+
+        // 部门名模糊筛选同样使用 EXISTS，保证该 where 子句也能直接用于无 JOIN 的 COUNT 查询。
+        if (!string.IsNullOrWhiteSpace(departmentName))
+        {
+            conditions.Add("""
+                EXISTS (
+                    SELECT 1
+                    FROM EMPLOYEES de
+                        JOIN DEPARTMENTS_TRAINING dd ON de.DEPT_ID = dd.DEPT_ID
+                    WHERE de.EMP_ID = r.EMP_ID
+                      AND LOWER(dd.DEPT_NAME) LIKE LOWER(:DepartmentName)
+                )
+                """);
+            parameters.Add("DepartmentName", $"%{departmentName.Trim()}%");
         }
 
         if (deptId.HasValue)

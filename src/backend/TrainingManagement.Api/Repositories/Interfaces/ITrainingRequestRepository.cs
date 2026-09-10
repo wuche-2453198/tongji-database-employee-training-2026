@@ -12,6 +12,7 @@ public interface ITrainingRequestRepository
         string? status,
         int? employeeId,
         int? courseId,
+        string? departmentName,
         int? deptId,
         int page,
         int pageSize,
