@@ -7,11 +7,11 @@ using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
 
 namespace TrainingManagement.Api.Repositories.Implementations;
-public sealed class RatingRepository : IRatingRepository
+public sealed class OracleRatingRepository : IRatingRepository
 {
     private readonly IDbConnectionFactory _connectionFactory;
 
-    public RatingRepository(IDbConnectionFactory connectionFactory)
+    public OracleRatingRepository(IDbConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }

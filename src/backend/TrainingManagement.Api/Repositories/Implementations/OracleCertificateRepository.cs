@@ -7,11 +7,11 @@ using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
 
 namespace TrainingManagement.Api.Repositories.Implementations;
-public sealed class CertificateRepository : ICertificateRepository
+public sealed class OracleCertificateRepository : ICertificateRepository
 {
     private readonly IDbConnectionFactory _connectionFactory;
 
-    public CertificateRepository(IDbConnectionFactory connectionFactory)
+    public OracleCertificateRepository(IDbConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }

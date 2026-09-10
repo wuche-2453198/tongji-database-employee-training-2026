@@ -59,7 +59,7 @@ public sealed class RatingsController : ApiControllerBase
         [FromBody] VerifyRatingRequest request)
     {
         var hrVerifierEmpId = GetCurrentEmployeeId();
-        var result = await _ratingService.VerifyRatingAsync(id, request.VerifyComment, hrVerifierEmpId);
+        var result = await _ratingService.VerifyRatingAsync(id, request.VerifyComment ?? string.Empty, hrVerifierEmpId);
         return OkResponse(result, "复核完成");
     }
 

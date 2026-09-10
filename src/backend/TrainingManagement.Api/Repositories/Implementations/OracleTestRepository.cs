@@ -8,11 +8,11 @@ using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
 
 namespace TrainingManagement.Api.Repositories.Implementations;
-public sealed class TestRepository : ITestRepository
+public sealed class OracleTestRepository : ITestRepository
 {
     private readonly IDbConnectionFactory _connectionFactory;
 
-    public TestRepository(IDbConnectionFactory connectionFactory)
+    public OracleTestRepository(IDbConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }
