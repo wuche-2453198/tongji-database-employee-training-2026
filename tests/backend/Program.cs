@@ -6,6 +6,8 @@ var tests = CourseServiceTests
     .Concat(ResultModuleTests.GetTests())
     .Concat(RequestValidationTests.GetTests())
     .Concat(RepositoryContractTests.GetTests())
+    .Concat(RegistrationServiceTests.GetTests())
+    .Concat(AttendanceServiceTests.GetTests())
     .ToArray();
 
 if (args.Contains("--auth-http"))

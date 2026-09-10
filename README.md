@@ -2,7 +2,7 @@
 
 同济大学数据库课程设计项目，目标是交付一个可部署、可演示、可恢复数据的企业内部培训管理系统。系统覆盖员工组织、课程培训、申请审批、报名签到、成果评估和证书记录等内部培训流程。
 
-当前状态：后端认证、讲师与课程、培训申请审批、成果评估、组织基础五个模块已合入 `develop`，可通过 Swagger 查看；报名签到和前端工程在独立分支开发，尚未合入。技术、数据、状态、权限和核心业务决策已通过；接口路径、DTO 和页面映射为推荐基线，最终以运行后端后的 Swagger/OpenAPI 为准。
+当前状态：后端认证、讲师与课程、培训申请审批、成果评估、组织基础、报名签到六个模块已合入 `develop`，可通过 Swagger 查看；前端工程在独立分支开发，尚未合入。技术、数据、状态、权限和核心业务决策已通过；接口路径、DTO 和页面映射为推荐基线，最终以运行后端后的 Swagger/OpenAPI 为准。
 
 ## 文档入口
 
@@ -96,6 +96,24 @@ ALTER SESSION SET CURRENT_SCHEMA = TRAINING_OWNER;
 | `GET` | `/api/health` | 后端存活检查 |
 | `GET` | `/api/health/db` | Oracle 连接检查 |
 
+## 报名签到接口
+
+| 方法 | 路径 | 角色 | 说明 |
+| --- | --- | --- | --- |
+| `GET` | `/api/registrations/my` | 员工 | 当前员工的报名分页列表 |
+| `GET` | `/api/registrations` | HR/管理员 | 全量报名查询（员工、部门、课程、状态、签到状态、培训日期筛选） |
+| `GET` | `/api/registrations/{id}` | 本人或 HR/管理员 | 报名详情、签到摘要和可执行操作资格 |
+| `GET` | `/api/registrations/summary` | HR/管理员 | 按状态统计报名数量，传 `courseId` 时返回剩余名额 |
+| `POST` | `/api/registrations` | 员工 | 报名已发布课程（校验 HR 备案、员工、黑名单、课程状态/时间、容量和防重） |
+| `PATCH` | `/api/registrations/{id}/cancel` | 本人或 HR/管理员 | 课程开始前取消报名 |
+| `PATCH` | `/api/registrations/{id}/absent` | HR/管理员 | 课程结束后将未签到报名标记缺勤 |
+| `PATCH` | `/api/registrations/{id}/complete` | HR/管理员 | 课程结束后完成已签到培训 |
+| `POST` | `/api/registrations/{id}/signin` | HR/管理员 | 正常签到（SCAN，时间取服务端） |
+| `POST` | `/api/attendance/manual` | HR/管理员 | 补签（MANUAL，备注必填，可指定签到时间） |
+
+报名状态枚举：`REGISTERED`、`SIGNED_IN`、`ABSENT`、`COMPLETED`、`CANCELED`；签到类型：`SCAN`、`MANUAL`。迟到扣减规则：实际学时 = 课程学时 - 按迟到分钟等比例折算并四舍五入到 0.5 小时的扣减（上限为课程学时）。
+
+
 Oracle 种子测试账号：
 
 | 登录名 | 密码 | 角色 |
@@ -120,12 +138,12 @@ Oracle 种子测试账号：
 | 培训申请审批 | `/api/training-requests` | 提交、部门审批、HR 备案、状态查询 |
 | 成果评估 | `/api/ratings`、`/api/tests`、`/api/certificates` | 评分、训前/训后测试、证书生成与查询 |
 | 组织基础 | `/api/employees`、`/api/department-trainings`、`/api/blacklists` | 员工、部门培训预算、黑名单；读取限 HR/管理员，写操作限管理员 |
+| 报名签到 | `/api/registrations`、`/api/attendance` | 报名、签到、缺勤、完成；员工仅本人，HR/管理员全量 |
 
 尚未合入 `develop`：
 
 | 模块 | 接口前缀 | 说明 |
 | --- | --- | --- |
-| 报名签到 | `/api/registrations`、`/api/attendance` | 报名、签到、缺勤、完成 |
 | 前端 | — | Vue 3 单页应用、公共组件与业务页面 |
 
 字段、枚举和状态码以运行后端后的 Swagger/OpenAPI 为准；测试入口见 `tests/backend/`（C# 回归）和 `tests/api/`（HTTP 用例）。

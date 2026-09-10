@@ -12,8 +12,8 @@
 | `trainers.http` | 讲师 CRUD | 已有 |
 | `training-requests.http` | 申请提交、查询范围、主管审批、HR 备案 | 已有（2026-09-09 由 `tests/backend/` 迁入） |
 | `training-requests.md` | 上述用例的准备步骤、预期结果与 REQ 对照 | 已有（同上迁入） |
-| `employees.http` | 员工、部门预算、黑名单 | **待补**（组织模块 PR #11 未合并） |
-| `registrations.http`、`attendance.http` | 报名、签到、缺勤、完成 | **待合并**（在 `feature/module-registration` 分支，未提 PR） |
+| `employees.http` | 员工、部门预算、黑名单 | **待补**（组织模块已合入 `develop`，用例尚未编写） |
+| `registrations.http`、`attendance.http` | 报名、签到、缺勤、完成 | 已有（随报名签到模块合入 `develop`） |
 | `results.http` | 评分、测试、证书 | **待补** |
 | `demo-flow.http` | 四角色主链路端到端 | **待补** |
 

@@ -1,6 +1,6 @@
 # 后端模块测试
 
-课程、讲师、成果评估和认证权限的模块级回归测试，位于 `tests/backend/`。`.http` 手工用例在 `tests/api/`，不要放回本目录。
+课程、讲师、成果评估、报名签到和认证权限的模块级回归测试，位于 `tests/backend/`。`.http` 手工用例在 `tests/api/`，不要放回本目录。
 
 ## 运行方式
 
@@ -22,16 +22,18 @@ dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- 
 | `ResultModuleTests.cs` | 12 | 评分资格与重复、PRE/POST 时点与分数、证书资格（`COMPLETED`、`POST >= 60`）、重复发证、越权查询 |
 | `RequestValidationTests.cs` | 7 | `Trainer`/`Course` DTO 的电话长度、学时与人数精度边界，对照 `V001` |
 | `RepositoryContractTests.cs` | 5 | Dapper 命令绑定、分页参数、条件 `UPDATE`、数字/空值映射、输出 ID |
+| `RegistrationServiceTests.cs` | 24 | 报名资格（HR 备案、离职、黑名单、未发布、已开始）、满员、重复、取消权限与状态、缺勤/完成时点、数据范围、汇总 |
+| `AttendanceServiceTests.cs` | 9 | 签到权限与状态、重复签到、补签备注与时间校验、迟到扣减计算 |
 | `HttpAuthorizationTests.cs` | 1（仅 `--auth-http`） | 四角色登录、JWT claim、`/api/auth/me`，以及 10 个课程/讲师路由 × 6 种鉴权组合共 60 次请求 |
-| 合计 | **51**（加 `--auth-http` 为 **52**） | |
+| 合计 | **84**（加 `--auth-http` 为 **85**） | |
 
 ## 最近验证记录（2026-09-09）
 
 - `dotnet build src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj --no-incremental`：**成功，0 错误，1 警告**（`Controllers/RatingsController.cs:62` CS8604，历史遗留，待成果评估模块清理）。
-- `dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj`：**51/51 通过**。
-- `dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- --auth-http`：**52/52 通过**，含 60 次 HTTP 权限请求。
+- `dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj`：**84/84 通过**。
+- `dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- --auth-http`：**85/85 通过**，含 60 次 HTTP 权限请求。
 - 讲师列表与课程列表统一返回 `PagedResult<T>`，支持 `Page`（默认 1）和 `PageSize`（默认 20，最大 100）；前端从 `data.items`、`data.page`、`data.pageSize`、`data.total` 读取。
-- **未覆盖**：真实 Oracle 上的 SQL 执行、事务回滚、行锁与并发场景。发布路径 `PublishAsync` 目前固定返回 409（等待组织模块提供同一事务内的预算占用能力），用例 `Publish remains blocked without budget transaction` 就是这条临时行为的回归保护。
+- **未覆盖**：真实 Oracle 上的 SQL 执行、事务回滚、行锁与并发场景（报名并发争抢最后名额的用例仍待补）。发布路径 `PublishAsync` 目前固定返回 409（等待组织模块提供同一事务内的预算占用能力），用例 `Publish remains blocked without budget transaction` 就是这条临时行为的回归保护。
 
 ## Oracle 字段约束回归
 
@@ -67,4 +69,5 @@ dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- 
 - **课程发布仍被阻塞**：`PublishAsync` 返回 409，等待组织模块提供能接受同一连接与事务的预算占用能力；预算占用和课程状态更新必须一起提交或回滚。
 - 容量摘要内部查询已实现，公开接口契约仍待团队确认。
 - 更新演示账号配置后需重新登录获取 token；原 token 携带的旧 ID 不会自动变化。
-- 组织、报名、前端三个模块合入后，本套测试需再跑一次并补跨模块用例。
+- 组织与报名模块已合入 `develop`（本轮测试数 85），仍需补跨模块用例：报名→完成→评分/测试→证书的真库链路。
+- 前端工程合入后，本套测试需再跑一次并补端到端用例。
