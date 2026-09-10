@@ -47,6 +47,17 @@ public sealed class RatingService : IRatingService
         return new PagedResult<TrainerRating>(items, page, pageSize, total);
     }
 
+    public async Task<PagedResult<TrainerRating>> GetMyRatingListAsync(
+        int employeeId, string? keyword, DateTime? startDateFrom, DateTime? startDateTo, int page, int pageSize)
+    {
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? DefaultPageSize : Math.Min(pageSize, MaxPageSize);
+
+        var (items, total) = await _ratingRepository.GetMyListAsync(
+            employeeId, keyword, startDateFrom, startDateTo, page, pageSize);
+        return new PagedResult<TrainerRating>(items, page, pageSize, total);
+    }
+
     public async Task<RatingAverageResponse> GetAverageAsync(int courseId, int? trainerId)
     {
         var (average, count) = await _ratingRepository.GetAverageAsync(courseId, trainerId);

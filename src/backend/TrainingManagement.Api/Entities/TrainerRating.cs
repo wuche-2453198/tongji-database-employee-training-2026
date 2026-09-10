@@ -12,4 +12,7 @@ public class TrainerRating
     public DateTime? VerifiedAt { get; set; }
     public string? HrComment { get; set; }
     public DateTime RatedAt { get; set; }
+    public string? CourseName { get; set; }
+    public string? TrainerName { get; set; }
+    public string? EmployeeName { get; set; }
 }

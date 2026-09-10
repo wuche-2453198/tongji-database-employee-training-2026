@@ -43,12 +43,12 @@ public sealed class OracleRatingRepository : IRatingRepository
         var parameters = new DynamicParameters();
         if (courseId.HasValue)
         {
-            conditions.Add("COURSE_ID = :CourseId");
+            conditions.Add("r.COURSE_ID = :CourseId");
             parameters.Add("CourseId", courseId.Value);
         }
         if (trainerId.HasValue)
         {
-            conditions.Add("TRAINER_ID = :TrainerId");
+            conditions.Add("r.TRAINER_ID = :TrainerId");
             parameters.Add("TrainerId", trainerId.Value);
         }
 
@@ -57,19 +57,79 @@ public sealed class OracleRatingRepository : IRatingRepository
         parameters.Add("PageSize", pageSize);
 
         var itemsSql = """
-            SELECT RATING_ID AS RatingId, COURSE_ID AS CourseId, TRAINER_ID AS TrainerId,
-                   EMP_ID AS EmpId, SCORE AS Score, RATING_COMMENT AS RatingComment,
-                   HR_VERIFIED AS HrVerified, HR_VERIFIER_EMP_ID AS HrVerifierEmpId,
-                   VERIFIED_AT AS VerifiedAt, HR_COMMENT AS HrComment, RATED_AT AS RatedAt
-            FROM TRAINER_RATINGS
+            SELECT r.RATING_ID AS RatingId, r.COURSE_ID AS CourseId, r.TRAINER_ID AS TrainerId,
+                   r.EMP_ID AS EmpId, r.SCORE AS Score, r.RATING_COMMENT AS RatingComment,
+                   r.HR_VERIFIED AS HrVerified, r.HR_VERIFIER_EMP_ID AS HrVerifierEmpId,
+                   r.VERIFIED_AT AS VerifiedAt, r.HR_COMMENT AS HrComment, r.RATED_AT AS RatedAt,
+                   c.COURSE_NAME AS CourseName, t.TRAINER_NAME AS TrainerName, e.EMP_NAME AS EmployeeName
+            FROM TRAINER_RATINGS r
+            LEFT JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
+            LEFT JOIN TRAINERS t ON r.TRAINER_ID = t.TRAINER_ID
+            LEFT JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
             """ + $"""
 
             {where}
-            ORDER BY RATING_ID DESC
+            ORDER BY r.RATING_ID DESC
             OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY
             """;
         var countSql = $"""
-            SELECT COUNT(1) FROM TRAINER_RATINGS {where}
+            SELECT COUNT(1) FROM TRAINER_RATINGS r {where}
+            """;
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
+        var items = (await connection.QueryAsync<TrainerRating>(itemsSql, parameters)).ToArray();
+        var total = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+        return (items, total);
+    }
+
+    public async Task<(IReadOnlyList<TrainerRating> Items, int Total)> GetMyListAsync(
+        int employeeId, string? keyword, DateTime? startDateFrom, DateTime? startDateTo, int page, int pageSize)
+    {
+        var conditions = new List<string> { "r.EMP_ID = :EmployeeId" };
+        var parameters = new DynamicParameters();
+        parameters.Add("EmployeeId", employeeId);
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            conditions.Add("(c.COURSE_NAME LIKE :Keyword OR t.TRAINER_NAME LIKE :Keyword)");
+            parameters.Add("Keyword", $"%{keyword}%");
+        }
+        if (startDateFrom.HasValue)
+        {
+            conditions.Add("r.RATED_AT >= :StartDateFrom");
+            parameters.Add("StartDateFrom", startDateFrom.Value);
+        }
+        if (startDateTo.HasValue)
+        {
+            conditions.Add("r.RATED_AT <= :StartDateTo");
+            parameters.Add("StartDateTo", startDateTo.Value);
+        }
+
+        var where = "WHERE " + string.Join(" AND ", conditions);
+        parameters.Add("Offset", (page - 1) * pageSize);
+        parameters.Add("PageSize", pageSize);
+
+        var itemsSql = """
+            SELECT r.RATING_ID AS RatingId, r.COURSE_ID AS CourseId, r.TRAINER_ID AS TrainerId,
+                   r.EMP_ID AS EmpId, r.SCORE AS Score, r.RATING_COMMENT AS RatingComment,
+                   r.HR_VERIFIED AS HrVerified, r.HR_VERIFIER_EMP_ID AS HrVerifierEmpId,
+                   r.VERIFIED_AT AS VerifiedAt, r.HR_COMMENT AS HrComment, r.RATED_AT AS RatedAt,
+                   c.COURSE_NAME AS CourseName, t.TRAINER_NAME AS TrainerName, e.EMP_NAME AS EmployeeName
+            FROM TRAINER_RATINGS r
+            LEFT JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
+            LEFT JOIN TRAINERS t ON r.TRAINER_ID = t.TRAINER_ID
+            LEFT JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
+            """ + $"""
+
+            {where}
+            ORDER BY r.RATED_AT DESC
+            OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY
+            """;
+        var countSql = $"""
+            SELECT COUNT(1)
+            FROM TRAINER_RATINGS r
+            LEFT JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
+            LEFT JOIN TRAINERS t ON r.TRAINER_ID = t.TRAINER_ID
+            {where}
             """;
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
