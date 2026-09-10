@@ -27,9 +27,9 @@ dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- 
 | `HttpAuthorizationTests.cs` | 1（仅 `--auth-http`） | 四角色登录、JWT claim、`/api/auth/me`，以及 10 个课程/讲师路由 × 6 种鉴权组合共 60 次请求 |
 | 合计 | **84**（加 `--auth-http` 为 **85**） | |
 
-## 最近验证记录（2026-09-09）
+## 最近验证记录（2026-09-10）
 
-- `dotnet build src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj --no-incremental`：**成功，0 错误，1 警告**（`Controllers/RatingsController.cs:62` CS8604，历史遗留，待成果评估模块清理）。
+- `dotnet build src/backend/TrainingManagement.Api/TrainingManagement.Api.csproj --no-incremental`：**成功，0 错误，0 警告**（`RatingsController` 的 CS8604 已随后端骨架对齐提交修复）。
 - `dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj`：**84/84 通过**。
 - `dotnet run --project tests/backend/TrainingManagement.Api.ModuleTests.csproj -- --auth-http`：**85/85 通过**，含 60 次 HTTP 权限请求。
 - 讲师列表与课程列表统一返回 `PagedResult<T>`，支持 `Page`（默认 1）和 `PageSize`（默认 20，最大 100）；前端从 `data.items`、`data.page`、`data.pageSize`、`data.total` 读取。
