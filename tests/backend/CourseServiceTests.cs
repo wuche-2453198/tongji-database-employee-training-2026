@@ -21,7 +21,9 @@ internal static class CourseServiceTests
         yield return ("Close uses PUBLISHED to CLOSED conditional transition", CloseUsesConditionalTransitionAsync);
         yield return ("Close reports a concurrent transition", CloseConflictAsync);
         yield return ("Publish requires location", PublishRequiresLocationAsync);
-        yield return ("Publish remains blocked without budget transaction", PublishRemainsBlockedAsync);
+        yield return ("Publish occupies department budget in one transaction", PublishOccupiesBudgetAsync);
+        yield return ("Publish rolls back when the budget is insufficient", PublishBudgetRejectionRollsBackAsync);
+        yield return ("Publish reports a concurrent status change without charging budget", PublishConflictSkipsBudgetAsync);
         yield return ("Capacity remaining seats never becomes negative", CapacityClampsRemainingSeatsAsync);
         yield return ("Missing course capacity remains null", MissingCapacityReturnsNullAsync);
         yield return ("Course create and PUT reject Oracle numeric overflow", RejectsNumericOverflowAsync);
@@ -138,7 +140,9 @@ internal static class CourseServiceTests
         var trainerRepository = new FakeTrainerRepository();
         var service = new CourseService(
             courseRepository,
-            trainerRepository);
+            trainerRepository,
+            new FakeDepartmentTrainingService(),
+            new FakeDbConnectionFactory());
 
         var response = await service.CreateAsync(
             ValidCreateRequest(),
@@ -296,24 +300,61 @@ internal static class CourseServiceTests
             "Publish must reject an incomplete location.");
     }
 
-    private static async Task PublishRemainsBlockedAsync()
+    private static async Task PublishOccupiesBudgetAsync()
+    {
+        var course = ValidCourse("DRAFT");
+        var courseRepository = new FakeCourseRepository { Course = course };
+        var departmentTraining = new FakeDepartmentTrainingService();
+        var connectionFactory = new FakeDbConnectionFactory();
+        var service = CreateService(courseRepository, departmentTraining, connectionFactory);
+
+        await service.PublishAsync(course.CourseId, CancellationToken.None);
+
+        var session = connectionFactory.LastSession;
+        TestAssert.Equal(1, connectionFactory.BeginCallCount, "Publish must open exactly one transaction session.");
+        TestAssert.True(session is not null, "Publish must open a transaction session.");
+        TestAssert.True(session!.Committed, "Publish must commit the shared transaction.");
+        TestAssert.True(!session.RolledBack, "Successful publish must not roll back.");
+        TestAssert.Equal(1, departmentTraining.OccupyCallCount, "Publish must charge the department budget once.");
+        TestAssert.Equal<long?>(course.DeptId, departmentTraining.LastDeptId, "Publish must charge the course department.");
+        TestAssert.Equal<decimal?>(course.BudgetAmount, departmentTraining.LastAmount, "Publish must charge the course budget.");
+        TestAssert.Equal("DRAFT", courseRepository.LastStatusExpectedStatus, "Publish must keep the conditional transition.");
+        TestAssert.Equal("PUBLISHED", courseRepository.LastStatusNewStatus, "Publish must transition DRAFT to PUBLISHED.");
+    }
+
+    private static async Task PublishBudgetRejectionRollsBackAsync()
+    {
+        var course = ValidCourse("DRAFT");
+        var courseRepository = new FakeCourseRepository { Course = course };
+        var departmentTraining = new FakeDepartmentTrainingService { OccupyResult = false };
+        var connectionFactory = new FakeDbConnectionFactory();
+        var service = CreateService(courseRepository, departmentTraining, connectionFactory);
+
+        await TestAssert.ThrowsAsync<ConflictApiException>(
+            () => service.PublishAsync(course.CourseId, CancellationToken.None),
+            "Insufficient budget must fail the publish.");
+
+        var session = connectionFactory.LastSession;
+        TestAssert.True(session is not null, "Failed publish must still own a session.");
+        TestAssert.True(session!.RolledBack, "Insufficient budget must roll the shared transaction back.");
+        TestAssert.True(!session.Committed, "Insufficient budget must not commit the course status.");
+    }
+
+    private static async Task PublishConflictSkipsBudgetAsync()
     {
         var course = ValidCourse("DRAFT");
         var courseRepository = new FakeCourseRepository
         {
-            Course = course
+            Course = course,
+            StatusUpdateResult = false
         };
-        var service = CreateService(courseRepository);
+        var departmentTraining = new FakeDepartmentTrainingService();
+        var service = CreateService(courseRepository, departmentTraining, new FakeDbConnectionFactory());
 
         await TestAssert.ThrowsAsync<ConflictApiException>(
-            () => service.PublishAsync(
-                course.CourseId,
-                CancellationToken.None),
-            "Publish must remain blocked without an atomic budget capability.");
-
-        TestAssert.True(
-            courseRepository.LastStatusNewStatus is null,
-            "Blocked publish must not update the course status.");
+            () => service.PublishAsync(course.CourseId, CancellationToken.None),
+            "A concurrent status change must fail the publish.");
+        TestAssert.Equal(0, departmentTraining.OccupyCallCount, "A concurrent status change must not charge budget.");
     }
 
     private static async Task CapacityClampsRemainingSeatsAsync()
@@ -357,11 +398,15 @@ internal static class CourseServiceTests
     }
 
     private static CourseService CreateService(
-        FakeCourseRepository courseRepository)
+        FakeCourseRepository courseRepository,
+        FakeDepartmentTrainingService? departmentTraining = null,
+        FakeDbConnectionFactory? connectionFactory = null)
     {
         return new CourseService(
             courseRepository,
-            new FakeTrainerRepository());
+            new FakeTrainerRepository(),
+            departmentTraining ?? new FakeDepartmentTrainingService(),
+            connectionFactory ?? new FakeDbConnectionFactory());
     }
 
     private static TrainingCourse ValidCourse(

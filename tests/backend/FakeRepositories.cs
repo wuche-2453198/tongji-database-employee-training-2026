@@ -1,9 +1,12 @@
 using System.Security.Claims;
+using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Dtos.Organization;
 using TrainingManagement.Api.Dtos.Registration;
 using TrainingManagement.Api.Dtos.Course;
 using TrainingManagement.Api.Dtos.Trainer;
 using TrainingManagement.Api.Entities;
 using TrainingManagement.Api.Repositories.Interfaces;
+using TrainingManagement.Api.Services.Interfaces;
 
 namespace TrainingManagement.Api.ModuleTests;
 
@@ -114,6 +117,14 @@ internal sealed class FakeCourseRepository : ICourseRepository
         return Task.FromResult(StatusUpdateResult);
     }
 
+    public Task<bool> UpdateStatusAsync(
+        long courseId,
+        string expectedStatus,
+        string newStatus,
+        IDbSession session,
+        CancellationToken cancellationToken)
+        => UpdateStatusAsync(courseId, expectedStatus, newStatus, cancellationToken);
+
     private static TrainingCourse CopyCourse(
         TrainingCourse source,
         long courseId,
@@ -142,6 +153,117 @@ internal sealed class FakeCourseRepository : ICourseRepository
             UpdatedAt = source.UpdatedAt
         };
     }
+}
+
+/// <summary>课程发布测试用：模拟开启事务会话，并记录提交/回滚。</summary>
+internal sealed class FakeDbConnectionFactory : IDbConnectionFactory
+{
+    public bool IsConfigured => true;
+
+    public int BeginCallCount { get; private set; }
+
+    public FakeDbSession? LastSession { get; private set; }
+
+    public Task<System.Data.Common.DbConnection> CreateOpenConnectionAsync(
+        CancellationToken cancellationToken)
+        => throw new NotSupportedException("课程发布必须通过 BeginSessionAsync 开启事务。");
+
+    public Task<IDbSession> BeginSessionAsync(CancellationToken cancellationToken)
+    {
+        BeginCallCount++;
+        LastSession = new FakeDbSession();
+        return Task.FromResult<IDbSession>(LastSession);
+    }
+}
+
+internal sealed class FakeDbSession : IDbSession
+{
+    public bool Committed { get; private set; }
+
+    public bool RolledBack { get; private set; }
+
+    public bool Disposed { get; private set; }
+
+    public System.Data.Common.DbConnection Connection
+        => throw new NotSupportedException("测试替身不提供真实连接。");
+
+    public System.Data.Common.DbTransaction Transaction
+        => throw new NotSupportedException("测试替身不提供真实事务。");
+
+    public Task CommitAsync(CancellationToken cancellationToken)
+    {
+        Committed = true;
+        return Task.CompletedTask;
+    }
+
+    public Task RollbackAsync(CancellationToken cancellationToken)
+    {
+        RolledBack = true;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>与 OracleDbSession 一致：未提交的会话在释放时回滚。</summary>
+    public ValueTask DisposeAsync()
+    {
+        Disposed = true;
+
+        if (!Committed)
+        {
+            RolledBack = true;
+        }
+
+        return ValueTask.CompletedTask;
+    }
+}
+
+/// <summary>课程发布测试用的部门预算占用替身。</summary>
+internal sealed class FakeDepartmentTrainingService : IDepartmentTrainingService
+{
+    public bool OccupyResult { get; set; } = true;
+
+    public int OccupyCallCount { get; private set; }
+
+    public long? LastDeptId { get; private set; }
+
+    public decimal? LastAmount { get; private set; }
+
+    public Task<bool> TryOccupyBudgetAsync(
+        long deptId,
+        decimal amount,
+        IDbSession session,
+        CancellationToken cancellationToken = default)
+    {
+        OccupyCallCount++;
+        LastDeptId = deptId;
+        LastAmount = amount;
+        return Task.FromResult(OccupyResult);
+    }
+
+    public Task<PagedResult<DepartmentTrainingResponse>> GetPagedAsync(
+        DepartmentTrainingQuery query,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
+
+    public Task<DepartmentTrainingResponse?> GetByIdAsync(
+        long deptId,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
+
+    public Task<DepartmentTrainingResponse> CreateAsync(
+        CreateDepartmentTrainingRequest request,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
+
+    public Task<DepartmentTrainingResponse> UpdateAsync(
+        long deptId,
+        UpdateDepartmentTrainingRequest request,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
+
+    public Task<bool> DeleteAsync(
+        long deptId,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
 }
 
 internal sealed class FakeTrainerRepository : ITrainerRepository
