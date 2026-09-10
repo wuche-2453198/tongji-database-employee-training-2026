@@ -37,6 +37,7 @@ export function mapTrainingRequest(dto: TrainingRequestDto): TrainingRequest {
     departmentName: dto.departmentName || dto.deptName || '—',
     reason: dto.reason || dto.requestReason || '',
     status: mapStatus(dto.status),
+    // 后端字段是 createTime；createdAt 只作历史别名兼容。
     submittedAt: dto.submittedAt || dto.createTime || dto.createdAt || '',
     updatedAt: dto.updatedAt ?? null,
     departmentOpinion: dto.deptApproveComment ?? null,

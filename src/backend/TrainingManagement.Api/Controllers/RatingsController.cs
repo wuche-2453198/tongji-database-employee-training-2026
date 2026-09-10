@@ -42,6 +42,20 @@ public sealed class RatingsController : ApiControllerBase
         return OkResponse(result, "查询成功");
     }
 
+    [HttpGet("my")]
+    public async Task<ActionResult<ApiResponse<PagedResult<TrainerRating>>>> GetMyList(
+        [FromQuery] string? keyword,
+        [FromQuery] DateTime? startDateFrom,
+        [FromQuery] DateTime? startDateTo,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var employeeId = GetCurrentEmployeeId();
+        var result = await _ratingService.GetMyRatingListAsync(
+            employeeId, keyword, startDateFrom, startDateTo, page, pageSize);
+        return OkResponse(result, "查询成功");
+    }
+
     /// <summary>按课程(可选讲师)查询平均评分。</summary>
     [HttpGet("average")]
     public async Task<ActionResult<ApiResponse<RatingAverageResponse>>> GetAverage(

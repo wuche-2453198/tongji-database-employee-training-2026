@@ -12,6 +12,20 @@ public interface ICertificateRepository
 
     Task<IEnumerable<TrainingCertificate>> GetByEmployeeIdAsync(int employeeId);
 
+    Task<(IReadOnlyList<TrainingCertificate> Items, int Total)> GetPagedListAsync(
+        string? employeeName,
+        string? courseName,
+        DateTime? startDateFrom,
+        DateTime? startDateTo,
+        int page,
+        int pageSize);
+
+    Task<(IReadOnlyList<CertificateCandidate> Items, int Total)> GetCandidatesAsync(
+        string? employeeName,
+        string? courseName,
+        int page,
+        int pageSize);
+
     Task<TrainingCertificate?> GetByIdAsync(int id);
 
     Task<bool> UpdateNotifyFlagAsync(int id);

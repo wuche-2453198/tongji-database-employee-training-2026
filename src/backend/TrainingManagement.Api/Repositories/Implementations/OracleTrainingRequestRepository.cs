@@ -14,7 +14,7 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
             r.EMP_ID                  AS "EmployeeId",
             e.EMP_NAME                AS "EmployeeName",
             e.DEPT_ID                 AS "DeptId",
-            d.DEPT_NAME               AS "DeptName",
+            d.DEPT_NAME               AS "DepartmentName",
             r.COURSE_ID               AS "CourseId",
             c.COURSE_NAME             AS "CourseName",
             r.REASON                  AS "RequestReason",
@@ -85,8 +85,12 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
         string? status,
         int? employeeId,
         int? courseId,
-        string? departmentName,
         int? deptId,
+        string? employeeName,
+        string? courseName,
+        string? departmentName,
+        DateTime? startDateFrom,
+        DateTime? startDateTo,
         int page,
         int pageSize,
         CancellationToken cancellationToken)
@@ -112,19 +116,34 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
             parameters.Add("CourseId", courseId.Value);
         }
 
-        // 部门名模糊筛选同样使用 EXISTS，保证该 where 子句也能直接用于无 JOIN 的 COUNT 查询。
+        if (!string.IsNullOrWhiteSpace(employeeName))
+        {
+            conditions.Add("e.EMP_NAME LIKE :EmployeeName");
+            parameters.Add("EmployeeName", $"%{employeeName}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(courseName))
+        {
+            conditions.Add("c.COURSE_NAME LIKE :CourseName");
+            parameters.Add("CourseName", $"%{courseName}%");
+        }
+
         if (!string.IsNullOrWhiteSpace(departmentName))
         {
-            conditions.Add("""
-                EXISTS (
-                    SELECT 1
-                    FROM EMPLOYEES de
-                        JOIN DEPARTMENTS_TRAINING dd ON de.DEPT_ID = dd.DEPT_ID
-                    WHERE de.EMP_ID = r.EMP_ID
-                      AND LOWER(dd.DEPT_NAME) LIKE LOWER(:DepartmentName)
-                )
-                """);
-            parameters.Add("DepartmentName", $"%{departmentName.Trim()}%");
+            conditions.Add("d.DEPT_NAME LIKE :DepartmentName");
+            parameters.Add("DepartmentName", $"%{departmentName}%");
+        }
+
+        if (startDateFrom.HasValue)
+        {
+            conditions.Add("r.REQUESTED_AT >= :StartDateFrom");
+            parameters.Add("StartDateFrom", startDateFrom.Value);
+        }
+
+        if (startDateTo.HasValue)
+        {
+            conditions.Add("r.REQUESTED_AT <= :StartDateTo");
+            parameters.Add("StartDateTo", startDateTo.Value);
         }
 
         if (deptId.HasValue)
@@ -152,6 +171,9 @@ public sealed class OracleTrainingRequestRepository : ITrainingRequestRepository
         var countSql = $"""
             SELECT COUNT(*)
             FROM TRAINING_REQUESTS r
+            LEFT JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d ON e.DEPT_ID = d.DEPT_ID
+            LEFT JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
             {whereClause}
             """;
 

@@ -10,6 +10,9 @@ public interface IRatingService
 
     Task<PagedResult<TrainerRating>> GetRatingListAsync(int? courseId, int? trainerId, int page, int pageSize);
 
+    Task<PagedResult<TrainerRating>> GetMyRatingListAsync(
+        int employeeId, string? keyword, DateTime? startDateFrom, DateTime? startDateTo, int page, int pageSize);
+
     Task<RatingAverageResponse> GetAverageAsync(int courseId, int? trainerId);
 
     Task<bool> VerifyRatingAsync(int ratingId, string verifyComment, int hrVerifierEmpId);

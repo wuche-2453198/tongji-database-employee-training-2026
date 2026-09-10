@@ -278,6 +278,28 @@ internal static class ResultModuleTests
         {
             return Task.FromResult(PostScore);
         }
+
+        public Task<(IReadOnlyList<TrainingCertificate> Items, int Total)> GetPagedListAsync(
+            string? employeeName,
+            string? courseName,
+            DateTime? startDateFrom,
+            DateTime? startDateTo,
+            int page,
+            int pageSize)
+        {
+            IReadOnlyList<TrainingCertificate> items = Certificates;
+            return Task.FromResult((items, items.Count));
+        }
+
+        public Task<(IReadOnlyList<CertificateCandidate> Items, int Total)> GetCandidatesAsync(
+            string? employeeName,
+            string? courseName,
+            int page,
+            int pageSize)
+        {
+            IReadOnlyList<CertificateCandidate> items = Array.Empty<CertificateCandidate>();
+            return Task.FromResult((items, 0));
+        }
     }
 
     private sealed class FakeTestRepository : Repositories.Interfaces.ITestRepository
@@ -309,7 +331,15 @@ internal static class ResultModuleTests
         }
 
         public Task<PagedResult<TrainingTest>> GetPagedListAsync(
-            int? employeeId, int? courseId, string? testType, int page, int pageSize)
+            int? employeeId,
+            int? courseId,
+            string? testType,
+            string? employeeName,
+            string? courseName,
+            DateTime? startDateFrom,
+            DateTime? startDateTo,
+            int page,
+            int pageSize)
         {
             return Task.FromResult(new PagedResult<TrainingTest>(Array.Empty<TrainingTest>(), page, pageSize, 0));
         }
@@ -350,6 +380,21 @@ internal static class ResultModuleTests
         {
             IReadOnlyList<TrainerRating> items = Ratings;
             return Task.FromResult((items, Ratings.Count));
+        }
+
+        public Task<(IReadOnlyList<TrainerRating> Items, int Total)> GetMyListAsync(
+            int employeeId,
+            string? keyword,
+            DateTime? startDateFrom,
+            DateTime? startDateTo,
+            int page,
+            int pageSize)
+        {
+            IReadOnlyList<TrainerRating> items = Ratings
+                .Where(rating => rating.EmpId == employeeId)
+                .ToArray();
+
+            return Task.FromResult((items, items.Count));
         }
 
         public Task<bool> ExistsByEmployeeAndCourseAsync(int employeeId, int courseId)

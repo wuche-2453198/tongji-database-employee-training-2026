@@ -16,6 +16,10 @@ public sealed class CourseResponse
 
     public int MaxStudents { get; set; }
 
+    public int? RegisteredCount { get; set; }
+
+    public int? RemainingSeats { get; set; }
+
     public DateTime? StartAt { get; set; }
 
     public DateTime? EndAt { get; set; }
@@ -35,12 +39,6 @@ public sealed class CourseResponse
     public string? PostTestUrl { get; set; }
 
     public string? MaterialUrl { get; set; }
-
-    /// <summary>有效报名数（REGISTERED/SIGNED_IN/COMPLETED/ABSENT），供前端展示剩余名额。</summary>
-    public int? RegisteredCount { get; set; }
-
-    /// <summary>剩余名额，由最大人数减去有效报名数得到。</summary>
-    public int? RemainingSeats { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

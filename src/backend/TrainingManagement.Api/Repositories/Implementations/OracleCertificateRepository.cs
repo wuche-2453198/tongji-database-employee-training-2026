@@ -62,27 +62,168 @@ public sealed class OracleCertificateRepository : ICertificateRepository
     public async Task<IEnumerable<TrainingCertificate>> GetByEmployeeIdAsync(int employeeId)
     {
         const string sql = """
-            SELECT CERT_ID AS CertId, EMP_ID AS EmpId, COURSE_ID AS CourseId,
-                   CERT_CODE AS CertCode, ISSUE_DATE AS IssueDate, EXPIRE_DATE AS ExpireDate,
-                   NOTIFIED AS Notified, NOTIFIED_AT AS NotifiedAt,
-                   ISSUED_BY_EMP_ID AS IssuedByEmpId, CREATED_AT AS CreatedAt
-            FROM TRAINING_CERTIFICATES
-            WHERE EMP_ID = :EmpId
-            ORDER BY ISSUE_DATE DESC
+            SELECT cert.CERT_ID AS CertId, cert.EMP_ID AS EmpId, cert.COURSE_ID AS CourseId,
+                   cert.CERT_CODE AS CertCode, cert.ISSUE_DATE AS IssueDate, cert.EXPIRE_DATE AS ExpireDate,
+                   cert.NOTIFIED AS Notified, cert.NOTIFIED_AT AS NotifiedAt,
+                   cert.ISSUED_BY_EMP_ID AS IssuedByEmpId, cert.CREATED_AT AS CreatedAt,
+                   course.COURSE_NAME AS CourseName, emp.EMP_NAME AS EmployeeName
+            FROM TRAINING_CERTIFICATES cert
+            LEFT JOIN TRAINING_COURSES course ON cert.COURSE_ID = course.COURSE_ID
+            LEFT JOIN EMPLOYEES emp ON cert.EMP_ID = emp.EMP_ID
+            WHERE cert.EMP_ID = :EmpId
+            ORDER BY cert.ISSUE_DATE DESC
             """;
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         return await connection.QueryAsync<TrainingCertificate>(sql, new { EmpId = employeeId });
     }
 
+    public async Task<(IReadOnlyList<TrainingCertificate> Items, int Total)> GetPagedListAsync(
+        string? employeeName,
+        string? courseName,
+        DateTime? startDateFrom,
+        DateTime? startDateTo,
+        int page,
+        int pageSize)
+    {
+        var conditions = new List<string>();
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(employeeName))
+        {
+            conditions.Add("emp.EMP_NAME LIKE :EmployeeName");
+            parameters.Add("EmployeeName", $"%{employeeName.Trim()}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(courseName))
+        {
+            conditions.Add("course.COURSE_NAME LIKE :CourseName");
+            parameters.Add("CourseName", $"%{courseName.Trim()}%");
+        }
+
+        if (startDateFrom.HasValue)
+        {
+            conditions.Add("cert.ISSUE_DATE >= :StartDateFrom");
+            parameters.Add("StartDateFrom", startDateFrom.Value);
+        }
+
+        if (startDateTo.HasValue)
+        {
+            conditions.Add("cert.ISSUE_DATE <= :StartDateTo");
+            parameters.Add("StartDateTo", startDateTo.Value);
+        }
+
+        var whereSql = conditions.Count == 0
+            ? string.Empty
+            : "WHERE " + string.Join(" AND ", conditions);
+
+        var countSql = $"""
+            SELECT COUNT(1)
+            FROM TRAINING_CERTIFICATES cert
+            LEFT JOIN TRAINING_COURSES course ON cert.COURSE_ID = course.COURSE_ID
+            LEFT JOIN EMPLOYEES emp ON cert.EMP_ID = emp.EMP_ID
+            {whereSql}
+            """;
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
+        var total = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+        parameters.Add("Offset", (page - 1) * pageSize);
+        parameters.Add("PageSize", pageSize);
+
+        var itemsSql = $"""
+            SELECT cert.CERT_ID AS CertId, cert.EMP_ID AS EmpId, cert.COURSE_ID AS CourseId,
+                   cert.CERT_CODE AS CertCode, cert.ISSUE_DATE AS IssueDate, cert.EXPIRE_DATE AS ExpireDate,
+                   cert.NOTIFIED AS Notified, cert.NOTIFIED_AT AS NotifiedAt,
+                   cert.ISSUED_BY_EMP_ID AS IssuedByEmpId, cert.CREATED_AT AS CreatedAt,
+                   course.COURSE_NAME AS CourseName, emp.EMP_NAME AS EmployeeName
+            FROM TRAINING_CERTIFICATES cert
+            LEFT JOIN TRAINING_COURSES course ON cert.COURSE_ID = course.COURSE_ID
+            LEFT JOIN EMPLOYEES emp ON cert.EMP_ID = emp.EMP_ID
+            {whereSql}
+            ORDER BY cert.ISSUE_DATE DESC
+            OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY
+            """;
+
+        var items = await connection.QueryAsync<TrainingCertificate>(itemsSql, parameters);
+        return (items.ToArray(), total);
+    }
+
+    public async Task<(IReadOnlyList<CertificateCandidate> Items, int Total)> GetCandidatesAsync(
+        string? employeeName,
+        string? courseName,
+        int page,
+        int pageSize)
+    {
+        var conditions = new List<string>
+        {
+            "r.STATUS = 'COMPLETED'",
+            """
+            NOT EXISTS (
+                SELECT 1 FROM TRAINING_CERTIFICATES cert
+                WHERE cert.EMP_ID = r.EMP_ID AND cert.COURSE_ID = r.COURSE_ID
+            )
+            """,
+        };
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(employeeName))
+        {
+            conditions.Add("e.EMP_NAME LIKE :EmployeeName");
+            parameters.Add("EmployeeName", $"%{employeeName.Trim()}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(courseName))
+        {
+            conditions.Add("c.COURSE_NAME LIKE :CourseName");
+            parameters.Add("CourseName", $"%{courseName.Trim()}%");
+        }
+
+        var whereSql = "WHERE " + string.Join(" AND ", conditions);
+
+        var countSql = $"""
+            SELECT COUNT(1)
+            FROM TRAINING_REGISTRATIONS r
+            JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
+            JOIN DEPARTMENTS_TRAINING d ON e.DEPT_ID = d.DEPT_ID
+            JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
+            {whereSql}
+            """;
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
+        var total = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+        parameters.Add("Offset", (page - 1) * pageSize);
+        parameters.Add("PageSize", pageSize);
+
+        var itemsSql = $"""
+            SELECT r.REG_ID AS RegId, r.EMP_ID AS EmpId, e.EMP_NAME AS EmployeeName,
+                   d.DEPT_NAME AS DepartmentName, r.COURSE_ID AS CourseId, c.COURSE_NAME AS CourseName,
+                   r.ACTUAL_HOURS AS ActualHours
+            FROM TRAINING_REGISTRATIONS r
+            JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
+            JOIN DEPARTMENTS_TRAINING d ON e.DEPT_ID = d.DEPT_ID
+            JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
+            {whereSql}
+            ORDER BY r.COMPLETED_AT DESC
+            OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY
+            """;
+
+        var items = await connection.QueryAsync<CertificateCandidate>(itemsSql, parameters);
+        return (items.ToArray(), total);
+    }
+
     public async Task<TrainingCertificate?> GetByIdAsync(int id)
     {
         const string sql = """
-            SELECT CERT_ID AS CertId, EMP_ID AS EmpId, COURSE_ID AS CourseId,
-                   CERT_CODE AS CertCode, ISSUE_DATE AS IssueDate, EXPIRE_DATE AS ExpireDate,
-                   NOTIFIED AS Notified, NOTIFIED_AT AS NotifiedAt,
-                   ISSUED_BY_EMP_ID AS IssuedByEmpId, CREATED_AT AS CreatedAt
-            FROM TRAINING_CERTIFICATES
-            WHERE CERT_ID = :CertId
+            SELECT cert.CERT_ID AS CertId, cert.EMP_ID AS EmpId, cert.COURSE_ID AS CourseId,
+                   cert.CERT_CODE AS CertCode, cert.ISSUE_DATE AS IssueDate, cert.EXPIRE_DATE AS ExpireDate,
+                   cert.NOTIFIED AS Notified, cert.NOTIFIED_AT AS NotifiedAt,
+                   cert.ISSUED_BY_EMP_ID AS IssuedByEmpId, cert.CREATED_AT AS CreatedAt,
+                   course.COURSE_NAME AS CourseName, emp.EMP_NAME AS EmployeeName
+            FROM TRAINING_CERTIFICATES cert
+            LEFT JOIN TRAINING_COURSES course ON cert.COURSE_ID = course.COURSE_ID
+            LEFT JOIN EMPLOYEES emp ON cert.EMP_ID = emp.EMP_ID
+            WHERE cert.CERT_ID = :CertId
             """;
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         return await connection.QueryFirstOrDefaultAsync<TrainingCertificate>(sql, new { CertId = id });

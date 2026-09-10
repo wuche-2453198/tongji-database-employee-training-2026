@@ -18,8 +18,11 @@ const unwrap = <T>(envelope: ApiEnvelopeDto<T>): T => {
 
 const queryParams = (query: Parameters<TrainingRequestService['listMine']>[0]) => ({
   Status: query.status === 'UNKNOWN' ? undefined : query.status || undefined,
-  // 主管审批页与 HR 备案页的部门筛选由后端 TrainingRequestQueryDto.DepartmentName 支持。
+  EmployeeName: query.employeeKeyword || undefined,
+  CourseName: query.keyword || undefined,
   DepartmentName: query.departmentName || undefined,
+  StartDateFrom: query.startDateFrom || undefined,
+  StartDateTo: query.startDateTo || undefined,
   Page: query.page,
   PageSize: query.pageSize,
 })

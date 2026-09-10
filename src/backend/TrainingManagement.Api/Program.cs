@@ -198,6 +198,7 @@ builder.Services.AddScoped<IAttendanceRepository, OracleAttendanceRepository>();
 builder.Services.AddScoped<IRatingRepository, OracleRatingRepository>();
 builder.Services.AddScoped<ITestRepository, OracleTestRepository>();
 builder.Services.AddScoped<ICertificateRepository, OracleCertificateRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -210,6 +211,7 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Employee
 builder.Services.AddScoped<IEmployeeRepository, OracleEmployeeRepository>();

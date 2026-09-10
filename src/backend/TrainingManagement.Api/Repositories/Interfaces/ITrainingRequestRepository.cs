@@ -12,8 +12,12 @@ public interface ITrainingRequestRepository
         string? status,
         int? employeeId,
         int? courseId,
-        string? departmentName,
         int? deptId,
+        string? employeeName,
+        string? courseName,
+        string? departmentName,
+        DateTime? startDateFrom,
+        DateTime? startDateTo,
         int page,
         int pageSize,
         CancellationToken cancellationToken);

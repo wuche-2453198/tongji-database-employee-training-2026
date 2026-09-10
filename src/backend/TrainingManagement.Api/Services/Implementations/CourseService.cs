@@ -90,29 +90,19 @@ public sealed class CourseService : ICourseService
         }
 
         var response = ToResponse(course);
-        await FillCapacityAsync(response, cancellationToken);
-
-        return response;
-    }
-
-    /// <summary>课程容量摘要（CRS-11）：详情页的剩余名额与前端资格判断都依赖该字段。</summary>
-    private async Task FillCapacityAsync(
-        CourseResponse response,
-        CancellationToken cancellationToken)
-    {
         var capacity = await _courseRepository.GetCapacityAsync(
-            response.CourseId,
+            courseId,
             cancellationToken);
 
-        if (capacity is null)
+        if (capacity.HasValue)
         {
-            return;
+            response.RegisteredCount = capacity.Value.ValidRegistrationCount;
+            response.RemainingSeats = Math.Max(
+                0,
+                capacity.Value.MaxStudents - capacity.Value.ValidRegistrationCount);
         }
 
-        response.RegisteredCount = capacity.Value.ValidRegistrationCount;
-        response.RemainingSeats = Math.Max(
-            0,
-            capacity.Value.MaxStudents - capacity.Value.ValidRegistrationCount);
+        return response;
     }
 
     public async Task<CourseResponse> CreateAsync(
