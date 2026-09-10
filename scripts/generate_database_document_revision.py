@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from shutil import copyfile
 
@@ -17,7 +18,10 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = Path("/tmp/tongji-dbdoc-revision/数据库设计文档.docx")
 OUTPUT = ROOT / "document/数据库设计文档_修订稿.docx"
 ASSET_DIR = Path("/tmp/tongji-dbdoc-revision/revision-assets")
-FONT_PATH = Path("/Users/huangsirsmacbookairm5/Library/Fonts/NotoSerifSC-Variable.ttf")
+# 字体路径不写死个人目录：可用 DBDOC_FONT 覆盖，默认取当前用户的 macOS 字体目录。
+FONT_PATH = Path(
+    os.environ.get("DBDOC_FONT", str(Path.home() / "Library/Fonts/NotoSerifSC-Variable.ttf"))
+)
 
 
 TABLES = [
