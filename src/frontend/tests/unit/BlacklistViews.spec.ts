@@ -62,4 +62,41 @@ describe('黑名单管理页面', () => {
     expect(buttonLabels(wrapper)).not.toContain('加入黑名单')
     wrapper.unmount()
   })
+
+  it('「加入黑名单」对话框包含员工、原因、起止日期与操作按钮', async () => {
+    setActivePinia(createPinia())
+    await loginAs('manager.demo')
+    resetMockBusinessSnapshot()
+    const wrapper = mount(BlacklistManagementView, {
+      global: { plugins: [ElementPlus] },
+      attachTo: document.body,
+    })
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    await nextTick()
+
+    const addButton = wrapper
+      .findAllComponents(AppButton)
+      .find((button) => button.props('label') === '加入黑名单')
+    // AppButton 的根节点是 span，真正的点击监听在内层 el-button 上。
+    await addButton?.find('button').trigger('click')
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    await nextTick()
+
+    // el-dialog 通过 teleport 渲染到 body，需从文档而非组件 wrapper 中查找。
+    const dialog = [...document.querySelectorAll('.el-dialog')].find((node) =>
+      node.textContent?.includes('黑名单原因'),
+    ) as HTMLElement | undefined
+    expect(dialog).toBeTruthy()
+    expect(dialog?.textContent).toContain('员工')
+    expect(dialog?.textContent).toContain('开始日期')
+    expect(dialog?.textContent).toContain('结束日期')
+    expect(dialog?.textContent).toContain('取消')
+    expect(dialog?.textContent).toContain('确认加入')
+
+    const reason = dialog?.querySelector('textarea')
+    expect(reason?.getAttribute('placeholder')).toBe('请填写加入黑名单的原因')
+    expect(dialog?.querySelectorAll('.el-date-editor')).toHaveLength(2)
+
+    wrapper.unmount()
+  })
 })

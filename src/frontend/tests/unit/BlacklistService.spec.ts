@@ -44,13 +44,41 @@ describe('黑名单 mock 服务', () => {
     expect(result.total).toBe(2)
   })
 
-  it('主管可将本部门员工加入黑名单并记录操作人', async () => {
+  it('主管可将本部门员工加入黑名单并刷新列表', async () => {
     loginAs('manager.demo')
     const record = await mockBlacklistService.createBlacklist({ empId: 58, reason: '违规' })
     expect(record.empId).toBe(58)
     expect(record.deptName).toBe('技术部')
-    expect(record.operatorEmpId).toBe(56)
     expect(record.status).toBe('ACTIVE')
+
+    const list = await mockBlacklistService.listBlacklists({ page: 1, pageSize: 20 })
+    expect(list.items.some((item) => item.empId === 58)).toBe(true)
+  })
+
+  it('主管候选员工仅限本部门且排除管理账号', async () => {
+    loginAs('manager.demo')
+    const result = await mockBlacklistService.listCandidates({ page: 1, pageSize: 50 })
+    const ids = result.items.map((item) => item.empId)
+
+    // 技术部普通员工：张三(55)、王五(58)、赵六(59)
+    expect(ids).toContain(58)
+    // 排除同部门主管李主管(56)、管理员(54)、其他部门(60,57)
+    expect(ids).not.toContain(56)
+    expect(ids).not.toContain(54)
+    expect(ids).not.toContain(60)
+    expect(ids).not.toContain(57)
+  })
+
+  it('管理员候选员工跨部门且排除管理账号', async () => {
+    loginAs('admin.demo')
+    const result = await mockBlacklistService.listCandidates({ page: 1, pageSize: 50 })
+    const ids = result.items.map((item) => item.empId)
+
+    expect(ids).toContain(60)
+    expect(ids).toContain(58)
+    expect(ids).not.toContain(54)
+    expect(ids).not.toContain(56)
+    expect(ids).not.toContain(57)
   })
 
   it('主管不能跨部门加入黑名单', async () => {
@@ -105,6 +133,5 @@ describe('黑名单 mock 服务', () => {
     loginAs('admin.demo')
     const record = await mockBlacklistService.createBlacklist({ empId: 58, reason: '违规' })
     expect(record.empId).toBe(58)
-    expect(record.operatorEmpId).toBe(54)
   })
 })

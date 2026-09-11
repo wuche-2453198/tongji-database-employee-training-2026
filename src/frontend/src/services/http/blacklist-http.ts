@@ -1,6 +1,6 @@
 import { requestApi } from '@/api/client'
-import { mapBlacklist, mapBlacklistPage } from '@/api/mappers/blacklist'
-import type { ApiEnvelopeDto, BlacklistDto, PageDto } from '@/api/transport'
+import { mapBlacklist, mapBlacklistCandidatePage, mapBlacklistPage } from '@/api/mappers/blacklist'
+import type { ApiEnvelopeDto, BlacklistCandidateDto, BlacklistDto, PageDto } from '@/api/transport'
 import type { BlacklistService } from '@/services/blacklist'
 
 export const httpBlacklistService: BlacklistService = {
@@ -17,6 +17,21 @@ export const httpBlacklistService: BlacklistService = {
       operation: 'query',
     })
     return mapBlacklistPage(response)
+  },
+
+  async listCandidates(query, options) {
+    const response = await requestApi<ApiEnvelopeDto<PageDto<BlacklistCandidateDto>>>({
+      method: 'GET',
+      url: '/api/blacklists/candidates',
+      params: {
+        Keyword: query.keyword || undefined,
+        Page: query.page,
+        PageSize: query.pageSize,
+      },
+      signal: options?.signal,
+      operation: 'query',
+    })
+    return mapBlacklistCandidatePage(response)
   },
 
   async createBlacklist(input, options) {
@@ -37,7 +52,10 @@ export const httpBlacklistService: BlacklistService = {
 
   async updateBlacklist(id, input, options) {
     const response = await requestApi<ApiEnvelopeDto<BlacklistDto>>({
-      method: 'PUT', url: `/api/blacklists/${encodeURIComponent(id)}`, signal: options?.signal, operation: 'write',
+      method: 'PUT',
+      url: `/api/blacklists/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+      operation: 'write',
       data: { Reason: input.reason, EndDate: input.endDate, Status: input.status },
     })
     return mapBlacklist(response)
@@ -45,7 +63,10 @@ export const httpBlacklistService: BlacklistService = {
 
   async deleteBlacklist(id, options) {
     await requestApi<ApiEnvelopeDto<boolean>>({
-      method: 'DELETE', url: `/api/blacklists/${encodeURIComponent(id)}`, signal: options?.signal, operation: 'write',
+      method: 'DELETE',
+      url: `/api/blacklists/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+      operation: 'write',
     })
   },
 }

@@ -45,7 +45,12 @@ const emit = defineEmits<{
 
       <div v-if="$slots.action || actionLabel" class="page-header__action">
         <slot name="action">
-          <AppButton :label="actionLabel" variant="primary" @click="emit('action')" />
+          <AppButton
+            v-if="actionLabel"
+            :label="actionLabel"
+            variant="primary"
+            @click="emit('action')"
+          />
         </slot>
       </div>
     </div>

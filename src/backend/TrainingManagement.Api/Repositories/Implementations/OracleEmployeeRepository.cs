@@ -115,6 +115,109 @@ public sealed class OracleEmployeeRepository : IEmployeeRepository
         };
     }
 
+    public async Task<PagedResult<Employee>> GetBlacklistCandidatesAsync(
+        BlacklistCandidateQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_connectionFactory.IsConfigured)
+        {
+            return new PagedResult<Employee>
+            {
+                Items = Array.Empty<Employee>(),
+                Page = query.Page,
+                PageSize = query.PageSize,
+                Total = 0
+            };
+        }
+
+        var conditions = new List<string>
+        {
+            // 候选名单只保留在职员工
+            "e.STATUS = 'ACTIVE'",
+            // 排除管理员/HR/部门主管等具备管理权限的账号
+            @"NOT EXISTS (
+                SELECT 1 FROM USER_ROLES ur
+                INNER JOIN ROLES r ON r.ROLE_ID = ur.ROLE_ID
+                WHERE ur.EMP_ID = e.EMP_ID
+                  AND r.ROLE_CODE IN ('ADMIN', 'HR', 'MANAGER', 'DEPT_MANAGER'))"
+        };
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            conditions.Add("(LOWER(e.EMP_NAME) LIKE LOWER(:Keyword) OR LOWER(e.LOGIN_NAME) LIKE LOWER(:Keyword))");
+            parameters.Add("Keyword", $"%{query.Keyword}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.DeptName))
+        {
+            conditions.Add("d.DEPT_NAME = :DeptName");
+            parameters.Add("DeptName", query.DeptName);
+        }
+
+        var whereClause = "WHERE " + string.Join(" AND ", conditions);
+
+        var countSql = $@"
+            SELECT COUNT(*)
+            FROM EMPLOYEES e
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
+            {whereClause}";
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+
+        var total = await connection.ExecuteScalarAsync<int>(
+            new CommandDefinition(countSql, parameters, cancellationToken: cancellationToken));
+
+        var offset = (query.Page - 1) * query.PageSize;
+        var dataSql = $@"
+            SELECT
+                e.EMP_ID AS ""EmpId"",
+                e.EMP_NAME AS ""EmpName"",
+                d.DEPT_NAME AS ""DeptName"",
+                e.POSITION AS ""Position"",
+                e.STATUS AS ""Status""
+            FROM EMPLOYEES e
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
+            {whereClause}
+            ORDER BY e.EMP_ID
+            OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY";
+
+        parameters.Add("Offset", offset);
+        parameters.Add("PageSize", query.PageSize);
+
+        var items = await connection.QueryAsync<Employee>(
+            new CommandDefinition(dataSql, parameters, cancellationToken: cancellationToken));
+
+        return new PagedResult<Employee>
+        {
+            Items = items.ToArray(),
+            Page = query.Page,
+            PageSize = query.PageSize,
+            Total = total
+        };
+    }
+
+    public async Task<IReadOnlyCollection<string>> GetRoleCodesAsync(
+        long empId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_connectionFactory.IsConfigured)
+        {
+            return Array.Empty<string>();
+        }
+
+        const string sql = @"
+            SELECT r.ROLE_CODE
+            FROM USER_ROLES ur
+            INNER JOIN ROLES r ON r.ROLE_ID = ur.ROLE_ID
+            WHERE ur.EMP_ID = :EmpId";
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var roles = await connection.QueryAsync<string>(
+            new CommandDefinition(sql, new { EmpId = empId }, cancellationToken: cancellationToken));
+        return roles.ToArray();
+    }
+
     public async Task<Employee?> GetByIdAsync(long empId, CancellationToken cancellationToken = default)
     {
         if (!_connectionFactory.IsConfigured)

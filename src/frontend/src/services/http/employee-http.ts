@@ -23,34 +23,59 @@ export const httpEmployeeService: EmployeeService = {
 
   async getEmployee(id, options) {
     const response = await requestApi<ApiEnvelopeDto<EmployeeSummaryDto>>({
-      method: 'GET', url: `/api/employees/${encodeURIComponent(id)}`, signal: options?.signal, operation: 'query',
+      method: 'GET',
+      url: `/api/employees/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+      operation: 'query',
     })
     return mapEmployee(response)
   },
 
   async createEmployee(input, options) {
     const response = await requestApi<ApiEnvelopeDto<EmployeeSummaryDto>>({
-      method: 'POST', url: '/api/employees', signal: options?.signal, operation: 'write',
-      data: { LoginName: input.loginName, EmpName: input.empName, DeptName: input.deptName,
-        Position: input.position || undefined, Email: input.email || undefined, Phone: input.phone || undefined,
-        HireDate: input.hireDate, Password: input.password },
+      method: 'POST',
+      url: '/api/employees',
+      signal: options?.signal,
+      operation: 'write',
+      data: {
+        LoginName: input.loginName,
+        EmpName: input.empName,
+        DeptName: input.deptName,
+        Position: input.position || undefined,
+        Email: input.email || undefined,
+        Phone: input.phone || undefined,
+        HireDate: input.hireDate,
+        Password: input.password,
+      },
     })
     return mapEmployee(response)
   },
 
   async updateEmployee(id, input, options) {
     const response = await requestApi<ApiEnvelopeDto<EmployeeSummaryDto>>({
-      method: 'PUT', url: `/api/employees/${encodeURIComponent(id)}`, signal: options?.signal, operation: 'write',
-      data: { EmpName: input.empName, DeptName: input.deptName, Position: input.position || undefined,
-        Email: input.email || undefined, Phone: input.phone || undefined, HireDate: input.hireDate || undefined,
-        Status: input.status },
+      method: 'PUT',
+      url: `/api/employees/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+      operation: 'write',
+      data: {
+        EmpName: input.empName,
+        DeptName: input.deptName,
+        Position: input.position || undefined,
+        Email: input.email || undefined,
+        Phone: input.phone || undefined,
+        HireDate: input.hireDate || undefined,
+        Status: input.status,
+      },
     })
     return mapEmployee(response)
   },
 
   async deleteEmployee(id, options) {
     await requestApi<ApiEnvelopeDto<boolean>>({
-      method: 'DELETE', url: `/api/employees/${encodeURIComponent(id)}`, signal: options?.signal, operation: 'write',
+      method: 'DELETE',
+      url: `/api/employees/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+      operation: 'write',
     })
   },
 }

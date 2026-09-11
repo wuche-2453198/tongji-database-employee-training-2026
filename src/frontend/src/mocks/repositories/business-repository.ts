@@ -294,13 +294,83 @@ const baseTests = (): TrainingTest[] => [
 ]
 
 const baseEmployees = (): EmployeeSummary[] => [
-  { empId: 55, empName: '张三', deptName: '技术部', position: '前端工程师', email: 'zhangsan@example.com', phone: null, hireDate: '2024-01-10', status: 'ACTIVE', createdAt: '2024-01-10T09:00:00+08:00' },
-  { empId: 56, empName: '李主管', deptName: '技术部', position: '部门主管', email: 'manager@example.com', phone: null, hireDate: '2020-04-12', status: 'ACTIVE', createdAt: '2020-04-12T09:00:00+08:00' },
-  { empId: 58, empName: '王五', deptName: '技术部', position: '后端工程师', email: null, phone: null, hireDate: '2023-08-01', status: 'ACTIVE', createdAt: '2023-08-01T09:00:00+08:00' },
-  { empId: 59, empName: '赵六', deptName: '技术部', position: '测试工程师', email: null, phone: null, hireDate: '2023-06-01', status: 'ACTIVE', createdAt: '2023-06-01T09:00:00+08:00' },
-  { empId: 57, empName: '王 HR', deptName: '人力资源部', position: '培训专员', email: null, phone: null, hireDate: '2021-05-12', status: 'ACTIVE', createdAt: '2021-05-12T09:00:00+08:00' },
-  { empId: 54, empName: '赵管理员', deptName: '信息管理部', position: '系统管理员', email: null, phone: null, hireDate: '2019-09-12', status: 'ACTIVE', createdAt: '2019-09-12T09:00:00+08:00' },
-  { empId: 60, empName: '钱七', deptName: '市场部', position: '市场专员', email: null, phone: null, hireDate: '2022-07-12', status: 'ACTIVE', createdAt: '2022-07-12T09:00:00+08:00' },
+  {
+    empId: 55,
+    empName: '张三',
+    deptName: '技术部',
+    position: '前端工程师',
+    email: 'zhangsan@example.com',
+    phone: null,
+    hireDate: '2024-01-10',
+    status: 'ACTIVE',
+    createdAt: '2024-01-10T09:00:00+08:00',
+  },
+  {
+    empId: 56,
+    empName: '李主管',
+    deptName: '技术部',
+    position: '部门主管',
+    email: 'manager@example.com',
+    phone: null,
+    hireDate: '2020-04-12',
+    status: 'ACTIVE',
+    createdAt: '2020-04-12T09:00:00+08:00',
+  },
+  {
+    empId: 58,
+    empName: '王五',
+    deptName: '技术部',
+    position: '后端工程师',
+    email: null,
+    phone: null,
+    hireDate: '2023-08-01',
+    status: 'ACTIVE',
+    createdAt: '2023-08-01T09:00:00+08:00',
+  },
+  {
+    empId: 59,
+    empName: '赵六',
+    deptName: '技术部',
+    position: '测试工程师',
+    email: null,
+    phone: null,
+    hireDate: '2023-06-01',
+    status: 'ACTIVE',
+    createdAt: '2023-06-01T09:00:00+08:00',
+  },
+  {
+    empId: 57,
+    empName: '王 HR',
+    deptName: '人力资源部',
+    position: '培训专员',
+    email: null,
+    phone: null,
+    hireDate: '2021-05-12',
+    status: 'ACTIVE',
+    createdAt: '2021-05-12T09:00:00+08:00',
+  },
+  {
+    empId: 54,
+    empName: '赵管理员',
+    deptName: '信息管理部',
+    position: '系统管理员',
+    email: null,
+    phone: null,
+    hireDate: '2019-09-12',
+    status: 'ACTIVE',
+    createdAt: '2019-09-12T09:00:00+08:00',
+  },
+  {
+    empId: 60,
+    empName: '钱七',
+    deptName: '市场部',
+    position: '市场专员',
+    email: null,
+    phone: null,
+    hireDate: '2022-07-12',
+    status: 'ACTIVE',
+    createdAt: '2022-07-12T09:00:00+08:00',
+  },
 ]
 
 const baseBlacklist = (): BlacklistRecord[] => [
@@ -314,7 +384,6 @@ const baseBlacklist = (): BlacklistRecord[] => [
     endDate: '2026-08-31',
     status: 'ACTIVE',
     statusLabel: '生效中',
-    operatorEmpId: 56,
     createdAt: '2026-08-01T09:00:00+08:00',
   },
   {
@@ -327,7 +396,6 @@ const baseBlacklist = (): BlacklistRecord[] => [
     endDate: '2026-08-15',
     status: 'RELEASED',
     statusLabel: '已解除',
-    operatorEmpId: 54,
     createdAt: '2026-07-15T10:00:00+08:00',
   },
 ]
@@ -467,13 +535,64 @@ export function getMockBusinessState() {
   return mockBusinessRepository.getState()
 }
 
-export function getMockActor(): {
+type MockActor = {
   employeeId: number
   role: 'EMPLOYEE' | 'DEPT_MANAGER' | 'HR' | 'ADMIN'
   departmentId: number
   departmentName: string
   status: 'ACTIVE' | 'RESIGNED'
-} {
+}
+
+const mockActorDirectory: Record<string, MockActor> = {
+  'employee.demo': {
+    employeeId: 55,
+    role: 'EMPLOYEE',
+    departmentId: 101,
+    departmentName: '技术部',
+    status: 'ACTIVE',
+  },
+  'employee.resigned.demo': {
+    employeeId: 1005,
+    role: 'EMPLOYEE',
+    departmentId: 101,
+    departmentName: '技术部',
+    status: 'RESIGNED',
+  },
+  'manager.demo': {
+    employeeId: 56,
+    role: 'DEPT_MANAGER',
+    departmentId: 101,
+    departmentName: '技术部',
+    status: 'ACTIVE',
+  },
+  'hr.demo': {
+    employeeId: 57,
+    role: 'HR',
+    departmentId: 102,
+    departmentName: '人力资源部',
+    status: 'ACTIVE',
+  },
+  'admin.demo': {
+    employeeId: 54,
+    role: 'ADMIN',
+    departmentId: 103,
+    departmentName: '管理部',
+    status: 'ACTIVE',
+  },
+}
+
+/** 具备管理权限(管理员/HR/部门主管)的演示账号员工编号，用于从黑名单候选中排除。 */
+export function getMockPrivilegedEmployeeIds(): Set<number> {
+  return new Set(
+    Object.values(mockActorDirectory)
+      .filter(
+        (actor) => actor.role === 'ADMIN' || actor.role === 'HR' || actor.role === 'DEPT_MANAGER',
+      )
+      .map((actor) => actor.employeeId),
+  )
+}
+
+export function getMockActor(): MockActor {
   const account =
     typeof window === 'undefined'
       ? 'employee.demo'
@@ -487,53 +606,7 @@ export function getMockActor(): {
             return 'employee.demo'
           }
         })()
-  const actors: Record<
-    string,
-    {
-      employeeId: number
-      role: 'EMPLOYEE' | 'DEPT_MANAGER' | 'HR' | 'ADMIN'
-      departmentId: number
-      departmentName: string
-      status: 'ACTIVE' | 'RESIGNED'
-    }
-  > = {
-    'employee.demo': {
-      employeeId: 55,
-      role: 'EMPLOYEE',
-      departmentId: 101,
-      departmentName: '技术部',
-      status: 'ACTIVE',
-    },
-    'employee.resigned.demo': {
-      employeeId: 1005,
-      role: 'EMPLOYEE',
-      departmentId: 101,
-      departmentName: '技术部',
-      status: 'RESIGNED',
-    },
-    'manager.demo': {
-      employeeId: 56,
-      role: 'DEPT_MANAGER',
-      departmentId: 101,
-      departmentName: '技术部',
-      status: 'ACTIVE',
-    },
-    'hr.demo': {
-      employeeId: 57,
-      role: 'HR',
-      departmentId: 102,
-      departmentName: '人力资源部',
-      status: 'ACTIVE',
-    },
-    'admin.demo': {
-      employeeId: 54,
-      role: 'ADMIN',
-      departmentId: 103,
-      departmentName: '管理部',
-      status: 'ACTIVE',
-    },
-  }
-  return actors[account] ?? actors['employee.demo']!
+  return mockActorDirectory[account] ?? mockActorDirectory['employee.demo']!
 }
 
 if (typeof window !== 'undefined') {

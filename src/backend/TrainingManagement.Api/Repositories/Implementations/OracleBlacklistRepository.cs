@@ -100,7 +100,6 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 b.START_AT AS ""StartDate"",
                 b.END_AT AS ""EndDate"",
                 b.STATUS AS ""Status"",
-                b.OPERATOR_EMP_ID AS ""OperatorEmpId"",
                 b.CREATED_AT AS ""CreatedAt""
             FROM BLACKLIST b
             LEFT JOIN EMPLOYEES e ON e.EMP_ID = b.EMP_ID
@@ -141,7 +140,6 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 b.START_AT AS ""StartDate"",
                 b.END_AT AS ""EndDate"",
                 b.STATUS AS ""Status"",
-                b.OPERATOR_EMP_ID AS ""OperatorEmpId"",
                 b.CREATED_AT AS ""CreatedAt""
             FROM BLACKLIST b
             LEFT JOIN EMPLOYEES e ON e.EMP_ID = b.EMP_ID
@@ -195,8 +193,7 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
             SELECT COUNT(1)
             FROM BLACKLIST
             WHERE EMP_ID = :EmpId
-              AND STATUS = 'ACTIVE'
-              AND (END_AT IS NULL OR END_AT >= SYSDATE)";
+              AND STATUS = 'ACTIVE'";
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var count = await connection.ExecuteScalarAsync<int>(
@@ -232,16 +229,16 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 START_AT,
                 END_AT,
                 STATUS,
-                OPERATOR_EMP_ID,
-                CREATED_AT
+                CREATED_AT,
+                UPDATED_AT
             ) VALUES (
                 :EmpId,
                 :Reason,
                 :StartDate,
                 :EndDate,
                 :Status,
-                :OperatorEmpId,
-                :CreatedAt
+                :CreatedAt,
+                :UpdatedAt
             )
             RETURNING BLACK_ID INTO :BlackId";
 
@@ -251,8 +248,8 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
         parameters.Add("StartDate", entity.StartDate);
         parameters.Add("EndDate", entity.EndDate);
         parameters.Add("Status", entity.Status);
-        parameters.Add("OperatorEmpId", entity.OperatorEmpId);
         parameters.Add("CreatedAt", entity.CreatedAt);
+        parameters.Add("UpdatedAt", entity.CreatedAt);
         parameters.Add("BlackId", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -275,7 +272,8 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
             UPDATE BLACKLIST SET
                 REASON = :Reason,
                 END_AT = :EndDate,
-                STATUS = :Status
+                STATUS = :Status,
+                UPDATED_AT = :UpdatedAt
             WHERE BLACK_ID = :BlackId";
 
         var parameters = new DynamicParameters();
@@ -283,6 +281,7 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
         parameters.Add("Reason", entity.Reason);
         parameters.Add("EndDate", entity.EndDate);
         parameters.Add("Status", entity.Status);
+        parameters.Add("UpdatedAt", DateTime.Now);
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var affected = await connection.ExecuteAsync(

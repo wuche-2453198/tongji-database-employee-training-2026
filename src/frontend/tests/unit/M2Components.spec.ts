@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import CourseSummary from '@/components/business/CourseSummary.vue'
 import FileEntry from '@/components/business/FileEntry.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import PageState from '@/components/common/PageState.vue'
 import SearchPanel from '@/components/common/SearchPanel.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
@@ -73,5 +74,26 @@ describe('M2 公共组件', () => {
     expect(wrapper.text()).toContain('受限资源')
     expect(wrapper.text()).not.toContain('保密薪酬培训资料.pdf')
     expect(wrapper.get('button').attributes()).toHaveProperty('disabled')
+  })
+
+  it('PageHeader 操作区在插槽渲染为空时不产生空白按钮', () => {
+    const wrapper = mount(PageHeader, {
+      props: { title: '部门预算管理' },
+      slots: { action: '<template v-if="false">隐藏</template>' },
+    })
+
+    expect(wrapper.find('.page-header__action').exists()).toBe(true)
+    expect(wrapper.findAll('.page-header__action button')).toHaveLength(0)
+  })
+
+  it('PageHeader 提供 actionLabel 时渲染按钮并派发 action 事件', async () => {
+    const wrapper = mount(PageHeader, {
+      props: { title: '部门预算管理', actionLabel: '新增预算' },
+    })
+
+    const button = wrapper.get('.page-header__action button')
+    expect(button.text()).toContain('新增预算')
+    await button.trigger('click')
+    expect(wrapper.emitted('action')).toHaveLength(1)
   })
 })

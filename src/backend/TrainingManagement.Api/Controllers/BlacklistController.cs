@@ -34,6 +34,20 @@ public sealed class BlacklistController : ApiControllerBase
         return OkResponse(result);
     }
 
+    // 分页查询黑名单候选员工（排除管理员/HR/部门主管；部门主管仅限本部门）
+    [HttpGet("candidates")]
+    [Authorize(Policy = AuthorizationPolicies.ManagerHrOrAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<BlacklistCandidateResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<PagedResult<BlacklistCandidateResponse>>>> GetCandidates(
+        [FromQuery] BlacklistCandidateQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetCandidatesAsync(query, User, cancellationToken);
+        return OkResponse(result);
+    }
+
     // 根据ID获取黑名单记录详情
     [HttpGet("{id:long}")]
     [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]

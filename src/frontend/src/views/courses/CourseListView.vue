@@ -260,7 +260,13 @@ onBeforeUnmount(() => latestQuery.cancel())
 <template>
   <section class="course-list-view">
     <PageHeader title="课程中心" description="浏览已发布课程，查看培训安排与报名资格。">
-      <template #action><AppButton v-if="canManageCourses" label="新建课程" variant="primary" @click="editorVisible = true" /></template>
+      <template #action
+        ><AppButton
+          v-if="canManageCourses"
+          label="新建课程"
+          variant="primary"
+          @click="editorVisible = true"
+      /></template>
     </PageHeader>
 
     <el-alert

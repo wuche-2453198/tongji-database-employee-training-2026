@@ -45,7 +45,10 @@ export interface EmployeeService {
     options?: ServiceRequestOptions,
   ): Promise<DomainPage<EmployeeSummary>>
   getEmployee(id: string, options?: ServiceRequestOptions): Promise<EmployeeSummary>
-  createEmployee(input: CreateEmployeeInput, options?: ServiceRequestOptions): Promise<EmployeeSummary>
+  createEmployee(
+    input: CreateEmployeeInput,
+    options?: ServiceRequestOptions,
+  ): Promise<EmployeeSummary>
   updateEmployee(
     id: string,
     input: UpdateEmployeeInput,

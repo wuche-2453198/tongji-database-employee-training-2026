@@ -4,10 +4,18 @@ import type { ApiEnvelopeDto, CourseSummaryDto, PageDto } from '@/api/transport'
 import type { CourseEditorInput, CourseService } from '@/domains/course'
 
 const toPayload = (input: CourseEditorInput) => ({
-  CourseName: input.name, CourseType: input.type, DurationHours: input.durationHours,
-  TrainerId: Number(input.trainerId), MaxStudents: input.maxStudents, StartAt: input.startAt,
-  EndAt: input.endAt, Location: input.location, BudgetAmount: input.budgetAmount, DeptId: Number(input.deptId),
-  PreTestUrl: input.preTestUrl || undefined, PostTestUrl: input.postTestUrl || undefined,
+  CourseName: input.name,
+  CourseType: input.type,
+  DurationHours: input.durationHours,
+  TrainerId: Number(input.trainerId),
+  MaxStudents: input.maxStudents,
+  StartAt: input.startAt,
+  EndAt: input.endAt,
+  Location: input.location,
+  BudgetAmount: input.budgetAmount,
+  DeptId: Number(input.deptId),
+  PreTestUrl: input.preTestUrl || undefined,
+  PostTestUrl: input.postTestUrl || undefined,
   MaterialUrl: input.materialUrl || undefined,
 })
 
@@ -66,15 +74,22 @@ export const httpCourseService: CourseService = {
 
   async createCourse(input, options) {
     const response = await requestApi<ApiEnvelopeDto<import('@/api/transport').CourseDetailDto>>({
-      method: 'POST', url: '/api/courses', data: toPayload(input), signal: options?.signal, operation: 'write',
+      method: 'POST',
+      url: '/api/courses',
+      data: toPayload(input),
+      signal: options?.signal,
+      operation: 'write',
     })
     return mapCourseDetail(response)
   },
 
   async updateCourse(courseId, input, options) {
     const response = await requestApi<ApiEnvelopeDto<import('@/api/transport').CourseDetailDto>>({
-      method: 'PUT', url: `/api/courses/${encodeURIComponent(courseId)}`, data: toPayload(input),
-      signal: options?.signal, operation: 'write',
+      method: 'PUT',
+      url: `/api/courses/${encodeURIComponent(courseId)}`,
+      data: toPayload(input),
+      signal: options?.signal,
+      operation: 'write',
     })
     return mapCourseDetail(response)
   },

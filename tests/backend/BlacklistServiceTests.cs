@@ -23,6 +23,9 @@ internal static class BlacklistServiceTests
         yield return ("Empty reason returns 400", EmptyReasonAsync);
         yield return ("Manager list is scoped to own department", ManagerListScopedAsync);
         yield return ("Admin can blacklist across departments", AdminCrossDepartmentAsync);
+        yield return ("Manager candidates are scoped to own department", ManagerCandidatesScopedAsync);
+        yield return ("Admin candidates are not department scoped", AdminCandidatesUnscopedAsync);
+        yield return ("Manager cannot blacklist a manager account", ManagerCannotBlacklistPrivilegedAsync);
     }
 
     private const long ManagerId = 98;
@@ -45,7 +48,6 @@ internal static class BlacklistServiceTests
             CancellationToken.None);
 
         TestAssert.Equal(TargetId, response.EmpId, "Created record must target the employee.");
-        TestAssert.Equal(ManagerId, response.OperatorEmpId!.Value, "Created record must record the operator.");
         TestAssert.Equal(ManagerDept, response.DeptName, "Created record must carry the employee department.");
         TestAssert.True(response.BlackId > 0, "Created record must have a generated ID.");
     }
@@ -176,7 +178,6 @@ internal static class BlacklistServiceTests
             Reason = "违规缺勤",
             Status = "ACTIVE",
             DeptName = ManagerDept,
-            OperatorEmpId = ManagerId,
             CreatedAt = DateTime.Now
         });
         repository.Records.Add(new Blacklist
@@ -213,6 +214,58 @@ internal static class BlacklistServiceTests
             CancellationToken.None);
 
         TestAssert.Equal(OtherDeptTargetId, response.EmpId, "Admin must be able to blacklist any department.");
+    }
+
+    private static async Task ManagerCandidatesScopedAsync()
+    {
+        var employees = new FakeEmployeeRepository();
+        employees.Employees[ManagerId] = Employee(ManagerId, ManagerDept);
+        employees.Roles[ManagerId] = new[] { RoleCodes.DepartmentManager };
+        employees.Employees[TargetId] = Employee(TargetId, ManagerDept);
+        employees.Employees[OtherDeptTargetId] = Employee(OtherDeptTargetId, OtherDept);
+        // 同部门内的管理员账号必须从候选名单中排除
+        employees.Employees[900] = Employee(900, ManagerDept);
+        employees.Roles[900] = new[] { RoleCodes.Admin };
+        var service = new BlacklistService(new FakeBlacklistRepository(), employees);
+
+        var result = await service.GetCandidatesAsync(
+            new BlacklistCandidateQuery { Page = 1, PageSize = 50 },
+            TestPrincipals.Manager(ManagerId),
+            CancellationToken.None);
+
+        TestAssert.Equal(1, result.Items.Count, "Manager candidates must exclude privileged accounts.");
+        TestAssert.Equal(TargetId, result.Items.First().EmpId, "Manager candidates must be scoped to own department.");
+    }
+
+    private static async Task AdminCandidatesUnscopedAsync()
+    {
+        var employees = new FakeEmployeeRepository();
+        employees.Employees[TargetId] = Employee(TargetId, ManagerDept);
+        employees.Employees[OtherDeptTargetId] = Employee(OtherDeptTargetId, OtherDept);
+        var service = new BlacklistService(new FakeBlacklistRepository(), employees);
+
+        var result = await service.GetCandidatesAsync(
+            new BlacklistCandidateQuery { Page = 1, PageSize = 50 },
+            TestPrincipals.Admin(),
+            CancellationToken.None);
+
+        TestAssert.Equal(2, result.Items.Count, "Admin candidates must span departments.");
+    }
+
+    private static async Task ManagerCannotBlacklistPrivilegedAsync()
+    {
+        var employees = new FakeEmployeeRepository();
+        employees.Employees[ManagerId] = Employee(ManagerId, ManagerDept);
+        employees.Employees[TargetId] = Employee(TargetId, ManagerDept);
+        employees.Roles[TargetId] = new[] { RoleCodes.DepartmentManager };
+        var service = new BlacklistService(new FakeBlacklistRepository(), employees);
+
+        await TestAssert.ThrowsAsync<ForbiddenApiException>(
+            () => service.CreateAsync(
+                new CreateBlacklistRequest { EmpId = TargetId, Reason = "违规" },
+                TestPrincipals.Manager(ManagerId),
+                CancellationToken.None),
+            "A manager must not blacklist another manager/admin/HR account.");
     }
 
     private static Employee Employee(long empId, string deptName)
@@ -290,6 +343,8 @@ internal static class BlacklistServiceTests
     {
         public Dictionary<long, Employee> Employees { get; } = new();
 
+        public Dictionary<long, string[]> Roles { get; } = new();
+
         public Task<PagedResult<Employee>> GetPagedAsync(
             EmployeeQuery query,
             CancellationToken cancellationToken = default)
@@ -299,6 +354,34 @@ internal static class BlacklistServiceTests
                 .ToArray();
             return Task.FromResult(
                 new PagedResult<Employee>(items, query.Page, query.PageSize, items.Length));
+        }
+
+        public Task<PagedResult<Employee>> GetBlacklistCandidatesAsync(
+            BlacklistCandidateQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            var items = Employees.Values
+                .Where(e => string.IsNullOrWhiteSpace(query.DeptName) || e.DeptName == query.DeptName)
+                .Where(e => !Roles.TryGetValue(e.EmpId, out var roles) || !roles.Any(IsPrivileged))
+                .ToArray();
+            return Task.FromResult(
+                new PagedResult<Employee>(items, query.Page, query.PageSize, items.Length));
+        }
+
+        public Task<IReadOnlyCollection<string>> GetRoleCodesAsync(
+            long empId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyCollection<string>>(
+                Roles.TryGetValue(empId, out var roles) ? roles : Array.Empty<string>());
+        }
+
+        private static bool IsPrivileged(string role)
+        {
+            var normalized = RoleCodes.Normalize(role);
+            return normalized == RoleCodes.Admin
+                || normalized == RoleCodes.Hr
+                || normalized == RoleCodes.DepartmentManager;
         }
 
         public Task<Employee?> GetByIdAsync(long empId, CancellationToken cancellationToken = default)

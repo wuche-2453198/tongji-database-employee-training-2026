@@ -243,13 +243,28 @@ async function confirmPublish(): Promise<void> {
 
 async function submitRating() {
   if (!course.value || !course.value.trainer.id || course.value.trainer.id === 'UNKNOWN') {
-    ratingError.value = '当前课程缺少讲师信息，无法提交评分。'; return
+    ratingError.value = '当前课程缺少讲师信息，无法提交评分。'
+    return
   }
-  ratingSaving.value = true; ratingError.value = ''
+  ratingSaving.value = true
+  ratingError.value = ''
   try {
-    await (await getRatingService()).create({ courseId: course.value.id, trainerId: course.value.trainer.id, score: ratingScore.value, comment: ratingComment.value })
-    ratingVisible.value = false; ratingComment.value = ''; actionMessage.value = '讲师评分已提交，等待 HR 复核。'
-  } catch (caught) { ratingError.value = isServiceError(caught) ? caught.ui.message : '提交评分失败。' } finally { ratingSaving.value = false }
+    await (
+      await getRatingService()
+    ).create({
+      courseId: course.value.id,
+      trainerId: course.value.trainer.id,
+      score: ratingScore.value,
+      comment: ratingComment.value,
+    })
+    ratingVisible.value = false
+    ratingComment.value = ''
+    actionMessage.value = '讲师评分已提交，等待 HR 复核。'
+  } catch (caught) {
+    ratingError.value = isServiceError(caught) ? caught.ui.message : '提交评分失败。'
+  } finally {
+    ratingSaving.value = false
+  }
 }
 
 onMounted(loadCourse)
@@ -445,11 +460,33 @@ onBeforeUnmount(() => latestQuery.cancel())
       @confirm="confirmClose"
     />
     <CourseEditorDialog v-model="editorVisible" :course="course" @saved="loadCourse" />
-    <el-dialog v-model="ratingVisible" title="评价讲师" width="480px" :close-on-click-modal="!ratingSaving">
+    <el-dialog
+      v-model="ratingVisible"
+      title="评价讲师"
+      width="480px"
+      :close-on-click-modal="!ratingSaving"
+    >
       <el-alert v-if="ratingError" :title="ratingError" type="error" show-icon :closable="false" />
       <p>课程：{{ course?.name }}；讲师：{{ course?.trainer.name }}</p>
-      <el-rate v-model="ratingScore" :max="5" show-score /><el-input v-model="ratingComment" class="course-detail-view__rating-input" type="textarea" :rows="4" maxlength="500" show-word-limit placeholder="请填写评价（选填）" />
-      <template #footer><AppButton label="取消" :disabled="ratingSaving" @click="ratingVisible = false" /><AppButton label="提交评分" variant="primary" :loading="ratingSaving" @click="submitRating" /></template>
+      <el-rate v-model="ratingScore" :max="5" show-score /><el-input
+        v-model="ratingComment"
+        class="course-detail-view__rating-input"
+        type="textarea"
+        :rows="4"
+        maxlength="500"
+        show-word-limit
+        placeholder="请填写评价（选填）"
+      />
+      <template #footer
+        ><AppButton
+          label="取消"
+          :disabled="ratingSaving"
+          @click="ratingVisible = false" /><AppButton
+          label="提交评分"
+          variant="primary"
+          :loading="ratingSaving"
+          @click="submitRating"
+      /></template>
     </el-dialog>
   </section>
 </template>
@@ -459,7 +496,9 @@ onBeforeUnmount(() => latestQuery.cancel())
   display: grid;
   gap: var(--space-6);
 }
-.course-detail-view__rating-input { margin-top: var(--space-4); }
+.course-detail-view__rating-input {
+  margin-top: var(--space-4);
+}
 .course-detail-view__actions {
   display: flex;
   flex-wrap: wrap;

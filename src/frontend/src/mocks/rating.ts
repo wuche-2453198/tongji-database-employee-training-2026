@@ -41,30 +41,52 @@ export const mockRatingService: RatingService = {
     const actor = getMockActor()
     if (actor.role !== 'HR' && actor.role !== 'ADMIN') throw createMockError('forbidden')
     const keyword = query.keyword?.trim().toLowerCase()
-    const items = mockBusinessRepository.getState().ratings.filter(
-      (item) =>
-        (!keyword || `${item.courseName}${item.trainerName}${item.employeeName}`.toLowerCase().includes(keyword)) &&
-        (!query.courseId || item.courseId === query.courseId) &&
-        (!query.trainerId || item.trainerId === query.trainerId),
+    const items = mockBusinessRepository
+      .getState()
+      .ratings.filter(
+        (item) =>
+          (!keyword ||
+            `${item.courseName}${item.trainerName}${item.employeeName}`
+              .toLowerCase()
+              .includes(keyword)) &&
+          (!query.courseId || item.courseId === query.courseId) &&
+          (!query.trainerId || item.trainerId === query.trainerId),
+      )
+    return pageOf(
+      items.sort((left, right) => right.ratingDate.localeCompare(left.ratingDate)),
+      query,
     )
-    return pageOf(items.sort((left, right) => right.ratingDate.localeCompare(left.ratingDate)), query)
   },
 
   async create(input, options) {
     await mockWait(options?.signal, 50)
     const actor = getMockActor()
     if (actor.role !== 'EMPLOYEE') throw createMockError('forbidden')
-    const course = mockBusinessRepository.getState().courses.find((item) => item.id === input.courseId)
+    const course = mockBusinessRepository
+      .getState()
+      .courses.find((item) => item.id === input.courseId)
     if (!course || String(course.trainer.id) !== input.trainerId) throw createMockError('not-found')
-    if (!Number.isInteger(input.score) || input.score < 1 || input.score > 5) throw createMockError('failure')
-    const employeeName = mockBusinessRepository.getState().employees.find(
-      (employee) => employee.empId === actor.employeeId,
-    )?.empName ?? '当前员工'
+    if (!Number.isInteger(input.score) || input.score < 1 || input.score > 5)
+      throw createMockError('failure')
+    const employeeName =
+      mockBusinessRepository
+        .getState()
+        .employees.find((employee) => employee.empId === actor.employeeId)?.empName ?? '当前员工'
     mockBusinessRepository.update((next) => {
-      next.ratings.unshift({ id: String(Date.now()), courseId: input.courseId, courseName: course.name,
-        trainerId: input.trainerId, trainerName: course.trainer.name, employeeId: actor.employeeId,
-        employeeName, score: input.score, comment: input.comment?.trim() || null,
-        hrVerified: 'N', hrComment: null, ratingDate: new Date().toISOString() })
+      next.ratings.unshift({
+        id: String(Date.now()),
+        courseId: input.courseId,
+        courseName: course.name,
+        trainerId: input.trainerId,
+        trainerName: course.trainer.name,
+        employeeId: actor.employeeId,
+        employeeName,
+        score: input.score,
+        comment: input.comment?.trim() || null,
+        hrVerified: 'N',
+        hrComment: null,
+        ratingDate: new Date().toISOString(),
+      })
     })
   },
 

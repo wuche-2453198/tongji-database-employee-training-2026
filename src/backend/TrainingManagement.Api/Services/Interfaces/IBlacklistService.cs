@@ -14,6 +14,12 @@ public interface IBlacklistService
         ClaimsPrincipal principal,
         CancellationToken cancellationToken = default);
 
+    // 分页查询黑名单候选员工
+    Task<PagedResult<BlacklistCandidateResponse>> GetCandidatesAsync(
+        BlacklistCandidateQuery query,
+        ClaimsPrincipal principal,
+        CancellationToken cancellationToken = default);
+
     // 根据ID获取黑名单记录
     Task<BlacklistResponse?> GetByIdAsync(
         long blackId,

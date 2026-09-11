@@ -22,8 +22,19 @@ export interface BlacklistRecord {
   endDate: string | null
   status: BlacklistStatus
   statusLabel: string
-  operatorEmpId: number | null
   createdAt: string
+}
+
+export interface BlacklistCandidateQuery extends DomainPageQuery {
+  keyword?: string
+}
+
+export interface BlacklistCandidate {
+  empId: number
+  empName: string
+  deptName: string
+  position: string | null
+  status: string
 }
 
 export interface CreateBlacklistInput {
@@ -44,6 +55,10 @@ export interface BlacklistService {
     query: BlacklistQuery,
     options?: ServiceRequestOptions,
   ): Promise<DomainPage<BlacklistRecord>>
+  listCandidates(
+    query: BlacklistCandidateQuery,
+    options?: ServiceRequestOptions,
+  ): Promise<DomainPage<BlacklistCandidate>>
   createBlacklist(
     input: CreateBlacklistInput,
     options?: ServiceRequestOptions,

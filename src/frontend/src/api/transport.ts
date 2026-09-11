@@ -226,8 +226,16 @@ export interface BlacklistDto {
   startDate: string
   endDate: string | null
   status: string
-  operatorEmpId: number | null
   createdAt: string
+}
+
+/** 后端 BlacklistCandidateResponse(camelCase 序列化)。 */
+export interface BlacklistCandidateDto {
+  empId: number
+  empName: string
+  deptName: string
+  position: string | null
+  status: string
 }
 
 /** 后端 EmployeeResponse 中用于选择器的最小字段(camelCase 序列化)。 */

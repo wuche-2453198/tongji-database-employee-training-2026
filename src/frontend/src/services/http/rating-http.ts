@@ -27,11 +27,16 @@ export const httpRatingService: RatingService = {
 
   async listAll(query, options) {
     const envelope = await requestApi<ApiEnvelopeDto<PageDto<TrainerRatingDto>>>({
-      method: 'GET', url: '/api/ratings', params: {
+      method: 'GET',
+      url: '/api/ratings',
+      params: {
         CourseId: query.courseId ? Number(query.courseId) : undefined,
         TrainerId: query.trainerId ? Number(query.trainerId) : undefined,
-        Page: query.page, PageSize: query.pageSize,
-      }, signal: options?.signal, operation: 'query',
+        Page: query.page,
+        PageSize: query.pageSize,
+      },
+      signal: options?.signal,
+      operation: 'query',
     })
     if (!envelope.success || !envelope.data) throw fromEnvelopeFailure(envelope)
     return { ...envelope.data, items: envelope.data.items.map(mapCourseRating) }
@@ -39,15 +44,25 @@ export const httpRatingService: RatingService = {
 
   async create(input, options) {
     await requestApi<ApiEnvelopeDto<boolean>>({
-      method: 'POST', url: '/api/ratings', signal: options?.signal, operation: 'write',
-      data: { CourseId: Number(input.courseId), TrainerId: Number(input.trainerId), Score: input.score,
-        RatingComment: input.comment || undefined },
+      method: 'POST',
+      url: '/api/ratings',
+      signal: options?.signal,
+      operation: 'write',
+      data: {
+        CourseId: Number(input.courseId),
+        TrainerId: Number(input.trainerId),
+        Score: input.score,
+        RatingComment: input.comment || undefined,
+      },
     })
   },
 
   async verify(id, comment, options) {
     await requestApi<ApiEnvelopeDto<boolean>>({
-      method: 'PATCH', url: `/api/ratings/${encodeURIComponent(id)}/verify`, signal: options?.signal, operation: 'write',
+      method: 'PATCH',
+      url: `/api/ratings/${encodeURIComponent(id)}/verify`,
+      signal: options?.signal,
+      operation: 'write',
       data: { VerifyComment: comment || undefined },
     })
   },

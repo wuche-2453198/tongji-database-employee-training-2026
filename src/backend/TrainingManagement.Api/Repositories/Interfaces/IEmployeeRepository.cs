@@ -12,6 +12,16 @@ public interface IEmployeeRepository
         EmployeeQuery query,
         CancellationToken cancellationToken = default);
 
+    // 分页查询黑名单候选员工（排除管理员/HR/部门主管等管理账号）
+    Task<PagedResult<Employee>> GetBlacklistCandidatesAsync(
+        BlacklistCandidateQuery query,
+        CancellationToken cancellationToken = default);
+
+    // 获取员工的角色编码集合
+    Task<IReadOnlyCollection<string>> GetRoleCodesAsync(
+        long empId,
+        CancellationToken cancellationToken = default);
+
     // 根据ID获取员工
     Task<Employee?> GetByIdAsync(
         long empId,

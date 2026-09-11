@@ -20,8 +20,15 @@ export interface DepartmentBudgetInput {
 }
 
 export interface DepartmentBudgetService {
-  list(query: DepartmentBudgetQuery, options?: ServiceRequestOptions): Promise<DomainPage<DepartmentBudget>>
+  list(
+    query: DepartmentBudgetQuery,
+    options?: ServiceRequestOptions,
+  ): Promise<DomainPage<DepartmentBudget>>
   create(input: DepartmentBudgetInput, options?: ServiceRequestOptions): Promise<DepartmentBudget>
-  update(id: string, input: DepartmentBudgetInput, options?: ServiceRequestOptions): Promise<DepartmentBudget>
+  update(
+    id: string,
+    input: DepartmentBudgetInput,
+    options?: ServiceRequestOptions,
+  ): Promise<DepartmentBudget>
   delete(id: string, options?: ServiceRequestOptions): Promise<void>
 }

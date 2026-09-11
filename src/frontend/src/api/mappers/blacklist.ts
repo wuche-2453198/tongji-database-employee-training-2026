@@ -1,7 +1,7 @@
 import { fromEnvelopeFailure } from '@/api/error'
-import type { ApiEnvelopeDto, BlacklistDto, PageDto } from '@/api/transport'
+import type { ApiEnvelopeDto, BlacklistCandidateDto, BlacklistDto, PageDto } from '@/api/transport'
 import type { PageResult } from '@/types/api'
-import type { BlacklistRecord, BlacklistStatus } from '@/domains/blacklist'
+import type { BlacklistCandidate, BlacklistRecord, BlacklistStatus } from '@/domains/blacklist'
 import { BLACKLIST_STATUS_LABELS } from '@/domains/blacklist'
 
 const mapStatus = (value: string): BlacklistStatus =>
@@ -19,9 +19,25 @@ export function mapBlacklistRecord(dto: BlacklistDto): BlacklistRecord {
     endDate: dto.endDate,
     status,
     statusLabel: BLACKLIST_STATUS_LABELS[status],
-    operatorEmpId: dto.operatorEmpId,
     createdAt: dto.createdAt,
   }
+}
+
+export function mapBlacklistCandidate(dto: BlacklistCandidateDto): BlacklistCandidate {
+  return {
+    empId: dto.empId,
+    empName: dto.empName,
+    deptName: dto.deptName,
+    position: dto.position,
+    status: dto.status,
+  }
+}
+
+export function mapBlacklistCandidatePage(
+  envelope: ApiEnvelopeDto<PageDto<BlacklistCandidateDto>>,
+): PageResult<BlacklistCandidate> {
+  if (!envelope.success || !envelope.data) throw fromEnvelopeFailure(envelope)
+  return { ...envelope.data, items: envelope.data.items.map(mapBlacklistCandidate) }
 }
 
 export function mapBlacklist(envelope: ApiEnvelopeDto<BlacklistDto>): BlacklistRecord {

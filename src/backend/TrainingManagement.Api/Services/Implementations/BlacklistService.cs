@@ -68,6 +68,47 @@ public sealed class BlacklistService : IBlacklistService
         };
     }
 
+    public async Task<PagedResult<BlacklistCandidateResponse>> GetCandidatesAsync(
+        BlacklistCandidateQuery query,
+        ClaimsPrincipal principal,
+        CancellationToken cancellationToken = default)
+    {
+        // 部门主管仅能查看本部门候选员工，范围由服务端强制注入。
+        if (!principal.IsInRole(RoleCodes.Hr) && !principal.IsInRole(RoleCodes.Admin))
+        {
+            if (!principal.IsInRole(RoleCodes.DepartmentManager))
+            {
+                throw new ForbiddenApiException("无权查看黑名单候选员工。");
+            }
+
+            var empId = principal.GetEmployeeId()
+                ?? throw new UnauthorizedApiException("无法识别当前登录用户。");
+
+            var operatorEmployee = await _employeeRepository.GetByIdAsync(empId, cancellationToken);
+            var department = operatorEmployee?.DeptName;
+            if (string.IsNullOrWhiteSpace(department))
+            {
+                return new PagedResult<BlacklistCandidateResponse>(
+                    Array.Empty<BlacklistCandidateResponse>(),
+                    query.Page,
+                    query.PageSize,
+                    0);
+            }
+
+            query.DeptName = department;
+        }
+
+        var result = await _employeeRepository.GetBlacklistCandidatesAsync(query, cancellationToken);
+
+        return new PagedResult<BlacklistCandidateResponse>
+        {
+            Items = result.Items.Select(MapToCandidateResponse).ToArray(),
+            Page = result.Page,
+            PageSize = result.PageSize,
+            Total = result.Total
+        };
+    }
+
     public async Task<BlacklistResponse?> GetByIdAsync(
         long blackId,
         CancellationToken cancellationToken = default)
@@ -120,6 +161,13 @@ public sealed class BlacklistService : IBlacklistService
             {
                 throw new ForbiddenApiException("只能将本部门员工加入黑名单。");
             }
+
+            // 主管部门不能把具备管理权限的账号加入黑名单。
+            var targetRoles = await _employeeRepository.GetRoleCodesAsync(request.EmpId, cancellationToken);
+            if (targetRoles.Any(IsPrivilegedRole))
+            {
+                throw new ForbiddenApiException("不能将管理员、HR 或部门主管加入黑名单。");
+            }
         }
 
         if (await _repository.IsEmployeeBlacklistedAsync(request.EmpId, cancellationToken))
@@ -137,13 +185,21 @@ public sealed class BlacklistService : IBlacklistService
             StartDate = startDate,
             EndDate = endDate,
             Status = "ACTIVE",
-            OperatorEmpId = operatorEmpId,
             CreatedAt = DateTime.Now,
             EmpName = target.EmpName,
             DeptName = target.DeptName
         };
 
-        var created = await _repository.CreateAsync(entity, cancellationToken);
+        Blacklist created;
+        try
+        {
+            created = await _repository.CreateAsync(entity, cancellationToken);
+        }
+        catch (Exception exception) when (exception.Message.Contains("ORA-00001", StringComparison.Ordinal))
+        {
+            // 并发写入时唯一索引 UQ_BLACKLIST_ACTIVE_EMP 兜底，转换为 409。
+            throw new ConflictApiException($"员工 ID {request.EmpId} 当前已在黑名单中。");
+        }
 
         var full = await _repository.GetByIdAsync(created.BlackId, cancellationToken);
         return MapToResponse(full ?? created);
@@ -229,8 +285,29 @@ public sealed class BlacklistService : IBlacklistService
             StartDate = entity.StartDate,
             EndDate = entity.EndDate,
             Status = entity.Status,
-            OperatorEmpId = entity.OperatorEmpId,
             CreatedAt = entity.CreatedAt
         };
+    }
+
+    // 将Employee实体映射为BlacklistCandidateResponse DTO
+    private static BlacklistCandidateResponse MapToCandidateResponse(Employee entity)
+    {
+        return new BlacklistCandidateResponse
+        {
+            EmpId = entity.EmpId,
+            EmpName = entity.EmpName,
+            DeptName = entity.DeptName,
+            Position = entity.Position,
+            Status = entity.Status
+        };
+    }
+
+    // 判断角色是否为具备管理权限的账号
+    private static bool IsPrivilegedRole(string roleCode)
+    {
+        var normalized = RoleCodes.Normalize(roleCode);
+        return normalized == RoleCodes.Admin
+            || normalized == RoleCodes.Hr
+            || normalized == RoleCodes.DepartmentManager;
     }
 }

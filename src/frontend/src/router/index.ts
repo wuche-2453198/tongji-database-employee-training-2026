@@ -63,10 +63,12 @@ const protectedPage = (
                                       : name === 'rating-management'
                                         ? () => import('@/views/ratings/RatingManagementView.vue')
                                         : name === 'department-budget-management'
-                                          ? () => import('@/views/budgets/DepartmentBudgetManagementView.vue')
+                                          ? () =>
+                                              import('@/views/budgets/DepartmentBudgetManagementView.vue')
                                           : name === 'trainer-management'
-                                            ? () => import('@/views/trainers/TrainerManagementView.vue')
-                                    : () => import('@/views/errors/NotFoundView.vue'),
+                                            ? () =>
+                                                import('@/views/trainers/TrainerManagementView.vue')
+                                            : () => import('@/views/errors/NotFoundView.vue'),
   meta: {
     title,
     requiresAuth: true,
