@@ -21,6 +21,8 @@ internal static class BlacklistServiceTests
         yield return ("Employee role is forbidden", EmployeeForbiddenAsync);
         yield return ("Missing identity returns 401", MissingIdentityAsync);
         yield return ("Empty reason returns 400", EmptyReasonAsync);
+        yield return ("End date not after today is rejected", EndDateNotAfterTodayAsync);
+        yield return ("End date before start date is rejected", EndDateBeforeStartDateAsync);
         yield return ("Manager list is scoped to own department", ManagerListScopedAsync);
         yield return ("Admin can blacklist across departments", AdminCrossDepartmentAsync);
         yield return ("Manager candidates are scoped to own department", ManagerCandidatesScopedAsync);
@@ -163,6 +165,47 @@ internal static class BlacklistServiceTests
                 TestPrincipals.Manager(ManagerId),
                 CancellationToken.None),
             "An empty reason must be rejected.");
+    }
+
+    private static async Task EndDateNotAfterTodayAsync()
+    {
+        var employees = new FakeEmployeeRepository();
+        employees.Employees[ManagerId] = Employee(ManagerId, ManagerDept);
+        employees.Employees[TargetId] = Employee(TargetId, ManagerDept);
+        var service = new BlacklistService(new FakeBlacklistRepository(), employees);
+
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.CreateAsync(
+                new CreateBlacklistRequest
+                {
+                    EmpId = TargetId,
+                    Reason = "违规",
+                    EndDate = DateTime.Today
+                },
+                TestPrincipals.Manager(ManagerId),
+                CancellationToken.None),
+            "An end date that is not after today must be rejected.");
+    }
+
+    private static async Task EndDateBeforeStartDateAsync()
+    {
+        var employees = new FakeEmployeeRepository();
+        employees.Employees[ManagerId] = Employee(ManagerId, ManagerDept);
+        employees.Employees[TargetId] = Employee(TargetId, ManagerDept);
+        var service = new BlacklistService(new FakeBlacklistRepository(), employees);
+
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.CreateAsync(
+                new CreateBlacklistRequest
+                {
+                    EmpId = TargetId,
+                    Reason = "违规",
+                    StartDate = DateTime.Today.AddDays(10),
+                    EndDate = DateTime.Today.AddDays(5)
+                },
+                TestPrincipals.Manager(ManagerId),
+                CancellationToken.None),
+            "An end date before the start date must be rejected.");
     }
 
     private static async Task ManagerListScopedAsync()

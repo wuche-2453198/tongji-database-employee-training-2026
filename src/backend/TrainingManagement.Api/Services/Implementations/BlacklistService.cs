@@ -144,6 +144,19 @@ public sealed class BlacklistService : IBlacklistService
             throw new BusinessException($"黑名单原因长度不能超过 {MaxReasonLength} 字符。");
         }
 
+        var startDate = (request.StartDate ?? DateTime.Today).Date;
+        var endDate = (request.EndDate ?? startDate.AddDays(30)).Date;
+
+        if (endDate <= DateTime.Today)
+        {
+            throw new BusinessException("黑名单结束日期必须晚于今天。");
+        }
+
+        if (endDate < startDate)
+        {
+            throw new BusinessException("黑名单结束日期不能早于开始日期。");
+        }
+
         if (operatorEmpId == request.EmpId)
         {
             throw new BusinessException("不能将自己加入黑名单。");
@@ -174,9 +187,6 @@ public sealed class BlacklistService : IBlacklistService
         {
             throw new ConflictApiException($"员工 ID {request.EmpId} 当前已在黑名单中。");
         }
-
-        var startDate = request.StartDate ?? DateTime.Today;
-        var endDate = request.EndDate ?? startDate.AddDays(30);
 
         var entity = new Blacklist
         {

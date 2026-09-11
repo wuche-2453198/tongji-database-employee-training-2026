@@ -99,6 +99,14 @@ export const mockBlacklistService: BlacklistService = {
 
     if (actor.employeeId === input.empId) throw domainError('BLACKLIST_SELF')
 
+    const today = localIsoDate(new Date())
+    if (input.endDate && input.endDate <= today) {
+      throw domainError('BLACKLIST_END_DATE_PAST')
+    }
+    if (input.startDate && input.endDate && input.endDate < input.startDate) {
+      throw domainError('BLACKLIST_DATE_RANGE_INVALID')
+    }
+
     const state = mockBusinessRepository.getState()
     const target = state.employees.find((employee) => employee.empId === input.empId)
     if (!target) throw domainError('BLACKLIST_EMPLOYEE_NOT_FOUND')
@@ -124,7 +132,7 @@ export const mockBlacklistService: BlacklistService = {
       empName: target.empName,
       deptName: target.deptName,
       reason,
-      startDate: input.startDate ?? new Date().toISOString().slice(0, 10),
+      startDate: input.startDate ?? localIsoDate(new Date()),
       endDate: input.endDate ?? null,
       status: 'ACTIVE',
       statusLabel: '生效中',
@@ -167,4 +175,11 @@ export const mockBlacklistService: BlacklistService = {
       next.blacklist = next.blacklist.filter((item) => item.id !== id)
     })
   },
+}
+
+function localIsoDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }

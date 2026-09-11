@@ -116,6 +116,13 @@ function formatDate(value: string | null): string {
     : new Intl.DateTimeFormat('zh-CN', { dateStyle: 'short' }).format(date)
 }
 
+function todayIso(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
 function buildQuery(): BlacklistQuery {
   return {
     status: filters.status || undefined,
@@ -189,6 +196,12 @@ function validateForm(): string | null {
   const reason = form.reason.trim()
   if (!reason) return '请填写黑名单原因。'
   if (reason.length > 500) return '黑名单原因不能超过 500 字。'
+  if (form.endDate) {
+    if (form.endDate <= todayIso()) return '结束日期必须晚于今天。'
+    if (form.startDate && form.endDate < form.startDate) {
+      return '结束日期不能早于开始日期。'
+    }
+  }
   return null
 }
 

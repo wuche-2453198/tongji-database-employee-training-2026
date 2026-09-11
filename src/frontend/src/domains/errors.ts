@@ -27,6 +27,8 @@ export type BusinessErrorCode =
   | 'BLACKLIST_EMPLOYEE_NOT_FOUND'
   | 'BLACKLIST_SELF'
   | 'BLACKLIST_DUPLICATE'
+  | 'BLACKLIST_END_DATE_PAST'
+  | 'BLACKLIST_DATE_RANGE_INVALID'
   | 'CONCURRENT_UPDATE'
   | 'RESULT_UNKNOWN'
   | 'HTTP_CONTRACT_NOT_FROZEN'
@@ -58,6 +60,8 @@ const defaultKind: Record<BusinessErrorCode, UiErrorKind> = {
   BLACKLIST_EMPLOYEE_NOT_FOUND: 'not-found',
   BLACKLIST_SELF: 'validation',
   BLACKLIST_DUPLICATE: 'conflict',
+  BLACKLIST_END_DATE_PAST: 'validation',
+  BLACKLIST_DATE_RANGE_INVALID: 'validation',
   CONCURRENT_UPDATE: 'conflict',
   RESULT_UNKNOWN: 'result-unknown',
   HTTP_CONTRACT_NOT_FROZEN: 'server',
@@ -90,6 +94,8 @@ const defaultMessage: Record<BusinessErrorCode, string> = {
   BLACKLIST_EMPLOYEE_NOT_FOUND: '员工不存在。',
   BLACKLIST_SELF: '不能将自己加入黑名单。',
   BLACKLIST_DUPLICATE: '该员工当前已在黑名单中。',
+  BLACKLIST_END_DATE_PAST: '黑名单结束日期必须晚于今天。',
+  BLACKLIST_DATE_RANGE_INVALID: '黑名单结束日期不能早于开始日期。',
   CONCURRENT_UPDATE: '数据状态已发生变化，请刷新后重试。',
   RESULT_UNKNOWN: '操作结果未知，请先查询最新状态，避免重复提交。',
   HTTP_CONTRACT_NOT_FROZEN: '服务暂不可用，请稍后重试。',

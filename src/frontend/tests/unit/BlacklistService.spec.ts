@@ -24,6 +24,14 @@ async function expectError(promise: Promise<unknown>, kind: UiErrorKind) {
   throw new Error('期望抛出服务错误，但请求成功返回。')
 }
 
+function isoDate(offsetDays: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() + offsetDays)
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
 describe('黑名单 mock 服务', () => {
   beforeEach(() => {
     window.sessionStorage.clear()
@@ -127,6 +135,37 @@ describe('黑名单 mock 服务', () => {
       mockBlacklistService.createBlacklist({ empId: 58, reason: '   ' }),
       'validation',
     )
+  })
+
+  it('结束日期不晚于今天被拒绝', async () => {
+    loginAs('manager.demo')
+    await expectError(
+      mockBlacklistService.createBlacklist({ empId: 58, reason: '违规', endDate: isoDate(0) }),
+      'validation',
+    )
+  })
+
+  it('结束日期早于开始日期被拒绝', async () => {
+    loginAs('manager.demo')
+    await expectError(
+      mockBlacklistService.createBlacklist({
+        empId: 58,
+        reason: '违规',
+        startDate: isoDate(10),
+        endDate: isoDate(5),
+      }),
+      'validation',
+    )
+  })
+
+  it('结束日期晚于今天可成功加入黑名单', async () => {
+    loginAs('manager.demo')
+    const record = await mockBlacklistService.createBlacklist({
+      empId: 59,
+      reason: '违规',
+      endDate: isoDate(7),
+    })
+    expect(record.empId).toBe(59)
   })
 
   it('管理员可跨部门加入黑名单', async () => {
