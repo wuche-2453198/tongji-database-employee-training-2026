@@ -19,16 +19,19 @@ Maintained by 2350439 钮培源
 ---
 
 ## 2. Database Accounts & Test Credentials
-Use the following designated test environment credentials to connect:
 
 | Account Name | Password | Role / Intent |
 | :--- | :--- | :--- |
-| **`TRAINING_OWNER`** | `Owner_Password_2026#` | Schema Owner. Used exclusively by migrations to manage structures, indexes, and grants. |
-| **`TRAINING_APP`** | `App_Runtime_2026#` | Application User. Used securely by the C# Web API for runtime DML operations. |
+| **`TRAINING_OWNER`** | 见部署环境配置（不写入仓库） | Schema Owner. Used exclusively by migrations to manage structures, indexes, and grants. |
+| **`TRAINING_APP`** | 见部署环境配置（不写入仓库） | Application User. Used securely by the C# Web API for runtime DML operations. |
 
-Example command to run:
+> ⚠️ **凭据不得写入仓库。** 按项目规则（`document/README.md` 使用规则第 5 条、`document/02-技术设计/技术架构与开发规范.md` §9），
+> 真实密码只通过环境变量或未跟踪的本地配置提供：后端使用 `appsettings.Local.json`（已 gitignore）或
+> `ConnectionStrings__OracleDb` 环境变量，数据库账号密码向数据库负责人索取。仓库中只保留占位符示例。
+
+Example command to run（口令由环境变量传入，避免进入 shell 历史）：
 ```
-sqlplus TRAINING_OWNER/Owner_Password_2026#@//localhost:1539/FREEPDB1.localdomain
+sqlplus TRAINING_OWNER/"$TRAINING_OWNER_PASSWORD"@//<host>:1539/FREEPDB1.localdomain
 ```
 
 
@@ -50,7 +53,8 @@ database/oracle/
 ├── migrations/             # Version-controlled structural DDL and scripts
 │   ├── V001__init_schema.sql
 │   ├── V002__add_indexes.sql
-│   └── V003__grant_app_privileges.sql
+│   ├── V003__grant_app_privileges.sql
+│   └── V004__blacklist_operator.sql
 ├── seed/                   # Data initialization environments
 │   ├── S001__roles_and_accounts.sql
 │   ├── S002__basic_data.sql
