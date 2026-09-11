@@ -22,14 +22,15 @@ public sealed class EmployeesController : ApiControllerBase
 
     // 分页查询员工列表
     [HttpGet]
-    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
+    [Authorize(Policy = AuthorizationPolicies.ManagerHrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<EmployeeResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ApiResponse<PagedResult<EmployeeResponse>>>> GetEmployees(
         [FromQuery] EmployeeQuery query,
         CancellationToken cancellationToken = default)
     {
-        var result = await _employeeService.GetPagedAsync(query, cancellationToken);
+        var result = await _employeeService.GetPagedAsync(query, User, cancellationToken);
         return OkResponse(result);
     }
 

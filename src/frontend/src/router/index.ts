@@ -56,7 +56,9 @@ const protectedPage = (
                                 ? () => import('@/views/ratings/MyRatingListView.vue')
                                 : name === 'test-management'
                                   ? () => import('@/views/tests/TestManagementView.vue')
-                                  : () => import('@/views/errors/NotFoundView.vue'),
+                                  : name === 'blacklist-management'
+                                    ? () => import('@/views/blacklist/BlacklistManagementView.vue')
+                                    : () => import('@/views/errors/NotFoundView.vue'),
   meta: {
     title,
     requiresAuth: true,
@@ -203,6 +205,14 @@ const routes: RouteRecordRaw[] = [
         ['HR', 'ADMIN'],
         'test-management',
         ['培训运营', '测试成绩'],
+      ),
+      protectedPage(
+        'organization/blacklist',
+        'blacklist-management',
+        '黑名单管理',
+        ['DEPT_MANAGER', 'ADMIN'],
+        'blacklist-management',
+        ['组织管理', '黑名单管理'],
       ),
     ],
   },

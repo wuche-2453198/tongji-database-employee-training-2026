@@ -180,6 +180,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy(AuthorizationPolicies.ManagerHrOrAdmin, policy =>
         policy.RequireRole(RoleCodes.DepartmentManager, RoleCodes.Hr, RoleCodes.Admin));
+
+    options.AddPolicy(AuthorizationPolicies.AdminOrManager, policy =>
+        policy.RequireRole(RoleCodes.Admin, RoleCodes.DepartmentManager));
 });
 
 builder.Services.AddHttpContextAccessor();

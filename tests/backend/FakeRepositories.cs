@@ -139,6 +139,7 @@ internal sealed class FakeCourseRepository : ICourseRepository
             TrainerId = source.TrainerId,
             TrainerName = source.TrainerName,
             MaxStudents = source.MaxStudents,
+            RegisteredCount = source.RegisteredCount,
             StartAt = source.StartAt,
             EndAt = source.EndAt,
             Location = source.Location,
@@ -623,6 +624,13 @@ internal static class TestPrincipals
         return Principal(
             empId,
             TrainingManagement.Api.Common.Security.RoleCodes.Hr);
+    }
+
+    public static ClaimsPrincipal Manager(long empId = 98)
+    {
+        return Principal(
+            empId,
+            TrainingManagement.Api.Common.Security.RoleCodes.DepartmentManager);
     }
 
     public static ClaimsPrincipal Admin(long empId = 100)

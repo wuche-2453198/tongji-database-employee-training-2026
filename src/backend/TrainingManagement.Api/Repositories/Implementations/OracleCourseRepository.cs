@@ -86,6 +86,16 @@ public sealed class OracleCourseRepository : ICourseRepository
                 c.TRAINER_ID AS "TrainerId",
                 t.TRAINER_NAME AS "TrainerName",
                 c.MAX_STUDENTS AS "MaxStudents",
+                (
+                    SELECT COUNT(1)
+                    FROM TRAINING_REGISTRATIONS r
+                    WHERE r.COURSE_ID = c.COURSE_ID
+                      AND r.STATUS IN (
+                          'REGISTERED',
+                          'SIGNED_IN',
+                          'COMPLETED',
+                          'ABSENT')
+                ) AS "RegisteredCount",
                 c.START_AT AS "StartAt",
                 c.END_AT AS "EndAt",
                 c.LOCATION AS "Location",
@@ -154,6 +164,16 @@ public sealed class OracleCourseRepository : ICourseRepository
                 c.TRAINER_ID AS "TrainerId",
                 t.TRAINER_NAME AS "TrainerName",
                 c.MAX_STUDENTS AS "MaxStudents",
+                (
+                    SELECT COUNT(1)
+                    FROM TRAINING_REGISTRATIONS r
+                    WHERE r.COURSE_ID = c.COURSE_ID
+                      AND r.STATUS IN (
+                          'REGISTERED',
+                          'SIGNED_IN',
+                          'COMPLETED',
+                          'ABSENT')
+                ) AS "RegisteredCount",
                 c.START_AT AS "StartAt",
                 c.END_AT AS "EndAt",
                 c.LOCATION AS "Location",

@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TrainingManagement.Api.Common.Enums;
 using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Common.Security;
@@ -31,6 +33,11 @@ public sealed class CoursesController : ApiControllerBase
         [FromQuery] CourseQuery query,
         CancellationToken cancellationToken)
     {
+        if (!IsHrOrAdmin(User))
+        {
+            query.CourseStatus = CourseStatusText.Published;
+        }
+
         var courses = await _courseService.GetAllAsync(
             query,
             cancellationToken);
@@ -59,6 +66,12 @@ public sealed class CoursesController : ApiControllerBase
         if (course is null)
         {
             throw new NotFoundApiException("课程不存在。");
+        }
+
+        if (!IsHrOrAdmin(User)
+            && string.Equals(course.CourseStatus, CourseStatusText.Draft, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ForbiddenApiException("课程尚未发布。");
         }
 
         return OkResponse(course);
@@ -149,12 +162,11 @@ public sealed class CoursesController : ApiControllerBase
         long id,
         CancellationToken cancellationToken)
     {
-        await _courseService.PublishAsync(
+        var response = await _courseService.PublishAsync(
             id,
             cancellationToken);
 
-        return OkResponse(
-            new PublishCourseResponse());
+        return OkResponse(response);
     }
 
     [HttpPatch("{id:long}/close")]
@@ -187,5 +199,11 @@ public sealed class CoursesController : ApiControllerBase
 
         return OkResponse(
             new CloseCourseResponse());
+    }
+
+    private static bool IsHrOrAdmin(ClaimsPrincipal user)
+    {
+        return user.IsInRole(RoleCodes.Hr)
+            || user.IsInRole(RoleCodes.Admin);
     }
 }

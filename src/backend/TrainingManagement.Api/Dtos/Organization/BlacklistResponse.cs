@@ -20,4 +20,16 @@ public sealed class BlacklistResponse
 
     // 黑名单状态：ACTIVE/RELEASED
     public string Status { get; set; } = string.Empty;
+
+    // 员工姓名
+    public string EmpName { get; set; } = string.Empty;
+
+    // 员工部门名称
+    public string DeptName { get; set; } = string.Empty;
+
+    // 操作人员工编号（审计字段）
+    public long? OperatorEmpId { get; set; }
+
+    // 创建时间
+    public DateTime CreatedAt { get; set; }
 }

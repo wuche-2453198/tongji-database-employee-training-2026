@@ -5,8 +5,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import { createMemoryHistory, createRouter } from 'vue-router'
 
+import AppButton from '@/components/common/AppButton.vue'
 import CourseListView from '@/views/courses/CourseListView.vue'
 import CourseDetailView from '@/views/courses/CourseDetailView.vue'
+import { resetMockBusinessSnapshot } from '@/mocks/repositories/business-repository'
+import { useAuthStore } from '@/stores/auth'
 
 async function testRouter(path: string) {
   const router = createRouter({
@@ -19,6 +22,18 @@ async function testRouter(path: string) {
   await router.push(path)
   await router.isReady()
   return router
+}
+
+async function loginAs(account: string): Promise<void> {
+  window.sessionStorage.setItem(
+    'training-management.mock-auth-session',
+    JSON.stringify({ account, expiresAt: Date.now() + 3600_000 }),
+  )
+  await useAuthStore().initialize()
+}
+
+function buttonLabels(wrapper: ReturnType<typeof mount>): string[] {
+  return wrapper.findAllComponents(AppButton).map((button) => String(button.props('label')))
 }
 
 describe('B1 课程中心页面', () => {
@@ -49,6 +64,116 @@ describe('B1 课程中心页面', () => {
     await nextTick()
     expect(wrapper.text()).toContain('4001')
     expect(wrapper.text()).toContain('陈老师')
+    wrapper.unmount()
+  })
+})
+
+describe('B1 课程发布/关闭与角色状态筛选', () => {
+  it('HR 可看到草稿课程并同时拥有发布与关闭按钮', async () => {
+    setActivePinia(createPinia())
+    await loginAs('hr.demo')
+    resetMockBusinessSnapshot()
+    const router = await testRouter('/courses')
+    const wrapper = mount(CourseListView, {
+      global: { plugins: [ElementPlus, router] },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await nextTick()
+    expect(wrapper.text()).toContain('数据分析入门实战')
+    const labels = buttonLabels(wrapper)
+    expect(labels).toContain('发布课程')
+    expect(labels).toContain('关闭课程')
+    wrapper.unmount()
+  })
+
+  it('管理员可看到草稿课程并拥有发布与关闭按钮', async () => {
+    setActivePinia(createPinia())
+    await loginAs('admin.demo')
+    resetMockBusinessSnapshot()
+    const router = await testRouter('/courses')
+    const wrapper = mount(CourseListView, {
+      global: { plugins: [ElementPlus, router] },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await nextTick()
+    expect(wrapper.text()).toContain('数据分析入门实战')
+    const labels = buttonLabels(wrapper)
+    expect(labels).toContain('发布课程')
+    expect(labels).toContain('关闭课程')
+    wrapper.unmount()
+  })
+
+  it('普通员工仅见已发布课程且无发布/关闭按钮', async () => {
+    setActivePinia(createPinia())
+    await loginAs('employee.demo')
+    resetMockBusinessSnapshot()
+    const router = await testRouter('/courses')
+    const wrapper = mount(CourseListView, {
+      global: { plugins: [ElementPlus, router] },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await nextTick()
+    expect(wrapper.text()).not.toContain('数据分析入门实战')
+    const labels = buttonLabels(wrapper)
+    expect(labels).not.toContain('发布课程')
+    expect(labels).not.toContain('关闭课程')
+    wrapper.unmount()
+  })
+
+  it('部门主管默认仅见已发布课程且无发布/关闭按钮', async () => {
+    setActivePinia(createPinia())
+    await loginAs('manager.demo')
+    resetMockBusinessSnapshot()
+    const router = await testRouter('/courses')
+    const wrapper = mount(CourseListView, {
+      global: { plugins: [ElementPlus, router] },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await nextTick()
+    expect(wrapper.text()).not.toContain('数据分析入门实战')
+    const labels = buttonLabels(wrapper)
+    expect(labels).not.toContain('发布课程')
+    expect(labels).not.toContain('关闭课程')
+    wrapper.unmount()
+  })
+
+  it('HR 在草稿详情页看到发布按钮，在已发布详情页看到关闭按钮', async () => {
+    setActivePinia(createPinia())
+    await loginAs('hr.demo')
+    resetMockBusinessSnapshot()
+    const router = await testRouter('/courses/4005')
+    const wrapper = mount(CourseDetailView, {
+      global: { plugins: [ElementPlus, router] },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await nextTick()
+    expect(buttonLabels(wrapper)).toContain('发布课程')
+    expect(buttonLabels(wrapper)).not.toContain('关闭课程')
+    wrapper.unmount()
+
+    const router2 = await testRouter('/courses/4001')
+    const wrapper2 = mount(CourseDetailView, {
+      global: { plugins: [ElementPlus, router2] },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await nextTick()
+    expect(buttonLabels(wrapper2)).toContain('关闭课程')
+    expect(buttonLabels(wrapper2)).not.toContain('发布课程')
+    wrapper2.unmount()
+  })
+
+  it('普通员工在已发布详情页没有关闭按钮', async () => {
+    setActivePinia(createPinia())
+    await loginAs('employee.demo')
+    resetMockBusinessSnapshot()
+    const router = await testRouter('/courses/4001')
+    const wrapper = mount(CourseDetailView, {
+      global: { plugins: [ElementPlus, router] },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await nextTick()
+    expect(buttonLabels(wrapper)).not.toContain('关闭课程')
+    expect(buttonLabels(wrapper)).not.toContain('发布课程')
     wrapper.unmount()
   })
 })

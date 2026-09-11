@@ -1,4 +1,5 @@
-﻿using TrainingManagement.Api.Common;
+﻿using System.Security.Claims;
+using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Organization;
 
@@ -10,6 +11,7 @@ public interface IBlacklistService
     // 分页查询黑名单列表
     Task<PagedResult<BlacklistResponse>> GetPagedAsync(
         BlacklistQuery query,
+        ClaimsPrincipal principal,
         CancellationToken cancellationToken = default);
 
     // 根据ID获取黑名单记录
@@ -20,6 +22,7 @@ public interface IBlacklistService
     // 新增黑名单记录
     Task<BlacklistResponse> CreateAsync(
         CreateBlacklistRequest request,
+        ClaimsPrincipal principal,
         CancellationToken cancellationToken = default);
 
     // 更新黑名单记录

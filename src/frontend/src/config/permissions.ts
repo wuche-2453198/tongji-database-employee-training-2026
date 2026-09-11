@@ -9,7 +9,14 @@ const rolePermissions: Record<AppRole, readonly AppPermission[]> = {
     'rating.create',
     'certificate.read',
   ],
-  DEPT_MANAGER: ['auth.me', 'employee.read', 'course.read', 'request.approve'],
+  DEPT_MANAGER: [
+    'auth.me',
+    'employee.read',
+    'course.read',
+    'request.approve',
+    'blacklist.read',
+    'blacklist.write',
+  ],
   HR: [
     'auth.me',
     'employee.read',

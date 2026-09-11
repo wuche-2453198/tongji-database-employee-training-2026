@@ -4,10 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { LatestRequestController, SingleFlightController } from '@/api/request-control'
 import AppButton from '@/components/common/AppButton.vue'
 import AppDescriptions from '@/components/common/AppDescriptions.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import CourseSummary from '@/components/business/CourseSummary.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import PageState from '@/components/common/PageState.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
+import { hasAnyRole } from '@/config/permissions'
 import { getCourseService } from '@/services/course'
 import { getRegistrationService } from '@/services/registration'
 import { useAuthStore } from '@/stores/auth'
@@ -34,6 +36,16 @@ const conflictMessage = computed(() =>
 
 const courseId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''))
 const isEmployee = computed(() => authStore.can('request.create'))
+const canPublish = computed(
+  () => course.value?.status === 'DRAFT' && hasAnyRole(authStore.currentUser, ['HR', 'ADMIN']),
+)
+const canClose = computed(
+  () => course.value?.status === 'PUBLISHED' && hasAnyRole(authStore.currentUser, ['HR', 'ADMIN']),
+)
+const publishing = ref(false)
+const publishDialogVisible = ref(false)
+const closing = ref(false)
+const closeDialogVisible = ref(false)
 const courseInfo = computed<CourseInfo | null>(() =>
   course.value
     ? {
@@ -152,6 +164,74 @@ async function confirmRegistration(): Promise<void> {
   }
 }
 
+function openPublishDialog(): void {
+  publishDialogVisible.value = true
+}
+
+function openCloseDialog(): void {
+  closeDialogVisible.value = true
+}
+
+async function confirmClose(): Promise<void> {
+  closing.value = true
+  actionMessage.value = ''
+  try {
+    const service = await getCourseService()
+    await service.closeCourse(courseId.value)
+    closeDialogVisible.value = false
+    actionMessage.value = '课程已关闭。'
+    await loadCourse()
+  } catch (caught) {
+    if (isServiceError(caught)) {
+      if (caught.ui.kind === 'conflict') await loadCourse()
+      else error.value = caught.ui
+    } else {
+      error.value = {
+        kind: 'unknown',
+        code: 'UNKNOWN',
+        message: '关闭失败，请稍后重试。',
+        fieldErrors: [],
+        retryable: false,
+        resultUnknown: false,
+      }
+    }
+  } finally {
+    closing.value = false
+  }
+}
+
+async function confirmPublish(): Promise<void> {
+  publishing.value = true
+  actionMessage.value = ''
+  try {
+    const service = await getCourseService()
+    await service.publishCourse(courseId.value)
+    publishDialogVisible.value = false
+    actionMessage.value = '课程已发布。'
+    await loadCourse()
+  } catch (caught) {
+    if (isServiceError(caught)) {
+      if (caught.ui.kind === 'conflict') {
+        // 状态已被并发修改，刷新展示最新状态即可。
+        await loadCourse()
+      } else {
+        error.value = caught.ui
+      }
+    } else {
+      error.value = {
+        kind: 'unknown',
+        code: 'UNKNOWN',
+        message: '发布失败，请稍后重试。',
+        fieldErrors: [],
+        retryable: false,
+        resultUnknown: false,
+      }
+    }
+  } finally {
+    publishing.value = false
+  }
+}
+
 onMounted(loadCourse)
 onBeforeUnmount(() => latestQuery.cancel())
 </script>
@@ -209,6 +289,13 @@ onBeforeUnmount(() => latestQuery.cancel())
               loading-text="报名中…"
               @click="confirmRegistration"
             />
+            <AppButton
+              v-if="canPublish"
+              label="发布课程"
+              variant="primary"
+              @click="openPublishDialog"
+            />
+            <AppButton v-if="canClose" label="关闭课程" variant="danger" @click="openCloseDialog" />
           </div>
         </template>
       </CourseSummary>
@@ -314,6 +401,27 @@ onBeforeUnmount(() => latestQuery.cancel())
         当前角色仅可浏览课程详情，申请与报名入口仅对员工本人开放。
       </p>
     </template>
+
+    <ConfirmDialog
+      v-model="publishDialogVisible"
+      title="发布课程"
+      :description="`确认发布课程「${course?.name ?? ''}」吗？发布后将占用主办部门预算，且不可恢复为草稿。`"
+      confirm-label="确认发布"
+      :loading="publishing"
+      loading-text="发布中…"
+      @confirm="confirmPublish"
+    />
+
+    <ConfirmDialog
+      v-model="closeDialogVisible"
+      title="关闭课程"
+      :description="`确定关闭课程「${course?.name ?? ''}」吗？关闭后员工将无法继续报名。`"
+      confirm-label="确认关闭"
+      type="danger"
+      :loading="closing"
+      loading-text="关闭中…"
+      @confirm="confirmClose"
+    />
   </section>
 </template>
 

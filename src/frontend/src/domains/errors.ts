@@ -21,6 +21,12 @@ export type BusinessErrorCode =
   | 'CERTIFICATE_NOT_FOUND'
   | 'CERTIFICATE_FORBIDDEN'
   | 'CERTIFICATE_EXISTS'
+  | 'BLACKLIST_FORBIDDEN'
+  | 'BLACKLIST_REASON_REQUIRED'
+  | 'BLACKLIST_REASON_TOO_LONG'
+  | 'BLACKLIST_EMPLOYEE_NOT_FOUND'
+  | 'BLACKLIST_SELF'
+  | 'BLACKLIST_DUPLICATE'
   | 'CONCURRENT_UPDATE'
   | 'RESULT_UNKNOWN'
   | 'HTTP_CONTRACT_NOT_FROZEN'
@@ -46,6 +52,12 @@ const defaultKind: Record<BusinessErrorCode, UiErrorKind> = {
   CERTIFICATE_NOT_FOUND: 'not-found',
   CERTIFICATE_FORBIDDEN: 'forbidden',
   CERTIFICATE_EXISTS: 'conflict',
+  BLACKLIST_FORBIDDEN: 'forbidden',
+  BLACKLIST_REASON_REQUIRED: 'validation',
+  BLACKLIST_REASON_TOO_LONG: 'validation',
+  BLACKLIST_EMPLOYEE_NOT_FOUND: 'not-found',
+  BLACKLIST_SELF: 'validation',
+  BLACKLIST_DUPLICATE: 'conflict',
   CONCURRENT_UPDATE: 'conflict',
   RESULT_UNKNOWN: 'result-unknown',
   HTTP_CONTRACT_NOT_FROZEN: 'server',
@@ -72,6 +84,12 @@ const defaultMessage: Record<BusinessErrorCode, string> = {
   CERTIFICATE_NOT_FOUND: '证书不存在。',
   CERTIFICATE_FORBIDDEN: '当前账号无权查看该证书。',
   CERTIFICATE_EXISTS: '该报名记录已经生成证书。',
+  BLACKLIST_FORBIDDEN: '当前账号无权执行黑名单操作。',
+  BLACKLIST_REASON_REQUIRED: '黑名单原因不能为空。',
+  BLACKLIST_REASON_TOO_LONG: '黑名单原因长度不能超过 500 字符。',
+  BLACKLIST_EMPLOYEE_NOT_FOUND: '员工不存在。',
+  BLACKLIST_SELF: '不能将自己加入黑名单。',
+  BLACKLIST_DUPLICATE: '该员工当前已在黑名单中。',
   CONCURRENT_UPDATE: '数据状态已发生变化，请刷新后重试。',
   RESULT_UNKNOWN: '操作结果未知，请先查询最新状态，避免重复提交。',
   HTTP_CONTRACT_NOT_FROZEN: '服务暂不可用，请稍后重试。',

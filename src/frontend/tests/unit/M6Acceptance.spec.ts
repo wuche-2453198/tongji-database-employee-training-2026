@@ -18,7 +18,7 @@ const expectedMenuKeys: Record<AppRole, string[]> = {
     'my-certificates',
     'my-ratings',
   ],
-  DEPT_MANAGER: ['dashboard', 'courses', 'department-approval'],
+  DEPT_MANAGER: ['dashboard', 'courses', 'department-approval', 'blacklist-management'],
   HR: [
     'dashboard',
     'courses',
@@ -32,6 +32,7 @@ const expectedMenuKeys: Record<AppRole, string[]> = {
     'courses',
     'department-approval',
     'hr-filing',
+    'blacklist-management',
     'attendance-management',
     'certificate-management',
     'test-management',

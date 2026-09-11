@@ -47,6 +47,12 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
             parameters.Add("Status", query.Status);
         }
 
+        if (!string.IsNullOrWhiteSpace(query.DeptName))
+        {
+            conditions.Add("d.DEPT_NAME = :DeptName");
+            parameters.Add("DeptName", query.DeptName);
+        }
+
         if (query.StartDateFrom.HasValue)
         {
             conditions.Add("b.START_AT >= :StartDateFrom");
@@ -74,6 +80,8 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
         var countSql = $@"
             SELECT COUNT(*)
             FROM BLACKLIST b
+            LEFT JOIN EMPLOYEES e ON e.EMP_ID = b.EMP_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
             {whereClause}";
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -86,11 +94,17 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
             SELECT
                 b.BLACK_ID AS ""BlackId"",
                 b.EMP_ID AS ""EmpId"",
+                e.EMP_NAME AS ""EmpName"",
+                d.DEPT_NAME AS ""DeptName"",
                 b.REASON AS ""Reason"",
                 b.START_AT AS ""StartDate"",
                 b.END_AT AS ""EndDate"",
-                b.STATUS AS ""Status""
+                b.STATUS AS ""Status"",
+                b.OPERATOR_EMP_ID AS ""OperatorEmpId"",
+                b.CREATED_AT AS ""CreatedAt""
             FROM BLACKLIST b
+            LEFT JOIN EMPLOYEES e ON e.EMP_ID = b.EMP_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
             {whereClause}
             ORDER BY {sortField} {sortOrder}
             OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY";
@@ -121,11 +135,17 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
             SELECT
                 b.BLACK_ID AS ""BlackId"",
                 b.EMP_ID AS ""EmpId"",
+                e.EMP_NAME AS ""EmpName"",
+                d.DEPT_NAME AS ""DeptName"",
                 b.REASON AS ""Reason"",
                 b.START_AT AS ""StartDate"",
                 b.END_AT AS ""EndDate"",
-                b.STATUS AS ""Status""
+                b.STATUS AS ""Status"",
+                b.OPERATOR_EMP_ID AS ""OperatorEmpId"",
+                b.CREATED_AT AS ""CreatedAt""
             FROM BLACKLIST b
+            LEFT JOIN EMPLOYEES e ON e.EMP_ID = b.EMP_ID
+            LEFT JOIN DEPARTMENTS_TRAINING d ON d.DEPT_ID = e.DEPT_ID
             WHERE b.BLACK_ID = :BlackId";
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -211,17 +231,28 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 REASON,
                 START_AT,
                 END_AT,
-                STATUS
+                STATUS,
+                OPERATOR_EMP_ID,
+                CREATED_AT
             ) VALUES (
                 :EmpId,
                 :Reason,
                 :StartDate,
                 :EndDate,
-                :Status
+                :Status,
+                :OperatorEmpId,
+                :CreatedAt
             )
             RETURNING BLACK_ID INTO :BlackId";
 
-        var parameters = new DynamicParameters(entity);
+        var parameters = new DynamicParameters();
+        parameters.Add("EmpId", entity.EmpId);
+        parameters.Add("Reason", entity.Reason);
+        parameters.Add("StartDate", entity.StartDate);
+        parameters.Add("EndDate", entity.EndDate);
+        parameters.Add("Status", entity.Status);
+        parameters.Add("OperatorEmpId", entity.OperatorEmpId);
+        parameters.Add("CreatedAt", entity.CreatedAt);
         parameters.Add("BlackId", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -247,9 +278,15 @@ public sealed class OracleBlacklistRepository : IBlacklistRepository
                 STATUS = :Status
             WHERE BLACK_ID = :BlackId";
 
+        var parameters = new DynamicParameters();
+        parameters.Add("BlackId", entity.BlackId);
+        parameters.Add("Reason", entity.Reason);
+        parameters.Add("EndDate", entity.EndDate);
+        parameters.Add("Status", entity.Status);
+
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var affected = await connection.ExecuteAsync(
-            new CommandDefinition(sql, entity, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
         return affected > 0;
     }
 

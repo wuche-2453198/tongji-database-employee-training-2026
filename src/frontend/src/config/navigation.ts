@@ -70,6 +70,18 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
+    label: '组织管理',
+    key: 'organization-management',
+    items: [
+      {
+        label: '黑名单管理',
+        path: '/organization/blacklist',
+        menuKey: 'blacklist-management',
+        roles: ['DEPT_MANAGER', 'ADMIN'],
+      },
+    ],
+  },
+  {
     label: '培训运营',
     key: 'training-operations',
     items: [

@@ -29,6 +29,45 @@ internal static class CourseServiceTests
         yield return ("Course create and PUT reject Oracle numeric overflow", RejectsNumericOverflowAsync);
         yield return ("Published course rejects blank location", PublishedRejectsBlankLocationAsync);
         yield return ("Draft blank and future published nonblank locations remain editable", ValidLocationUpdatesAsync);
+        yield return ("Course list maps registered count and remaining seats", ListMapsCapacityFieldsAsync);
+        yield return ("Publish returns the full course summary", PublishReturnsFullSummaryAsync);
+    }
+
+    private static async Task ListMapsCapacityFieldsAsync()
+    {
+        var course = ValidCourse("PUBLISHED");
+        course.RegisteredCount = 7;
+        var repository = new FakeCourseRepository { Course = course };
+        var service = CreateService(repository);
+
+        var result = await service.GetAllAsync(
+            new CourseQuery { Page = 1, PageSize = 20 },
+            CancellationToken.None);
+
+        TestAssert.Equal(1, result.Items.Count, "A single seeded course must be listed.");
+        var item = result.Items.First();
+        TestAssert.Equal(7, item.RegisteredCount, "List must expose the valid registration count.");
+        TestAssert.Equal(13, item.RemainingSeats, "List must compute remaining seats from capacity.");
+    }
+
+    private static async Task PublishReturnsFullSummaryAsync()
+    {
+        var course = ValidCourse("DRAFT");
+        course.RegisteredCount = 5;
+        var repository = new FakeCourseRepository { Course = course };
+        var service = CreateService(repository);
+
+        var response = await service.PublishAsync(
+            course.CourseId,
+            CancellationToken.None);
+
+        TestAssert.True(response.Published, "Publish response must report success.");
+        TestAssert.Equal(course.CourseId, response.CourseId, "Publish response must carry the course ID.");
+        TestAssert.Equal(course.CourseName, response.CourseName, "Publish response must carry the course name.");
+        TestAssert.Equal("PUBLISHED", response.CourseStatus, "Publish response must reflect the published state.");
+        TestAssert.Equal(course.MaxStudents, response.MaxStudents, "Publish response must carry capacity.");
+        TestAssert.Equal(5, response.RegisteredCount, "Publish response must carry the registration count.");
+        TestAssert.Equal(15, response.RemainingSeats, "Publish response must carry remaining seats.");
     }
 
     private static async Task RejectsNumericOverflowAsync()

@@ -89,4 +89,6 @@ export interface CourseService {
     courseId: string,
     options?: ServiceRequestOptions,
   ): Promise<CourseActionEligibility>
+  publishCourse(courseId: string, options?: ServiceRequestOptions): Promise<void>
+  closeCourse(courseId: string, options?: ServiceRequestOptions): Promise<void>
 }

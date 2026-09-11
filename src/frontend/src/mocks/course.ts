@@ -100,6 +100,10 @@ export function createMockCourseService(
       if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw createMockError(scenario)
       const state = mockBusinessRepository.getState()
       const keyword = normalize(query.keyword)
+      // 与后端一致：非 HR/管理员仅能查看已发布课程。
+      const actor = getMockActor()
+      const effectiveStatus =
+        actor.role === 'HR' || actor.role === 'ADMIN' ? query.status : 'PUBLISHED'
       const matching =
         scenario === 'empty'
           ? []
@@ -108,7 +112,11 @@ export function createMockCourseService(
                 if (keyword && !course.name.toLowerCase().includes(keyword)) return false
                 if (query.type && query.type !== 'UNKNOWN' && course.type !== query.type)
                   return false
-                if (query.status && query.status !== 'UNKNOWN' && course.status !== query.status)
+                if (
+                  effectiveStatus &&
+                  effectiveStatus !== 'UNKNOWN' &&
+                  course.status !== effectiveStatus
+                )
                   return false
                 if (query.startDateFrom && course.startTime.slice(0, 10) < query.startDateFrom)
                   return false
@@ -130,6 +138,10 @@ export function createMockCourseService(
         throw createMockError(scenario)
       const course = mockBusinessRepository.getState().courses.find((item) => item.id === courseId)
       if (!course) throw domainError('COURSE_NOT_FOUND')
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN' && course.status === 'DRAFT') {
+        throw domainError('COURSE_FORBIDDEN', { message: '课程尚未发布。' })
+      }
       return { ...course, eligibility: actorEligibility(course) }
     },
 
@@ -138,6 +150,52 @@ export function createMockCourseService(
       const course = mockBusinessRepository.getState().courses.find((item) => item.id === courseId)
       if (!course) throw domainError('COURSE_NOT_FOUND')
       return actorEligibility(course)
+    },
+
+    async publishCourse(courseId, options) {
+      await mockWait(options?.signal)
+      const scenario = getScenario()
+      if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw createMockError(scenario)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') {
+        throw domainError('COURSE_FORBIDDEN', { message: '只有 HR 或管理员可以发布课程。' })
+      }
+      const state = mockBusinessRepository.getState()
+      const course = state.courses.find((item) => item.id === courseId)
+      if (!course) throw domainError('COURSE_NOT_FOUND')
+      if (course.status !== 'DRAFT') {
+        throw domainError('COURSE_CLOSED', { message: '只有草稿课程可以发布。' })
+      }
+      mockBusinessRepository.update((next) => {
+        const target = next.courses.find((item) => item.id === courseId)
+        if (target) {
+          target.status = 'PUBLISHED'
+          target.statusLabel = '已发布'
+        }
+      })
+    },
+
+    async closeCourse(courseId, options) {
+      await mockWait(options?.signal)
+      const scenario = getScenario()
+      if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw createMockError(scenario)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') {
+        throw domainError('COURSE_FORBIDDEN', { message: '只有 HR 或管理员可以关闭课程。' })
+      }
+      const state = mockBusinessRepository.getState()
+      const course = state.courses.find((item) => item.id === courseId)
+      if (!course) throw domainError('COURSE_NOT_FOUND')
+      if (course.status !== 'PUBLISHED') {
+        throw domainError('COURSE_CLOSED', { message: '只有已发布课程可以关闭。' })
+      }
+      mockBusinessRepository.update((next) => {
+        const target = next.courses.find((item) => item.id === courseId)
+        if (target) {
+          target.status = 'CLOSED'
+          target.statusLabel = '已关闭'
+        }
+      })
     },
   }
 }

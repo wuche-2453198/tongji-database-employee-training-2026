@@ -2,12 +2,14 @@ using TrainingManagement.Api.ModuleTests;
 
 var tests = CourseServiceTests
     .GetTests()
+    .Concat(CourseControllerTests.GetTests())
     .Concat(TrainerServiceTests.GetTests())
     .Concat(ResultModuleTests.GetTests())
     .Concat(RequestValidationTests.GetTests())
     .Concat(RepositoryContractTests.GetTests())
     .Concat(RegistrationServiceTests.GetTests())
     .Concat(AttendanceServiceTests.GetTests())
+    .Concat(BlacklistServiceTests.GetTests())
     .ToArray();
 
 if (args.Contains("--auth-http"))

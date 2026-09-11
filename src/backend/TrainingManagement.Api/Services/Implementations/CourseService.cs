@@ -89,20 +89,7 @@ public sealed class CourseService : ICourseService
             return null;
         }
 
-        var response = ToResponse(course);
-        var capacity = await _courseRepository.GetCapacityAsync(
-            courseId,
-            cancellationToken);
-
-        if (capacity.HasValue)
-        {
-            response.RegisteredCount = capacity.Value.ValidRegistrationCount;
-            response.RemainingSeats = Math.Max(
-                0,
-                capacity.Value.MaxStudents - capacity.Value.ValidRegistrationCount);
-        }
-
-        return response;
+        return ToResponse(course);
     }
 
     public async Task<CourseResponse> CreateAsync(
@@ -234,7 +221,7 @@ public sealed class CourseService : ICourseService
                 capacity.Value.MaxStudents - capacity.Value.ValidRegistrationCount));
     }
 
-    public async Task PublishAsync(
+    public async Task<PublishCourseResponse> PublishAsync(
         long courseId,
         CancellationToken cancellationToken)
     {
@@ -289,6 +276,13 @@ public sealed class CourseService : ICourseService
         }
 
         await session.CommitAsync(cancellationToken);
+
+        var publishedCourse = await _courseRepository.GetByIdAsync(
+            courseId,
+            cancellationToken)
+            ?? throw new BusinessException("课程发布后读取失败。");
+
+        return ToPublishResponse(publishedCourse);
     }
 
     public async Task CloseAsync(
@@ -555,6 +549,10 @@ public sealed class CourseService : ICourseService
             TrainerId = course.TrainerId,
             TrainerName = course.TrainerName,
             MaxStudents = course.MaxStudents,
+            RegisteredCount = course.RegisteredCount,
+            RemainingSeats = course.RegisteredCount.HasValue
+                ? Math.Max(0, course.MaxStudents - course.RegisteredCount.Value)
+                : null,
             StartAt = course.StartAt,
             EndAt = course.EndAt,
             Location = course.Location,
@@ -567,6 +565,24 @@ public sealed class CourseService : ICourseService
             MaterialUrl = course.MaterialUrl,
             CreatedAt = course.CreatedAt,
             UpdatedAt = course.UpdatedAt
+        };
+    }
+
+    private static PublishCourseResponse ToPublishResponse(
+        TrainingCourse course)
+    {
+        var response = ToResponse(course);
+
+        return new PublishCourseResponse
+        {
+            Published = true,
+            CourseId = course.CourseId,
+            CourseName = course.CourseName,
+            CourseStatus = course.CourseStatus,
+            MaxStudents = course.MaxStudents,
+            RegisteredCount = course.RegisteredCount ?? 0,
+            RemainingSeats = response.RemainingSeats ?? 0,
+            PublishTime = course.UpdatedAt
         };
     }
 

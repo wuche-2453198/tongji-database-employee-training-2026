@@ -9,6 +9,9 @@ public sealed class BlacklistQuery
     // 状态筛选：ACTIVE/RELEASED
     public string? Status { get; set; }
 
+    // 部门名称筛选（主管仅能查看本部门时由服务端强制注入）
+    public string? DeptName { get; set; }
+
     // 开始日期范围（起始）
     public DateTime? StartDateFrom { get; set; }
 

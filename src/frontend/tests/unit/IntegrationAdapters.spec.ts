@@ -203,6 +203,31 @@ describe('整合分支真实 HTTP 适配器', () => {
     expect(backendWins.eligibility.register.allowed).toBe(true)
   })
 
+  it('发布课程使用 PATCH 动作路径', async () => {
+    const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
+      expect(config.url).toBe('/api/courses/4001/publish')
+      expect(config.method).toBe('patch')
+      return response(config, {
+        success: true,
+        message: 'ok',
+        data: {
+          published: true,
+          courseId: 4001,
+          courseName: '数据库实践',
+          courseStatus: 'PUBLISHED',
+          maxStudents: 20,
+          registeredCount: 3,
+          remainingSeats: 17,
+          publishTime: '2026-08-26T00:00:00+08:00',
+        },
+      })
+    })
+    httpTransport.defaults.adapter = adapter
+
+    await expect(httpCourseService.publishCourse('4001')).resolves.toBeUndefined()
+    expect(adapter).toHaveBeenCalledOnce()
+  })
+
   it('申请列表使用 /my 路径，主管审批使用 dept-approve 动作路径', async () => {
     const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
       if (config.url === '/api/training-requests/my') {

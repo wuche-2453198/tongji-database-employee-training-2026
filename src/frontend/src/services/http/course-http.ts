@@ -37,4 +37,22 @@ export const httpCourseService: CourseService = {
     // 当前后端没有独立资格接口；资格缺失时映射为禁止操作，由服务端写接口最终校验。
     return (await this.getCourse(courseId, options)).eligibility
   },
+
+  async publishCourse(courseId, options) {
+    await requestApi<ApiEnvelopeDto<unknown>>({
+      method: 'PATCH',
+      url: `/api/courses/${encodeURIComponent(courseId)}/publish`,
+      signal: options?.signal,
+      operation: 'write',
+    })
+  },
+
+  async closeCourse(courseId, options) {
+    await requestApi<ApiEnvelopeDto<unknown>>({
+      method: 'PATCH',
+      url: `/api/courses/${encodeURIComponent(courseId)}/close`,
+      signal: options?.signal,
+      operation: 'write',
+    })
+  },
 }
