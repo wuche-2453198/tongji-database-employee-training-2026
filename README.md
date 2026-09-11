@@ -2,7 +2,7 @@
 
 同济大学数据库课程设计项目，目标是交付一个可部署、可演示、可恢复数据的企业内部培训管理系统。系统覆盖员工组织、课程培训、申请审批、报名签到、成果评估和证书记录等内部培训流程。
 
-当前状态：后端认证、讲师与课程、培训申请审批、成果评估、组织基础、报名签到六个模块，以及前端工程（Vue 3 单页应用，覆盖课程、申请审批、报名签到、评分、测试、证书、控制台等 P0 业务页面）均已合入 `develop`，七个功能域的前端页面已切换为真实 HTTP 契约（状态 `HTTP_ADAPTED`，真实 Oracle 环境下的四角色端到端验收仍待完成）。后端可通过 Swagger 查看；前端默认 Mock 模式，复制 `.env.local.example` 为 `.env.local` 后执行 `pnpm dev:local` 即对接本地后端。技术、数据、状态、权限和核心业务决策已通过；接口路径、DTO 和页面映射以运行后端后的 Swagger/OpenAPI 为准。
+当前状态：后端认证、讲师与课程、培训申请审批、成果评估、组织基础、报名签到六个模块，以及前端工程（Vue 3 单页应用，覆盖课程、申请审批、报名签到、评分、测试、证书、控制台等 P0 业务页面，并补齐员工、部门预算、黑名单、讲师、讲师评分五个管理页）均已合入 `develop`；七个功能域的前端页面已切换为真实 HTTP 契约，并已于 2026-09-11 在真实 Oracle 环境完成联调验收（状态 `INTEGRATION_DONE`，记录见[测试联调与发布验收](document/03-质量交付/测试联调与发布验收.md)第 10 节）。后端可通过 Swagger 查看；前端默认 Mock 模式，复制 `.env.local.example` 为 `.env.local` 后执行 `pnpm dev:local` 即对接本地后端；生产构建使用 `pnpm build:prod`。技术、数据、状态、权限和核心业务决策见[决策日志](document/01-项目管理/决策日志.md)；接口路径、DTO 和页面映射以运行后端后的 Swagger/OpenAPI 为准。
 
 ## 文档入口
 
@@ -138,9 +138,9 @@ Oracle 种子测试账号：
 | 讲师与课程 | `/api/trainers`、`/api/courses` | 讲师与课程 CRUD、发布、关闭、容量摘要；发布需与部门预算占用在同一事务内完成 |
 | 培训申请审批 | `/api/training-requests` | 提交、部门审批、HR 备案、状态查询 |
 | 成果评估 | `/api/ratings`、`/api/tests`、`/api/certificates` | 评分、训前/训后测试、证书生成与查询 |
-| 组织基础 | `/api/employees`、`/api/department-trainings`、`/api/blacklists` | 员工、部门培训预算、黑名单；读取限 HR/管理员，写操作限管理员 |
+| 组织基础 | `/api/employees`、`/api/department-trainings`、`/api/blacklists` | 员工、部门培训预算、黑名单；黑名单权限口径见决策 `D-016`（读取为部门主管/HR/管理员，新增为管理员/部门主管，更新与删除仅管理员） |
 | 报名签到 | `/api/registrations`、`/api/attendance` | 报名、签到、缺勤、完成；员工仅本人，HR/管理员全量 |
-| 前端 | — | Vue 3 单页应用，覆盖课程、申请审批、报名签到、评分、测试、证书、控制台等 P0 页面；默认 Mock，`pnpm dev:local` 走真实 HTTP 契约（七个功能域已接入，真库验收待完成） |
+| 前端 | — | Vue 3 单页应用，覆盖课程、申请审批、报名签到、评分、测试、证书、控制台等 P0 页面，以及员工、部门预算、黑名单、讲师、讲师评分五个管理页；默认 Mock，`pnpm dev:local` 走真实 HTTP 契约，`pnpm build:prod` 产出生产包（同源部署，不含 Mock 数据） |
 
 字段、枚举和状态码以运行后端后的 Swagger/OpenAPI 为准；测试入口见 `tests/backend/`（C# 回归）和 `tests/api/`（HTTP 用例）。
 
