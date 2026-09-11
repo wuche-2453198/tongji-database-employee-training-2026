@@ -6,12 +6,16 @@ using TrainingManagement.Api.Repositories.Interfaces;
 
 namespace TrainingManagement.Api.Repositories.Implementations;
 
+/// <summary>
+/// Oracle 连接工厂：为每次仓储操作创建独立连接，并在连接打开后切换到业务 Schema。
+/// Repository 使用 await using 释放连接，避免跨请求共享连接造成并发和生命周期问题。
+/// </summary>
 public sealed class OracleConnectionFactory : IDbConnectionFactory
 {
     private readonly string _connectionString;
     private readonly string _currentSchema;
 
-    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
+    /// <summary>读取运行账号连接字符串和业务表所属 Schema，构造时不立即连接数据库。</summary>
     public OracleConnectionFactory(
         IOptions<DatabaseOptions> databaseOptions,
         IOptions<OracleOptions> oracleOptions)
@@ -20,6 +24,7 @@ public sealed class OracleConnectionFactory : IDbConnectionFactory
         _currentSchema = oracleOptions.Value.CurrentSchema;
     }
 
+    /// <summary>判断连接字符串是否已经配置；这里只检查非空，不代表数据库一定可达。</summary>
     public bool IsConfigured => !string.IsNullOrWhiteSpace(_connectionString);
 
     /// <summary>打开 Oracle 连接并设置当前架构；返回的连接由调用方负责释放。</summary>

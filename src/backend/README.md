@@ -34,6 +34,64 @@ TrainingManagement.Api/
 └── Templates/
 ```
 
+## 架构总览
+
+后端采用分层结构。一条典型请求按下面的方向流动：
+
+```text
+HTTP 请求
+  -> 中间件（异常处理、跨域、JWT 认证、角色授权）
+  -> Controller（接收和校验输入，选择 HTTP 状态码）
+  -> Service（业务规则、状态流转、数据范围权限）
+  -> Repository（Dapper 参数化 SQL）
+  -> OracleConnectionFactory（打开连接并设置 CURRENT_SCHEMA）
+  -> Oracle Database
+
+Oracle 查询结果
+  -> Entity（承接数据库记录）
+  -> DTO（对外传输的数据）
+  -> ApiResponse<T>（统一响应和 TraceId）
+  -> HTTP 响应
+```
+
+各目录的职责如下：
+
+| 目录 | 主要职责 | 不应该承担的职责 |
+| --- | --- | --- |
+| `Controllers` | 路由、授权特性、参数接收、调用 Service、返回响应 | SQL 和复杂业务判断 |
+| `Services` | 业务校验、状态机、数据范围和流程编排 | 拼接 HTTP 响应、直接依赖页面 |
+| `Repositories` | Oracle 查询和持久化、分页、事务相关数据操作 | 决定用户是否有业务权限 |
+| `Dtos` | 定义请求和响应结构、基础输入校验 | 数据库连接和业务流程 |
+| `Entities` | 映射数据库查询结果和领域数据 | 直接作为公共接口响应 |
+| `Common` | 统一响应、异常、配置、角色权限和公共扩展 | 某个业务模块独有的流程 |
+| `Middlewares` | 处理跨控制器的 HTTP 请求行为 | 某个接口专属的业务逻辑 |
+
+依赖方向保持为 `Controller -> Service -> Repository -> Oracle`。每层依赖接口，具体实现集中在 `Program.cs` 注册，控制器不直接创建服务或数据库连接。
+
+## 一条请求怎么看
+
+以登录 `POST /api/auth/login` 为例：
+
+1. `AuthController.Login` 接收 `LoginRequest`，ASP.NET Core 自动执行 DTO 校验。
+2. `AuthService.LoginAsync` 查找用户、用 BCrypt 校验密码、加载角色与权限。
+3. `OracleAuthRepository` 使用 Dapper 参数化 SQL 查询员工和角色。
+4. `OracleConnectionFactory` 使用 `TRAINING_APP` 打开连接，并切换到 `TRAINING_OWNER` Schema。
+5. `JwtTokenService` 为认证成功的用户签发 JWT。
+6. `ApiControllerBase.OkResponse` 将结果包装为 `ApiResponse<LoginResponse>`。
+7. 过程中抛出的业务异常由 `ExceptionHandlingMiddleware` 统一转换成 4xx 响应；未知异常转换成 500，并通过 TraceId 关联日志。
+
+其他业务接口也沿用同一条主链路。阅读一个模块时，可以从 Controller 的路由方法开始，依次使用“转到定义”进入 Service 接口、Service 实现、Repository 接口和 Oracle Repository。
+
+## 推荐阅读顺序
+
+1. `Program.cs`：了解配置来源、JWT、授权策略、依赖注入和中间件顺序。
+2. `Controllers/ApiControllerBase.cs` 与 `Common/Responses/ApiResponse.cs`：了解统一成功响应。
+3. `Middlewares/ExceptionHandlingMiddleware.cs` 与 `Common/Exceptions/`：了解统一错误响应。
+4. `Repositories/Implementations/OracleConnectionFactory.cs`：了解运行账号、连接生命周期和 Schema 切换。
+5. `AuthController -> AuthService -> OracleAuthRepository -> JwtTokenService`：完整阅读认证链路。
+6. `TrainingRequestsController -> TrainingRequestService -> OracleTrainingRequestRepository`：阅读包含状态机、数据范围和并发保护的业务参考模块。
+7. `Templates/BackendModuleTemplate.md`：检查其他模块是否遵守相同分层规则。
+
 ## 本地启动
 
 本机需要安装 .NET 8 SDK。

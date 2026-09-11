@@ -1,6 +1,9 @@
 namespace TrainingManagement.Api.Common.Responses;
 
-/// <summary>所有接口共用的响应外壳，统一承载成功标记、数据、错误和追踪编号。</summary>
+/// <summary>
+/// 所有接口共用的响应外壳，统一承载成功标记、数据、错误和追踪编号。
+/// Controller、模型校验、JWT 事件和异常中间件都使用该结构，前端只需维护一套解析逻辑。
+/// </summary>
 public sealed class ApiResponse<T>
 {
     public bool Success { get; init; }

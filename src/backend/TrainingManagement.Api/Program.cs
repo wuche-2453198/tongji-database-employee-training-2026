@@ -193,12 +193,13 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole(RoleCodes.DepartmentManager, RoleCodes.Hr, RoleCodes.Admin));
 });
 
-// 服务和仓储通过接口注入；Scoped 对象在同一请求内复用，令牌服务为单例。
+// 基础设施服务：令牌服务不保存用户状态，可全局复用；数据库连接工厂按请求创建。
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 
 builder.Services.AddScoped<IDbConnectionFactory, OracleConnectionFactory>();
 
+// 数据访问层：接口隔离上层与 Oracle/Dapper 实现，便于测试时替换为内存仓储。
 builder.Services.AddScoped<IAuthRepository, OracleAuthRepository>();
 builder.Services.AddScoped<IRoleRepository, OracleRoleRepository>();
 builder.Services.AddScoped<IHealthRepository, OracleHealthRepository>();
@@ -211,6 +212,7 @@ builder.Services.AddScoped<IRatingRepository, OracleRatingRepository>();
 builder.Services.AddScoped<ITestRepository, OracleTestRepository>();
 builder.Services.AddScoped<ICertificateRepository, OracleCertificateRepository>();
 
+// 业务服务层：负责业务校验、状态流转和数据范围；Controller 不直接访问 Repository。
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IHealthService, HealthService>();
@@ -235,6 +237,7 @@ builder.Services.AddScoped<IDepartmentTrainingService, DepartmentTrainingService
 builder.Services.AddScoped<IBlacklistRepository, OracleBlacklistRepository>();
 builder.Services.AddScoped<IBlacklistService, BlacklistService>();
 
+// 至此完成服务注册；Build 之后开始配置每个 HTTP 请求实际经过的中间件。
 var app = builder.Build();
 
 // 开发环境或显式开启配置时提供 Swagger 页面。

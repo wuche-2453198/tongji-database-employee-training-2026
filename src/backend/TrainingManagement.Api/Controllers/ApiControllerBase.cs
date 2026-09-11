@@ -4,6 +4,10 @@ using TrainingManagement.Api.Common.Responses;
 namespace TrainingManagement.Api.Controllers;
 
 [ApiController]
+/// <summary>
+/// API 控制器基类：统一创建成功响应并附加 TraceId。
+/// 业务控制器只负责接收参数、调用 Service 和返回结果，不在这里处理业务规则。
+/// </summary>
 public abstract class ApiControllerBase : ControllerBase
 {
     /// <summary>将业务数据包装为带请求追踪编号的统一 HTTP 200 响应。</summary>
