@@ -8,6 +8,7 @@
 
 业务模块不得在此目录外散落 Controller、Service、Repository 或 DTO。真实连接串和 JWT 密钥必须从环境变量或不入库的本地配置读取。
 
+
 ## 技术栈
 
 - ASP.NET Core Web API，目标框架 `net8.0`
