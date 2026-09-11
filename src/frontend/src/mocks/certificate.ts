@@ -10,13 +10,14 @@ import { createMockError, currentMockScenario, mockWait } from '@/mocks/scenario
 
 const PAGE_SIZES = [10, 20, 50]
 
-function isHr(): boolean {
-  return getMockActor().role === 'HR'
+function canManage(): boolean {
+  const role = getMockActor().role
+  return role === 'HR' || role === 'ADMIN'
 }
 
 function canRead(item: Certificate): boolean {
   const actor = getMockActor()
-  return actor.role === 'HR' || (actor.role === 'EMPLOYEE' && item.employeeId === actor.employeeId)
+  return canManage() || (actor.role === 'EMPLOYEE' && item.employeeId === actor.employeeId)
 }
 
 function pageOf<T>(items: T[], query: CertificateQuery) {
@@ -62,7 +63,7 @@ function candidateItems(query: CertificateQuery): CertificateCandidate[] {
       employeeId: item.employeeId,
       employeeName: item.employeeName,
       departmentName: item.departmentName || '—',
-      registrationStatus: 'COMPLETED' as const,
+      registrationStatus: item.status,
       actualHours: item.actualHours ?? null,
       qualification: { allowed: true },
     }))
@@ -99,7 +100,7 @@ export const mockCertificateService: CertificateService = {
 
   async generate(command, options) {
     await mockWait(options?.signal)
-    if (!isHr()) throw domainError('CERTIFICATE_FORBIDDEN')
+    if (!canManage()) throw domainError('CERTIFICATE_FORBIDDEN')
     const state = mockBusinessRepository.getState()
     const registration = state.registrations.find((item) => item.id === command.registrationId)
     if (!registration || registration.status !== 'COMPLETED')
@@ -137,7 +138,7 @@ export const mockCertificateService: CertificateService = {
       )
     return {
       action: 'generate',
-      allowed: isHr() && item.status === 'COMPLETED' && !existing,
+      allowed: canManage() && item.status === 'COMPLETED' && !existing,
       reason: existing
         ? '该报名记录已经生成证书。'
         : item.status !== 'COMPLETED'
@@ -148,14 +149,14 @@ export const mockCertificateService: CertificateService = {
 
   async listManage(query, options) {
     await mockWait(options?.signal, 50)
-    if (!isHr()) throw domainError('CERTIFICATE_FORBIDDEN')
+    if (!canManage()) throw domainError('CERTIFICATE_FORBIDDEN')
     if (currentMockScenario() === 'failure') throw createMockError('failure')
     return pageOf(filterCertificates(query, true), query)
   },
 
   async listCandidates(query, options) {
     await mockWait(options?.signal, 50)
-    if (!isHr()) throw domainError('CERTIFICATE_FORBIDDEN')
+    if (!canManage()) throw domainError('CERTIFICATE_FORBIDDEN')
     const items = currentMockScenario() === 'empty' ? [] : candidateItems(query)
     return pageOf(items, query)
   },

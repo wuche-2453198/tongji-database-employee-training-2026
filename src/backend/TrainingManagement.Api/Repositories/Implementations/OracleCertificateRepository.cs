@@ -195,14 +195,27 @@ public sealed class OracleCertificateRepository : ICertificateRepository
         parameters.Add("Offset", (page - 1) * pageSize);
         parameters.Add("PageSize", pageSize);
 
+        // 资格判定：课程未配置训后测试则直接合格；否则 POST 成绩需 >= 60。
         var itemsSql = $"""
             SELECT r.REG_ID AS RegId, r.EMP_ID AS EmpId, e.EMP_NAME AS EmployeeName,
                    d.DEPT_NAME AS DepartmentName, r.COURSE_ID AS CourseId, c.COURSE_NAME AS CourseName,
-                   r.ACTUAL_HOURS AS ActualHours
+                   r.ACTUAL_HOURS AS ActualHours, r.STATUS AS Status,
+                   CASE
+                       WHEN c.POST_TEST_URL IS NULL THEN 'Y'
+                       WHEN pt.SCORE IS NOT NULL AND pt.SCORE >= 60 THEN 'Y'
+                       ELSE 'N'
+                   END AS Qualified,
+                   CASE
+                       WHEN c.POST_TEST_URL IS NOT NULL AND pt.SCORE IS NULL THEN '尚未录入训后测试成绩'
+                       WHEN c.POST_TEST_URL IS NOT NULL AND pt.SCORE < 60 THEN '训后测试成绩未达到60分'
+                       ELSE NULL
+                   END AS QualificationReason
             FROM TRAINING_REGISTRATIONS r
             JOIN EMPLOYEES e ON r.EMP_ID = e.EMP_ID
             JOIN DEPARTMENTS_TRAINING d ON e.DEPT_ID = d.DEPT_ID
             JOIN TRAINING_COURSES c ON r.COURSE_ID = c.COURSE_ID
+            LEFT JOIN TRAINING_TESTS pt
+                ON pt.EMP_ID = r.EMP_ID AND pt.COURSE_ID = r.COURSE_ID AND pt.TEST_TYPE = 'POST'
             {whereSql}
             ORDER BY r.COMPLETED_AT DESC
             OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY

@@ -17,13 +17,13 @@ public sealed class OracleTestRepository : ITestRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<bool> CreateAsync(CreateTestRequest request, int recordedByEmpId)
+    public async Task<bool> CreateAsync(CreateTestRequest request, int recordedByEmpId, DateTime testedAt)
     {
         const string sql = """
             INSERT INTO TRAINING_TESTS
                 (EMP_ID, COURSE_ID, TEST_TYPE, SCORE, RECORDED_BY_EMP_ID, TESTED_AT)
             VALUES
-                (:EmpId, :CourseId, :TestType, :Score, :RecordedByEmpId, SYSTIMESTAMP)
+                (:EmpId, :CourseId, :TestType, :Score, :RecordedByEmpId, :TestedAt)
             """;
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
         var rows = await connection.ExecuteAsync(sql, new
@@ -32,26 +32,8 @@ public sealed class OracleTestRepository : ITestRepository
             request.CourseId,
             request.TestType,
             request.Score,
-            RecordedByEmpId = recordedByEmpId
-        });
-        return rows > 0;
-    }
-
-    public async Task<bool> UpdateScoreAsync(CreateTestRequest request, int recordedByEmpId)
-    {
-        const string sql = """
-            UPDATE TRAINING_TESTS
-            SET SCORE = :Score, RECORDED_BY_EMP_ID = :RecordedByEmpId, TESTED_AT = SYSTIMESTAMP
-            WHERE EMP_ID = :EmpId AND COURSE_ID = :CourseId AND TEST_TYPE = :TestType
-            """;
-        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
-        var rows = await connection.ExecuteAsync(sql, new
-        {
-            request.EmpId,
-            request.CourseId,
-            request.TestType,
-            request.Score,
-            RecordedByEmpId = recordedByEmpId
+            RecordedByEmpId = recordedByEmpId,
+            TestedAt = testedAt
         });
         return rows > 0;
     }
@@ -161,15 +143,96 @@ public sealed class OracleTestRepository : ITestRepository
         return gate;
     }
 
-    public async Task<bool> HasHrFiledRequestAsync(int employeeId, int courseId)
+    public async Task<string?> GetRegistrationStatusAsync(int employeeId, int courseId)
     {
         const string sql = """
-            SELECT COUNT(1) FROM TRAINING_REQUESTS
-            WHERE EMP_ID = :EmpId AND COURSE_ID = :CourseId AND STATUS = 'HR_FILED'
+            SELECT STATUS FROM TRAINING_REGISTRATIONS
+            WHERE EMP_ID = :EmpId AND COURSE_ID = :CourseId
+            ORDER BY REGISTERED_AT DESC
+            FETCH FIRST 1 ROWS ONLY
             """;
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
-        var count = await connection.ExecuteScalarAsync<int>(sql, new { EmpId = employeeId, CourseId = courseId });
-        return count > 0;
+        return await connection.ExecuteScalarAsync<string?>(sql, new { EmpId = employeeId, CourseId = courseId });
+    }
+
+    public async Task<PagedResult<TestScoreSummary>> GetScoreSummariesAsync(
+        int? employeeId, int? courseId,
+        string? employeeName, string? courseName,
+        DateTime? startDateFrom, DateTime? startDateTo,
+        int page, int pageSize)
+    {
+        var conditions = new List<string>();
+        var parameters = new DynamicParameters();
+        if (employeeId.HasValue)
+        {
+            conditions.Add("t.EMP_ID = :EmpId");
+            parameters.Add("EmpId", employeeId.Value);
+        }
+        if (courseId.HasValue)
+        {
+            conditions.Add("t.COURSE_ID = :CourseId");
+            parameters.Add("CourseId", courseId.Value);
+        }
+        if (!string.IsNullOrWhiteSpace(employeeName))
+        {
+            conditions.Add("e.EMP_NAME LIKE :EmployeeName");
+            parameters.Add("EmployeeName", $"%{employeeName}%");
+        }
+        if (!string.IsNullOrWhiteSpace(courseName))
+        {
+            conditions.Add("c.COURSE_NAME LIKE :CourseName");
+            parameters.Add("CourseName", $"%{courseName}%");
+        }
+        if (startDateFrom.HasValue)
+        {
+            conditions.Add("t.TESTED_AT >= :StartDateFrom");
+            parameters.Add("StartDateFrom", startDateFrom.Value);
+        }
+        if (startDateTo.HasValue)
+        {
+            conditions.Add("t.TESTED_AT <= :StartDateTo");
+            parameters.Add("StartDateTo", startDateTo.Value);
+        }
+
+        var where = conditions.Count > 0 ? "WHERE " + string.Join(" AND ", conditions) : string.Empty;
+
+        // 按员工+课程聚合：PRE/POST 各取一条最高分，分数变化由 Oracle 计算(任一缺失即为 NULL)。
+        var countSql = $"""
+            SELECT COUNT(1) FROM (
+                SELECT t.EMP_ID, t.COURSE_ID
+                FROM TRAINING_TESTS t
+                LEFT JOIN EMPLOYEES e ON t.EMP_ID = e.EMP_ID
+                LEFT JOIN TRAINING_COURSES c ON t.COURSE_ID = c.COURSE_ID
+                {where}
+                GROUP BY t.EMP_ID, t.COURSE_ID
+            )
+            """;
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(CancellationToken.None);
+        var total = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+        parameters.Add("Offset", (page - 1) * pageSize);
+        parameters.Add("PageSize", pageSize);
+
+        var itemsSql = $"""
+            SELECT t.EMP_ID AS EmpId, e.EMP_NAME AS EmployeeName,
+                   t.COURSE_ID AS CourseId, c.COURSE_NAME AS CourseName,
+                   MAX(CASE WHEN t.TEST_TYPE = 'PRE' THEN t.SCORE END) AS PreScore,
+                   MAX(CASE WHEN t.TEST_TYPE = 'POST' THEN t.SCORE END) AS PostScore,
+                   MAX(CASE WHEN t.TEST_TYPE = 'POST' THEN t.SCORE END)
+                       - MAX(CASE WHEN t.TEST_TYPE = 'PRE' THEN t.SCORE END) AS "Change",
+                   MAX(t.TESTED_AT) AS UpdatedAt
+            FROM TRAINING_TESTS t
+            LEFT JOIN EMPLOYEES e ON t.EMP_ID = e.EMP_ID
+            LEFT JOIN TRAINING_COURSES c ON t.COURSE_ID = c.COURSE_ID
+            {where}
+            GROUP BY t.EMP_ID, e.EMP_NAME, t.COURSE_ID, c.COURSE_NAME
+            ORDER BY MAX(t.TESTED_AT) DESC
+            OFFSET :Offset ROWS FETCH NEXT :PageSize ROWS ONLY
+            """;
+
+        var items = (await connection.QueryAsync<TestScoreSummary>(itemsSql, parameters)).ToArray();
+        return new PagedResult<TestScoreSummary>(items, page, pageSize, total);
     }
 
     public async Task<(decimal? PreScore, decimal? PostScore)> GetScoresAsync(int employeeId, int courseId)

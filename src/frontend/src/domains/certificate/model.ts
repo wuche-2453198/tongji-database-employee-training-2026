@@ -3,9 +3,33 @@ import type {
   DomainPage,
   DomainPageQuery,
   ServiceRequestOptions,
+  StatusSemantic,
 } from '@/domains/shared'
+import type { RegistrationStatus } from '@/domains/registration'
 
 export type CertificateDisplayStatus = 'VALID' | 'EXPIRING' | 'EXPIRED' | 'UNKNOWN'
+
+const statusLabels: Record<CertificateDisplayStatus, string> = {
+  VALID: '有效',
+  EXPIRING: '即将到期',
+  EXPIRED: '已过期',
+  UNKNOWN: '未知状态',
+}
+
+const statusSemantics: Record<CertificateDisplayStatus, StatusSemantic> = {
+  VALID: 'success',
+  EXPIRING: 'warning',
+  EXPIRED: 'error',
+  UNKNOWN: 'neutral',
+}
+
+export function certificateStatusLabel(status: CertificateDisplayStatus): string {
+  return statusLabels[status] ?? '未知状态'
+}
+
+export function certificateStatusSemantic(status: CertificateDisplayStatus): StatusSemantic {
+  return statusSemantics[status] ?? 'neutral'
+}
 
 export interface Certificate {
   id: string
@@ -26,7 +50,7 @@ export interface CertificateCandidate {
   employeeId: number
   employeeName: string
   departmentName: string
-  registrationStatus: 'COMPLETED'
+  registrationStatus: RegistrationStatus
   actualHours: number | null
   qualification: ActionEligibility
 }

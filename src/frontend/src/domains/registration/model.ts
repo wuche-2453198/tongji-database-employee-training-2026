@@ -3,10 +3,37 @@ import type {
   DomainPage,
   DomainPageQuery,
   ServiceRequestOptions,
+  StatusSemantic,
 } from '@/domains/shared'
 
 export type RegistrationStatus =
   'REGISTERED' | 'SIGNED_IN' | 'ABSENT' | 'COMPLETED' | 'CANCELED' | 'UNKNOWN'
+
+const statusLabels: Record<RegistrationStatus, string> = {
+  REGISTERED: '已报名',
+  SIGNED_IN: '已签到',
+  ABSENT: '缺席',
+  COMPLETED: '已完成',
+  CANCELED: '已取消',
+  UNKNOWN: '未知状态',
+}
+
+const statusSemantics: Record<RegistrationStatus, StatusSemantic> = {
+  REGISTERED: 'info',
+  SIGNED_IN: 'warning',
+  ABSENT: 'error',
+  COMPLETED: 'success',
+  CANCELED: 'neutral',
+  UNKNOWN: 'neutral',
+}
+
+export function registrationStatusLabel(status: RegistrationStatus): string {
+  return statusLabels[status] ?? '未知状态'
+}
+
+export function registrationStatusSemantic(status: RegistrationStatus): StatusSemantic {
+  return statusSemantics[status] ?? 'neutral'
+}
 
 export type SigninMethod = 'SELF' | 'MANUAL' | 'UNKNOWN'
 

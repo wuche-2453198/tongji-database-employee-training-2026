@@ -8,7 +8,11 @@ import PageState from '@/components/common/PageState.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
 import { getCertificateService } from '@/services/certificate'
 import { isServiceError, type UiError } from '@/types/api'
-import type { Certificate, CertificateDisplayStatus } from '@/domains/certificate'
+import {
+  certificateStatusLabel as label,
+  certificateStatusSemantic as semantic,
+  type Certificate,
+} from '@/domains/certificate'
 const route = useRoute()
 const router = useRouter()
 const certificate = ref<Certificate | null>(null)
@@ -21,17 +25,8 @@ function format(value: string | null) {
     ? '—'
     : new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
 }
-function label(status: CertificateDisplayStatus) {
-  return (
-    { VALID: '有效', EXPIRING: '即将到期', EXPIRED: '已过期', UNKNOWN: '未知状态' }[status] ??
-    '未知状态'
-  )
-}
-function semantic(
-  status: CertificateDisplayStatus,
-): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
-  return ({ VALID: 'success', EXPIRING: 'warning', EXPIRED: 'error', UNKNOWN: 'neutral' }[status] ??
-    'neutral') as 'success' | 'warning' | 'error' | 'info' | 'neutral'
+function formatExpiry(value: string | null) {
+  return value ? format(value) : '长期有效'
 }
 async function load() {
   loading.value = true
@@ -95,7 +90,7 @@ onMounted(load)
             { label: '课程名称', value: certificate.courseName },
             { label: '持证人', value: certificate.employeeName },
             { label: '发证时间', value: format(certificate.issuedAt) },
-            { label: '有效期至', value: format(certificate.expiresAt) },
+            { label: '有效期至', value: formatExpiry(certificate.expiresAt) },
             { label: '当前状态', value: label(certificate.displayStatus) },
           ]"
         />

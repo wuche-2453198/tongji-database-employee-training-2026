@@ -10,7 +10,13 @@ import SearchPanel from '@/components/common/SearchPanel.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
 import { getCertificateService } from '@/services/certificate'
 import { isServiceError, type UiError } from '@/types/api'
-import type { Certificate, CertificateDisplayStatus, CertificateQuery } from '@/domains/certificate'
+import {
+  certificateStatusLabel as label,
+  certificateStatusSemantic as semantic,
+  type Certificate,
+  type CertificateDisplayStatus,
+  type CertificateQuery,
+} from '@/domains/certificate'
 import type { TableColumn } from '@/types/ui'
 const router = useRouter()
 const filters = reactive({
@@ -35,7 +41,7 @@ const tableRows = computed(() =>
   rows.value.map((item) => ({
     ...item,
     issuedAtLabel: format(item.issuedAt),
-    expiresAtLabel: format(item.expiresAt),
+    expiresAtLabel: item.expiresAt ? format(item.expiresAt) : '长期有效',
     statusLabel: label(item.displayStatus),
   })),
 )
@@ -54,17 +60,6 @@ function format(value: string | null) {
   return Number.isNaN(date.getTime())
     ? '—'
     : new Intl.DateTimeFormat('zh-CN', { dateStyle: 'short' }).format(date)
-}
-function label(status: CertificateDisplayStatus) {
-  return (
-    { VALID: '有效', EXPIRING: '即将到期', EXPIRED: '已过期', UNKNOWN: '未知状态' }[status] ??
-    '未知状态'
-  )
-}
-function semantic(status: unknown): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
-  return ({ VALID: 'success', EXPIRING: 'warning', EXPIRED: 'error', UNKNOWN: 'neutral' }[
-    String(status) as CertificateDisplayStatus
-  ] ?? 'neutral') as 'success' | 'warning' | 'error' | 'info' | 'neutral'
 }
 function query(): CertificateQuery {
   return {

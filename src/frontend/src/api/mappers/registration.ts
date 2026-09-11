@@ -24,8 +24,11 @@ const knownStatuses = new Set<RegistrationStatus>([
   'CANCELED',
 ])
 
-const mapStatus = (value: string): RegistrationStatus =>
+/** 报名状态映射：后端状态值与前端枚举保持一致，未知值回落到 UNKNOWN。 */
+export const mapRegistrationStatus = (value: string): RegistrationStatus =>
   knownStatuses.has(value as RegistrationStatus) ? (value as RegistrationStatus) : 'UNKNOWN'
+
+const mapStatus = mapRegistrationStatus
 
 const mapSigninMethod = (value: string | null | undefined): SigninMethod => {
   if (value === 'SCAN') return 'SELF'

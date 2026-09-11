@@ -1,3 +1,4 @@
+import { mapRegistrationStatus } from '@/api/mappers/registration'
 import type { CertificateCandidateDto, CertificateDto } from '@/api/transport'
 import type {
   Certificate,
@@ -7,12 +8,26 @@ import type {
 
 const EXPIRING_SOON_MS = 30 * 24 * 60 * 60 * 1000
 
-function mapDisplayStatus(expiresAt: string | null): CertificateDisplayStatus {
-  if (!expiresAt) return 'UNKNOWN'
+const knownStatuses = new Set<CertificateDisplayStatus>(['VALID', 'EXPIRING', 'EXPIRED'])
+
+function fromExpireDate(expiresAt: string | null): CertificateDisplayStatus {
+  // 未设置到期日视为长期有效，而不是未知状态。
+  if (!expiresAt) return 'VALID'
   const expire = new Date(expiresAt).getTime()
   if (Number.isNaN(expire)) return 'UNKNOWN'
   if (expire < Date.now()) return 'EXPIRED'
   return expire <= Date.now() + EXPIRING_SOON_MS ? 'EXPIRING' : 'VALID'
+}
+
+/** 优先使用后端下发的状态值，缺失或不可识别时按到期日回退计算。 */
+function mapDisplayStatus(
+  status: string | null | undefined,
+  expiresAt: string | null,
+): CertificateDisplayStatus {
+  if (status && knownStatuses.has(status as CertificateDisplayStatus)) {
+    return status as CertificateDisplayStatus
+  }
+  return fromExpireDate(expiresAt)
 }
 
 export function mapCertificate(dto: CertificateDto): Certificate {
@@ -25,11 +40,13 @@ export function mapCertificate(dto: CertificateDto): Certificate {
     employeeName: dto.employeeName || '—',
     issuedAt: dto.issueDate,
     expiresAt: dto.expireDate ?? null,
-    displayStatus: mapDisplayStatus(dto.expireDate),
+    displayStatus: mapDisplayStatus(dto.status, dto.expireDate ?? null),
   }
 }
 
 export function mapCertificateCandidate(dto: CertificateCandidateDto): CertificateCandidate {
+  const allowed = (dto.qualified ?? 'N') === 'Y'
+  const reason = dto.qualificationReason?.trim()
   return {
     registrationId: String(dto.regId),
     courseId: String(dto.courseId),
@@ -37,8 +54,8 @@ export function mapCertificateCandidate(dto: CertificateCandidateDto): Certifica
     employeeId: dto.empId,
     employeeName: dto.employeeName || '—',
     departmentName: dto.departmentName || '—',
-    registrationStatus: 'COMPLETED',
+    registrationStatus: mapRegistrationStatus(dto.status ?? ''),
     actualHours: dto.actualHours ?? null,
-    qualification: { allowed: true },
+    qualification: { allowed, reason: reason ? reason : undefined },
   }
 }

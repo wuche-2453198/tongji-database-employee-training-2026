@@ -56,19 +56,23 @@ const protectedPage = (
                                 ? () => import('@/views/ratings/MyRatingListView.vue')
                                 : name === 'test-management'
                                   ? () => import('@/views/tests/TestManagementView.vue')
-                                  : name === 'blacklist-management'
-                                    ? () => import('@/views/blacklist/BlacklistManagementView.vue')
-                                    : name === 'employee-management'
-                                      ? () => import('@/views/employees/EmployeeManagementView.vue')
-                                      : name === 'rating-management'
-                                        ? () => import('@/views/ratings/RatingManagementView.vue')
-                                        : name === 'department-budget-management'
-                                          ? () =>
-                                              import('@/views/budgets/DepartmentBudgetManagementView.vue')
-                                          : name === 'trainer-management'
+                                  : name === 'my-test-scores'
+                                    ? () => import('@/views/tests/MyTestScoreView.vue')
+                                    : name === 'blacklist-management'
+                                      ? () =>
+                                          import('@/views/blacklist/BlacklistManagementView.vue')
+                                      : name === 'employee-management'
+                                        ? () =>
+                                            import('@/views/employees/EmployeeManagementView.vue')
+                                        : name === 'rating-management'
+                                          ? () => import('@/views/ratings/RatingManagementView.vue')
+                                          : name === 'department-budget-management'
                                             ? () =>
-                                                import('@/views/trainers/TrainerManagementView.vue')
-                                            : () => import('@/views/errors/NotFoundView.vue'),
+                                                import('@/views/budgets/DepartmentBudgetManagementView.vue')
+                                            : name === 'trainer-management'
+                                              ? () =>
+                                                  import('@/views/trainers/TrainerManagementView.vue')
+                                              : () => import('@/views/errors/NotFoundView.vue'),
   meta: {
     title,
     requiresAuth: true,
@@ -216,6 +220,10 @@ const routes: RouteRecordRaw[] = [
         'test-management',
         ['培训运营', '测试成绩'],
       ),
+      protectedPage('my/tests', 'my-test-scores', '我的成绩', ['EMPLOYEE'], 'my-test-scores', [
+        '我的培训',
+        '我的成绩',
+      ]),
       protectedPage(
         'organization/blacklist',
         'blacklist-management',

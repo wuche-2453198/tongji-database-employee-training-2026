@@ -1,28 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import AppButton from '@/components/common/AppButton.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
-import AppSelect from '@/components/common/AppSelect.vue'
 import DataTable from '@/components/common/DataTable.vue'
-import FormField from '@/components/common/FormField.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import PageState from '@/components/common/PageState.vue'
 import SearchPanel from '@/components/common/SearchPanel.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
-import { getCourseService } from '@/services/course'
-import { getEmployeeService } from '@/services/employee'
 import { getTestService } from '@/services/test'
 import { isServiceError, type UiError } from '@/types/api'
-import type { CourseSummary } from '@/domains/course'
-import type { EmployeeSummary } from '@/domains/employee'
-import type { TestQuerySummary, TestScoreSummary, TestType } from '@/domains/test'
-import type { SelectOption, TableColumn, StatusSemantic } from '@/types/ui'
+import type { TestQuerySummary, TestScoreSummary } from '@/domains/test'
+import type { StatusSemantic, TableColumn } from '@/types/ui'
 import { compactListQuery } from '@/utils/list-route-state'
 
 const router = useRouter()
 const filters = reactive({
-  employeeKeyword: '',
   keyword: '',
   dateRange: [] as string[],
   page: 1,
@@ -34,8 +26,7 @@ const loading = ref(false)
 const hasLoaded = ref(false)
 const error = ref<UiError | null>(null)
 const columns: TableColumn[] = [
-  { key: 'employeeName', label: '员工', width: 130 },
-  { key: 'courseName', label: '课程名称', minWidth: 220 },
+  { key: 'courseName', label: '课程名称', minWidth: 240 },
   { key: 'preScoreLabel', label: '训前成绩', width: 120, align: 'center' },
   { key: 'postScoreLabel', label: '训后成绩', width: 120, align: 'center' },
   { key: 'changeLabel', label: '分数变化', width: 120, align: 'center' },
@@ -46,7 +37,7 @@ const state = computed(() =>
   loading.value && !hasLoaded.value
     ? 'loading'
     : !loading.value && rows.value.length === 0
-      ? filters.employeeKeyword || filters.keyword || filters.dateRange.length
+      ? filters.keyword || filters.dateRange.length
         ? 'no-result'
         : 'empty'
       : 'default',
@@ -62,31 +53,8 @@ const tableRows = computed(() =>
   })),
 )
 
-const dialogVisible = ref(false)
-const saving = ref(false)
-const formError = ref('')
-const employees = ref<EmployeeSummary[]>([])
-const courses = ref<CourseSummary[]>([])
-const optionsError = ref(false)
-const form = reactive({
-  employeeId: null as number | null,
-  courseId: null as string | null,
-  testType: 'PRE' as TestType,
-  score: 60 as number,
-  testedAt: '' as string,
-})
 const scoreSemantic = (score: number | null): StatusSemantic =>
   score === null ? 'neutral' : score >= 60 ? 'success' : 'error'
-const employeeOptions = computed<SelectOption[]>(() =>
-  employees.value.map((employee) => ({
-    label: `${employee.empName}（${employee.empId}）`,
-    value: employee.empId,
-  })),
-)
-const courseOptions = computed<SelectOption[]>(() =>
-  courses.value.map((course) => ({ label: course.name, value: course.id })),
-)
-
 function scoreText(value: number | null) {
   return value === null ? '未录入' : `${value} 分`
 }
@@ -107,7 +75,6 @@ function formatDate(value: string | null) {
 }
 function query(): TestQuerySummary {
   return {
-    employeeKeyword: filters.employeeKeyword || undefined,
     keyword: filters.keyword || undefined,
     startDateFrom: filters.dateRange[0],
     startDateTo: filters.dateRange[1],
@@ -135,7 +102,7 @@ async function load() {
       : {
           kind: 'unknown',
           code: 'UNKNOWN',
-          message: '测试成绩列表加载失败。',
+          message: '成绩列表加载失败。',
           fieldErrors: [],
           retryable: false,
           resultUnknown: false,
@@ -149,7 +116,6 @@ async function sync(next: Partial<typeof filters>, reset = false) {
   if (reset) filters.page = 1
   await router.replace({
     query: compactListQuery({
-      employeeKeyword: filters.employeeKeyword,
       keyword: filters.keyword,
       startDateFrom: filters.dateRange[0],
       startDateTo: filters.dateRange[1],
@@ -159,91 +125,20 @@ async function sync(next: Partial<typeof filters>, reset = false) {
   })
   await load()
 }
-
-async function loadOptions() {
-  try {
-    const [employeeResult, courseResult] = await Promise.all([
-      (await getEmployeeService()).listEmployees({ page: 1, pageSize: 100 }),
-      (await getCourseService()).listCourses({ page: 1, pageSize: 100 }),
-    ])
-    employees.value = employeeResult.items
-    courses.value = courseResult.items
-    optionsError.value = false
-  } catch {
-    employees.value = []
-    courses.value = []
-    optionsError.value = true
-  }
-}
-function openCreate() {
-  form.employeeId = null
-  form.courseId = null
-  form.testType = 'PRE'
-  form.score = 60
-  form.testedAt = ''
-  formError.value = optionsError.value ? '员工或课程选项加载失败，请刷新页面后重试。' : ''
-  dialogVisible.value = true
-}
-async function submit() {
-  if (!form.employeeId) {
-    formError.value = '请选择员工。'
-    return
-  }
-  if (!form.courseId) {
-    formError.value = '请选择课程。'
-    return
-  }
-  if (!Number.isFinite(form.score) || form.score < 0 || form.score > 100) {
-    formError.value = '测试分数必须在0到100分之间。'
-    return
-  }
-  if (form.testedAt && new Date(form.testedAt).getTime() > Date.now() + 60_000) {
-    formError.value = '测试时间不能晚于当前时间。'
-    return
-  }
-  saving.value = true
-  formError.value = ''
-  try {
-    await (
-      await getTestService()
-    ).create({
-      employeeId: form.employeeId,
-      courseId: form.courseId,
-      testType: form.testType,
-      score: form.score,
-      testedAt: form.testedAt || undefined,
-    })
-    dialogVisible.value = false
-    await load()
-  } catch (caught) {
-    formError.value = isServiceError(caught) ? caught.ui.message : '录入成绩失败。'
-  } finally {
-    saving.value = false
-  }
-}
-onMounted(() => {
-  void load()
-  void loadOptions()
-})
+onMounted(load)
 </script>
 
 <template>
   <section class="business-list">
-    <PageHeader title="测试成绩" description="查看员工训前、训后的成绩汇总，并录入测试成绩。"
-      ><template #action
-        ><AppButton label="录入成绩" variant="primary" @click="openCreate" /></template></PageHeader
-    ><SearchPanel
-      :expanded="true"
+    <PageHeader
+      title="我的成绩"
+      description="查看本人各培训课程的训前、训后成绩与提升率。"
+    /><SearchPanel
+      :expanded="false"
       :searching="loading"
       @search="sync({}, true)"
-      @reset="
-        sync({ employeeKeyword: '', keyword: '', dateRange: [], page: 1, pageSize: 20 }, true)
-      "
+      @reset="sync({ keyword: '', dateRange: [], page: 1, pageSize: 20 }, true)"
       ><el-input
-        v-model="filters.employeeKeyword"
-        clearable
-        aria-label="员工"
-        placeholder="员工姓名或工号" /><el-input
         v-model="filters.keyword"
         clearable
         aria-label="课程关键词"
@@ -269,15 +164,15 @@ onMounted(() => {
     /><PageState
       v-else-if="state === 'empty'"
       state="empty"
-      title="暂无测试成绩"
-      description="当前没有已录入的测试成绩记录。"
+      title="暂无成绩记录"
+      description="完成培训并录入测试成绩后，会显示在这里。"
       compact
     /><PageState
       v-else-if="state === 'no-result'"
       state="no-result"
       secondary-label="清空筛选"
       compact
-      @secondary="sync({ employeeKeyword: '', keyword: '', dateRange: [], page: 1 }, true)"
+      @secondary="sync({ keyword: '', dateRange: [], page: 1 }, true)"
     /><DataTable v-else :columns="columns" :rows="tableRows"
       ><template #cell="{ column, row }"
         ><StatusTag
@@ -299,53 +194,6 @@ onMounted(() => {
       @update:page="sync({ page: $event })"
       @update:page-size="sync({ pageSize: $event }, true)"
     />
-    <el-dialog
-      v-model="dialogVisible"
-      title="录入测试成绩"
-      width="520px"
-      :close-on-click-modal="!saving"
-      ><el-alert v-if="formError" :title="formError" type="error" :closable="false" show-icon />
-      <FormField label="员工" required
-        ><AppSelect
-          v-model="form.employeeId"
-          :options="employeeOptions"
-          filterable
-          placeholder="选择员工"
-          accessible-label="员工" /></FormField
-      ><FormField label="课程" required
-        ><AppSelect
-          v-model="form.courseId"
-          :options="courseOptions"
-          filterable
-          placeholder="选择课程"
-          accessible-label="课程" /></FormField
-      ><FormField label="测试类型" required
-        ><el-radio-group v-model="form.testType" aria-label="测试类型"
-          ><el-radio value="PRE">训前测试</el-radio
-          ><el-radio value="POST">训后测试</el-radio></el-radio-group
-        ></FormField
-      ><FormField label="分数（0～100）" required
-        ><el-input-number
-          v-model="form.score"
-          :min="0"
-          :max="100"
-          :precision="1"
-          :step="1"
-          aria-label="测试分数" /></FormField
-      ><FormField label="测试时间"
-        ><el-date-picker
-          v-model="form.testedAt"
-          type="datetime"
-          value-format="YYYY-MM-DDTHH:mm:ss"
-          placeholder="默认当前时间"
-          aria-label="测试时间" /></FormField
-      ><template #footer
-        ><AppButton label="取消" :disabled="saving" @click="dialogVisible = false" /><AppButton
-          label="提交"
-          variant="primary"
-          :loading="saving"
-          @click="submit" /></template
-    ></el-dialog>
   </section>
 </template>
 

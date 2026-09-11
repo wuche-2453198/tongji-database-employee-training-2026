@@ -11,7 +11,14 @@ import SearchPanel from '@/components/common/SearchPanel.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
 import { getCertificateService } from '@/services/certificate'
 import { isServiceError, type UiError } from '@/types/api'
-import type { Certificate, CertificateCandidate, CertificateQuery } from '@/domains/certificate'
+import {
+  certificateStatusLabel,
+  certificateStatusSemantic,
+  type Certificate,
+  type CertificateCandidate,
+  type CertificateQuery,
+} from '@/domains/certificate'
+import { registrationStatusLabel, registrationStatusSemantic } from '@/domains/registration'
 import type { TableColumn } from '@/types/ui'
 const router = useRouter()
 const filters = reactive({ employeeKeyword: '', keyword: '', page: 1, pageSize: 20 })
@@ -28,6 +35,7 @@ const candidateColumns: TableColumn[] = [
   { key: 'employeeName', label: '员工', width: 130 },
   { key: 'departmentName', label: '部门', width: 140 },
   { key: 'courseName', label: '课程名称', minWidth: 260 },
+  { key: 'registrationStatusLabel', label: '报名状态', width: 120 },
   { key: 'actualHoursLabel', label: '实际学时', width: 120 },
   { key: 'qualificationLabel', label: '资格', width: 150 },
 ]
@@ -35,7 +43,7 @@ const issuedColumns: TableColumn[] = [
   { key: 'certificateNo', label: '证书编号', width: 190 },
   { key: 'employeeName', label: '员工', width: 130 },
   { key: 'courseName', label: '课程名称', minWidth: 240 },
-  { key: 'issuedAtLabel', label: '生成时间', width: 170 },
+  { key: 'issuedAtLabel', label: '发证日期', width: 170 },
   { key: 'statusLabel', label: '状态', width: 100 },
 ]
 const state = computed(() =>
@@ -50,7 +58,10 @@ const state = computed(() =>
 const candidateRows = computed(() =>
   candidates.value.map((item) => ({
     ...item,
-    actualHoursLabel: item.actualHours ? `${item.actualHours} 小时` : '待确认',
+    // 0 学时是合法值，只有缺失(null)才显示待确认。
+    actualHoursLabel: item.actualHours === null ? '待确认' : `${item.actualHours} 小时`,
+    registrationStatusLabel: registrationStatusLabel(item.registrationStatus),
+    registrationStatusSemantic: registrationStatusSemantic(item.registrationStatus),
     qualificationLabel: item.qualification.allowed
       ? '可生成'
       : item.qualification.reason || '不可生成',
@@ -60,7 +71,8 @@ const issuedRows = computed(() =>
   issued.value.map((item) => ({
     ...item,
     issuedAtLabel: format(item.issuedAt),
-    statusLabel: item.displayStatus === 'VALID' ? '有效' : item.displayStatus,
+    statusLabel: certificateStatusLabel(item.displayStatus),
+    statusSemantic: certificateStatusSemantic(item.displayStatus),
   })),
 )
 function format(value: string | null) {
@@ -187,7 +199,11 @@ onMounted(load)
               v-if="column.key === 'qualificationLabel'"
               :label="String(row.qualificationLabel)"
               :semantic="row.qualification?.allowed ? 'success' : 'warning'"
-            /><span v-else>{{ row[column.key] || '—' }}</span></template
+            /><StatusTag
+              v-else-if="column.key === 'registrationStatusLabel'"
+              :label="String(row.registrationStatusLabel)"
+              :semantic="row.registrationStatusSemantic"
+            /><span v-else>{{ row[column.key] ?? '—' }}</span></template
           ><template #actions="{ row }"
             ><AppButton
               label="生成证书"
@@ -199,6 +215,12 @@ onMounted(load)
       <section v-if="issued.length" class="business-list__section">
         <h2>已生成证书</h2>
         <DataTable :columns="issuedColumns" :rows="issuedRows" has-actions
+          ><template #cell="{ column, row }"
+            ><StatusTag
+              v-if="column.key === 'statusLabel'"
+              :label="String(row.statusLabel)"
+              :semantic="row.statusSemantic"
+            /><span v-else>{{ row[column.key] ?? '—' }}</span></template
           ><template #actions="{ row }"
             ><AppButton
               label="查看"

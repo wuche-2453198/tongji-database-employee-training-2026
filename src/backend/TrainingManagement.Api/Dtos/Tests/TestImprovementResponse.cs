@@ -10,4 +10,7 @@ public class TestImprovementResponse
 
     /// <summary>提升值 = POST - PRE;任一成绩缺失为 null。</summary>
     public decimal? Improvement { get; set; }
+
+    /// <summary>提升率(%) = (POST - PRE) / PRE * 100;PRE 缺失或为 0 时为 null。</summary>
+    public decimal? ImprovementRate { get; set; }
 }

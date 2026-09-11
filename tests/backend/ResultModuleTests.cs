@@ -28,12 +28,18 @@ internal static class ResultModuleTests
         yield return ("Certificate rejects duplicates", CertificateRejectsDuplicateAsync);
         yield return ("Certificate detail blocks other employees", CertificateBlocksOtherEmployeeAsync);
         yield return ("Certificate detail allows HR and owner", CertificateAllowsHrAndOwnerAsync);
-        yield return ("PRE test requires HR-filed request", PreTestRequiresHrFiledAsync);
+        yield return ("Certificate status maps expiry to VALID/EXPIRING/EXPIRED", CertificateStatusMappingAsync);
+        yield return ("PRE test requires a valid registration", PreTestRequiresValidRegistrationAsync);
         yield return ("PRE test rejects after course start", PreTestRejectsAfterStartAsync);
-        yield return ("POST test rejects before course end", PostTestRejectsBeforeEndAsync);
+        yield return ("POST test requires completed registration", PostTestRequiresCompletedRegistrationAsync);
+        yield return ("Duplicate PRE/POST score is rejected as conflict", DuplicateTestRejectedAsync);
+        yield return ("Out-of-range score is rejected", InvalidScoreRejectedAsync);
+        yield return ("Non PRE/POST test type is rejected", InvalidTypeRejectedAsync);
+        yield return ("Future test time is rejected", FutureTestedAtRejectedAsync);
+        yield return ("Unknown course is rejected as not found", CourseNotFoundRejectedAsync);
         yield return ("Rating requires completed training", RatingRequiresCompletedAsync);
         yield return ("Rating rejects duplicate by employee and course", RatingRejectsDuplicateAsync);
-        yield return ("Improvement reports null until both scores exist", ImprovementNullAwareAsync);
+        yield return ("Improvement reports change and 0-safe rate", ImprovementReportsScoresAsync);
     }
 
     // ---------- 证书 ----------
@@ -118,20 +124,47 @@ internal static class ResultModuleTests
         TestAssert.Equal(9, admin.CertId, "管理员可查");
     }
 
+    private static Task CertificateStatusMappingAsync()
+    {
+        var today = DateTime.Today;
+        TestAssert.Equal(
+            "VALID",
+            new TrainingCertificate { ExpireDate = null }.Status,
+            "EXPIRE_DATE 为空应按长期有效处理(修复“未知状态”)");
+        TestAssert.Equal(
+            "EXPIRED",
+            new TrainingCertificate { ExpireDate = today.AddDays(-1) }.Status,
+            "已过期应为 EXPIRED");
+        TestAssert.Equal(
+            "EXPIRING",
+            new TrainingCertificate { ExpireDate = today.AddDays(15) }.Status,
+            "30 天内到期应为 EXPIRING");
+        TestAssert.Equal(
+            "VALID",
+            new TrainingCertificate { ExpireDate = today.AddDays(90) }.Status,
+            "远期到期应为 VALID");
+        return Task.CompletedTask;
+    }
+
     // ---------- 成绩 ----------
 
-    private static async Task PreTestRequiresHrFiledAsync()
+    private static async Task PreTestRequiresValidRegistrationAsync()
     {
         var repository = new FakeTestRepository
         {
             CourseGate = new ResultCourseGate { Exists = true, StartAt = DateTime.Now.AddDays(7), EndAt = DateTime.Now.AddDays(8) },
-            HasHrFiled = false,
+            RegistrationStatus = null,
         };
         var service = new TestService(repository);
 
         await TestAssert.ThrowsAsync<BusinessException>(
             () => service.CreateTestAsync(new CreateTestRequest { EmpId = 55, CourseId = (int)CompletedCourseId, TestType = "PRE", Score = 70 }, 57),
-            "未备案不能录 PRE");
+            "无有效报名不能录 PRE");
+
+        repository.RegistrationStatus = "REGISTERED";
+        var created = await service.CreateTestAsync(
+            new CreateTestRequest { EmpId = 55, CourseId = (int)CompletedCourseId, TestType = "PRE", Score = 70 }, 57);
+        TestAssert.True(created, "有效报名应可录 PRE");
     }
 
     private static async Task PreTestRejectsAfterStartAsync()
@@ -139,7 +172,7 @@ internal static class ResultModuleTests
         var repository = new FakeTestRepository
         {
             CourseGate = new ResultCourseGate { Exists = true, StartAt = DateTime.Now.AddHours(-1), EndAt = DateTime.Now.AddDays(1) },
-            HasHrFiled = true,
+            RegistrationStatus = "SIGNED_IN",
         };
         var service = new TestService(repository);
 
@@ -148,21 +181,87 @@ internal static class ResultModuleTests
             "开课后不能录 PRE");
     }
 
-    private static async Task PostTestRejectsBeforeEndAsync()
+    private static async Task PostTestRequiresCompletedRegistrationAsync()
     {
         var repository = new FakeTestRepository
         {
             CourseGate = new ResultCourseGate { Exists = true, StartAt = DateTime.Now.AddDays(-1), EndAt = DateTime.Now.AddDays(1) },
-            HasHrFiled = true,
+            RegistrationStatus = "SIGNED_IN",
         };
         var service = new TestService(repository);
 
         await TestAssert.ThrowsAsync<BusinessException>(
             () => service.CreateTestAsync(new CreateTestRequest { EmpId = 55, CourseId = (int)StartedCourseId, TestType = "POST", Score = 90 }, 57),
-            "课程未结束不能录 POST");
+            "未完成培训不能录 POST");
+
+        repository.RegistrationStatus = "COMPLETED";
+        var created = await service.CreateTestAsync(
+            new CreateTestRequest { EmpId = 55, CourseId = (int)StartedCourseId, TestType = "POST", Score = 90 }, 57);
+        TestAssert.True(created, "完成培训后应可录 POST");
     }
 
-    private static async Task ImprovementNullAwareAsync()
+    private static async Task DuplicateTestRejectedAsync()
+    {
+        var repository = new FakeTestRepository
+        {
+            CourseGate = new ResultCourseGate { Exists = true, StartAt = DateTime.Now.AddDays(7), EndAt = DateTime.Now.AddDays(8) },
+            RegistrationStatus = "REGISTERED",
+        };
+        repository.Scores[(55, (int)CompletedCourseId)] = (70m, null);
+        var service = new TestService(repository);
+
+        await TestAssert.ThrowsAsync<ConflictApiException>(
+            () => service.CreateTestAsync(new CreateTestRequest { EmpId = 55, CourseId = (int)CompletedCourseId, TestType = "PRE", Score = 80 }, 57),
+            "同一员工+课程+类型重复录入应 409");
+    }
+
+    private static async Task InvalidScoreRejectedAsync()
+    {
+        var repository = new FakeTestRepository
+        {
+            CourseGate = new ResultCourseGate { Exists = true, StartAt = DateTime.Now.AddDays(7) },
+            RegistrationStatus = "REGISTERED",
+        };
+        var service = new TestService(repository);
+
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.CreateTestAsync(new CreateTestRequest { EmpId = 55, CourseId = (int)CompletedCourseId, TestType = "PRE", Score = -1 }, 57),
+            "负分应拒绝");
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.CreateTestAsync(new CreateTestRequest { EmpId = 55, CourseId = (int)CompletedCourseId, TestType = "PRE", Score = 101 }, 57),
+            "超过 100 分应拒绝");
+    }
+
+    private static async Task InvalidTypeRejectedAsync()
+    {
+        var service = new TestService(new FakeTestRepository());
+
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.CreateTestAsync(new CreateTestRequest { EmpId = 55, CourseId = (int)CompletedCourseId, TestType = "MID", Score = 70 }, 57),
+            "类型非 PRE/POST 应拒绝");
+    }
+
+    private static async Task FutureTestedAtRejectedAsync()
+    {
+        var service = new TestService(new FakeTestRepository());
+
+        await TestAssert.ThrowsAsync<BusinessException>(
+            () => service.CreateTestAsync(
+                new CreateTestRequest { EmpId = 55, CourseId = (int)CompletedCourseId, TestType = "PRE", Score = 70, TestedAt = DateTime.Now.AddDays(1) }, 57),
+            "测试时间晚于当前应拒绝");
+    }
+
+    private static async Task CourseNotFoundRejectedAsync()
+    {
+        var repository = new FakeTestRepository { CourseGate = new ResultCourseGate { Exists = false } };
+        var service = new TestService(repository);
+
+        await TestAssert.ThrowsAsync<NotFoundApiException>(
+            () => service.CreateTestAsync(new CreateTestRequest { EmpId = 55, CourseId = 9999, TestType = "PRE", Score = 70 }, 57),
+            "课程不存在应 404");
+    }
+
+    private static async Task ImprovementReportsScoresAsync()
     {
         var repository = new FakeTestRepository();
         repository.Scores[(55, 30)] = (65m, null);
@@ -170,10 +269,17 @@ internal static class ResultModuleTests
 
         var partial = await service.GetImprovementAsync(55, 30);
         TestAssert.True(partial.Improvement is null, "缺 POST 时提升值应为 null");
+        TestAssert.True(partial.ImprovementRate is null, "缺 POST 时提升率应为 null");
 
-        repository.Scores[(55, 30)] = (65m, 95m);
+        repository.Scores[(55, 30)] = (80m, 100m);
         var full = await service.GetImprovementAsync(55, 30);
-        TestAssert.Equal(30m, full.Improvement, "提升值应为 POST - PRE");
+        TestAssert.Equal(20m, full.Improvement, "提升值应为 POST - PRE");
+        TestAssert.Equal(25m, full.ImprovementRate, "80 -> 100 提升率应为 25%");
+
+        repository.Scores[(55, 31)] = (0m, 50m);
+        var zeroPre = await service.GetImprovementAsync(55, 31);
+        TestAssert.Equal(50m, zeroPre.Improvement, "PRE 为 0 分时提升值仍应计算");
+        TestAssert.True(zeroPre.ImprovementRate is null, "PRE 为 0 分时提升率不可计算应为 null");
     }
 
     // ---------- 评分 ----------
@@ -306,21 +412,17 @@ internal static class ResultModuleTests
     {
         public ResultCourseGate CourseGate { get; set; } = new() { Exists = true };
 
-        public bool HasHrFiled { get; set; }
+        /// <summary>该员工该课程的报名状态;null 表示没有报名记录。</summary>
+        public string? RegistrationStatus { get; set; }
 
         public Dictionary<(int EmpId, int CourseId), (decimal? Pre, decimal? Post)> Scores { get; } = new();
 
-        public Task<bool> CreateAsync(CreateTestRequest request, int recordedByEmpId)
+        public Task<bool> CreateAsync(CreateTestRequest request, int recordedByEmpId, DateTime testedAt)
         {
             Scores.TryGetValue((request.EmpId, request.CourseId), out var current);
             var score = request.TestType == "PRE" ? (request.Score, current.Post) : (current.Pre, (decimal?)request.Score);
             Scores[(request.EmpId, request.CourseId)] = score;
             return Task.FromResult(true);
-        }
-
-        public Task<bool> UpdateScoreAsync(CreateTestRequest request, int recordedByEmpId)
-        {
-            return CreateAsync(request, recordedByEmpId);
         }
 
         public Task<bool> ExistsByEmployeeCourseAndTypeAsync(int employeeId, int courseId, string testType)
@@ -344,14 +446,41 @@ internal static class ResultModuleTests
             return Task.FromResult(new PagedResult<TrainingTest>(Array.Empty<TrainingTest>(), page, pageSize, 0));
         }
 
+        public Task<PagedResult<TestScoreSummary>> GetScoreSummariesAsync(
+            int? employeeId,
+            int? courseId,
+            string? employeeName,
+            string? courseName,
+            DateTime? startDateFrom,
+            DateTime? startDateTo,
+            int page,
+            int pageSize)
+        {
+            var items = Scores
+                .Where(entry => !employeeId.HasValue || entry.Key.EmpId == employeeId.Value)
+                .Where(entry => !courseId.HasValue || entry.Key.CourseId == courseId.Value)
+                .Select(entry => new TestScoreSummary
+                {
+                    EmpId = entry.Key.EmpId,
+                    CourseId = entry.Key.CourseId,
+                    PreScore = entry.Value.Pre,
+                    PostScore = entry.Value.Post,
+                    Change = entry.Value.Pre.HasValue && entry.Value.Post.HasValue
+                        ? entry.Value.Post - entry.Value.Pre
+                        : null
+                })
+                .ToArray();
+            return Task.FromResult(new PagedResult<TestScoreSummary>(items, page, pageSize, items.Length));
+        }
+
         public Task<ResultCourseGate> GetCourseGateAsync(int courseId)
         {
             return Task.FromResult(CourseGate);
         }
 
-        public Task<bool> HasHrFiledRequestAsync(int employeeId, int courseId)
+        public Task<string?> GetRegistrationStatusAsync(int employeeId, int courseId)
         {
-            return Task.FromResult(HasHrFiled);
+            return Task.FromResult(RegistrationStatus);
         }
 
         public Task<(decimal? PreScore, decimal? PostScore)> GetScoresAsync(int employeeId, int courseId)

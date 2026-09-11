@@ -84,7 +84,9 @@ internal static class HttpAuthorizationTests
                 ("GET", "/api/trainers", 200, 403),
                 ("GET", "/api/trainers/-1", 404, 403),
                 ("POST", "/api/trainers", 400, 403),
-                ("PUT", "/api/trainers/-1", 400, 403)
+                ("PUT", "/api/trainers/-1", 400, 403),
+                // 成绩录入:仅 HR/ADMIN 通过授权(空体走到校验返回 400),普通员工与主管 403。
+                ("POST", "/api/tests", 400, 403)
             };
             foreach (var token in new string?[] { null, "invalid-token" })
                 foreach (var endpoint in endpoints)
@@ -131,7 +133,7 @@ internal static class HttpAuthorizationTests
                     TestAssert.Equal(0L, page.GetProperty("total").GetInt64(), "Unconfigured database has no rows; this is not an Oracle test.");
                     TestAssert.Equal(JsonValueKind.Array, page.GetProperty("items").ValueKind, "Trainer list uses data.items.");
                 }
-                Console.WriteLine($"PASS HTTP {user.Item3}: login, ID {user.Item2}, JWT, /me, 10 endpoints");
+                Console.WriteLine($"PASS HTTP {user.Item3}: login, ID {user.Item2}, JWT, /me, {endpoints.Length} endpoints");
             }
 
             foreach (var claimType in new[] { "emp_id", ClaimTypes.NameIdentifier })
@@ -139,7 +141,8 @@ internal static class HttpAuthorizationTests
                 var principal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(claimType, "9876") }));
                 TestAssert.Equal<long?>(9876, principal.GetEmployeeId(), "Read employee ID from either supported claim.");
             }
-            Console.WriteLine("PASS HTTP no token / invalid token: 20 checks; role matrix: 40 checks");
+            Console.WriteLine(
+                $"PASS HTTP no token / invalid token: {2 * endpoints.Length} checks; role matrix: {4 * endpoints.Length} checks");
             using var swagger = await client.GetAsync("/swagger/v1/swagger.json");
             TestAssert.Equal(HttpStatusCode.OK, swagger.StatusCode, "OpenAPI generation.");
             using var swaggerDocument = JsonDocument.Parse(await swagger.Content.ReadAsStringAsync());

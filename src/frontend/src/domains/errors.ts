@@ -21,6 +21,15 @@ export type BusinessErrorCode =
   | 'CERTIFICATE_NOT_FOUND'
   | 'CERTIFICATE_FORBIDDEN'
   | 'CERTIFICATE_EXISTS'
+  | 'TEST_FORBIDDEN'
+  | 'TEST_SCORE_INVALID'
+  | 'TEST_TYPE_INVALID'
+  | 'TEST_TESTED_AT_INVALID'
+  | 'TEST_DUPLICATE'
+  | 'TEST_REGISTRATION_REQUIRED'
+  | 'TEST_POST_NOT_COMPLETED'
+  | 'TEST_COURSE_NOT_FOUND'
+  | 'TEST_EMPLOYEE_NOT_FOUND'
   | 'BLACKLIST_FORBIDDEN'
   | 'BLACKLIST_REASON_REQUIRED'
   | 'BLACKLIST_REASON_TOO_LONG'
@@ -54,6 +63,15 @@ const defaultKind: Record<BusinessErrorCode, UiErrorKind> = {
   CERTIFICATE_NOT_FOUND: 'not-found',
   CERTIFICATE_FORBIDDEN: 'forbidden',
   CERTIFICATE_EXISTS: 'conflict',
+  TEST_FORBIDDEN: 'forbidden',
+  TEST_SCORE_INVALID: 'validation',
+  TEST_TYPE_INVALID: 'validation',
+  TEST_TESTED_AT_INVALID: 'validation',
+  TEST_DUPLICATE: 'conflict',
+  TEST_REGISTRATION_REQUIRED: 'validation',
+  TEST_POST_NOT_COMPLETED: 'validation',
+  TEST_COURSE_NOT_FOUND: 'not-found',
+  TEST_EMPLOYEE_NOT_FOUND: 'not-found',
   BLACKLIST_FORBIDDEN: 'forbidden',
   BLACKLIST_REASON_REQUIRED: 'validation',
   BLACKLIST_REASON_TOO_LONG: 'validation',
@@ -88,6 +106,15 @@ const defaultMessage: Record<BusinessErrorCode, string> = {
   CERTIFICATE_NOT_FOUND: '证书不存在。',
   CERTIFICATE_FORBIDDEN: '当前账号无权查看该证书。',
   CERTIFICATE_EXISTS: '该报名记录已经生成证书。',
+  TEST_FORBIDDEN: '当前账号无权录入或查看测试成绩。',
+  TEST_SCORE_INVALID: '测试分数必须在0到100分之间。',
+  TEST_TYPE_INVALID: '测试类型只能为PRE或POST。',
+  TEST_TESTED_AT_INVALID: '测试时间不能晚于当前时间。',
+  TEST_DUPLICATE: '该员工此课程的该类型成绩已存在，不能重复录入。',
+  TEST_REGISTRATION_REQUIRED: '该员工此课程没有有效报名，不能录入PRE成绩。',
+  TEST_POST_NOT_COMPLETED: '该员工尚未完成培训，不能录入POST成绩。',
+  TEST_COURSE_NOT_FOUND: '课程不存在。',
+  TEST_EMPLOYEE_NOT_FOUND: '员工不存在。',
   BLACKLIST_FORBIDDEN: '当前账号无权执行黑名单操作。',
   BLACKLIST_REASON_REQUIRED: '黑名单原因不能为空。',
   BLACKLIST_REASON_TOO_LONG: '黑名单原因长度不能超过 500 字符。',

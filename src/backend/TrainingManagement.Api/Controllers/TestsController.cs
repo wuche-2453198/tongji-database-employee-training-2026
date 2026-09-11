@@ -58,6 +58,31 @@ public sealed class TestsController : ApiControllerBase
         return OkResponse(result, "查询成功");
     }
 
+    /// <summary>按员工+课程聚合的成绩汇总：PRE/POST/分数变化/提升率。</summary>
+    [HttpGet("summary")]
+    public async Task<ActionResult<ApiResponse<PagedResult<TestScoreSummary>>>> GetSummary(
+        [FromQuery] int? employeeId,
+        [FromQuery] int? courseId,
+        [FromQuery] string? employeeName,
+        [FromQuery] string? courseName,
+        [FromQuery] DateTime? startDateFrom,
+        [FromQuery] DateTime? startDateTo,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var actor = GetActor();
+
+        // 越权防护:普通员工只能查看本人成绩;HR/管理员可查任意员工。
+        if (!actor.IsAdmin && !actor.IsHr)
+        {
+            employeeId = GetCurrentEmployeeId();
+        }
+
+        var result = await _testService.GetScoreSummariesAsync(
+            employeeId, courseId, employeeName, courseName, startDateFrom, startDateTo, page, pageSize);
+        return OkResponse(result, "查询成功");
+    }
+
     /// <summary>查询某员工某课程的 PRE/POST 成绩与提升值。</summary>
     [HttpGet("improvement")]
     public async Task<ActionResult<ApiResponse<TestImprovementResponse>>> GetImprovement(

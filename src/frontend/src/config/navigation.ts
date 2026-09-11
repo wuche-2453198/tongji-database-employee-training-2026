@@ -49,6 +49,12 @@ export const navigationGroups: NavigationGroup[] = [
         menuKey: 'my-ratings',
         roles: ['EMPLOYEE'],
       },
+      {
+        label: '我的成绩',
+        path: '/my/tests',
+        menuKey: 'my-test-scores',
+        roles: ['EMPLOYEE'],
+      },
     ],
   },
   {

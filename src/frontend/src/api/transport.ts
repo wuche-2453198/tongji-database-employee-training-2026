@@ -172,6 +172,8 @@ export interface CertificateDto {
   createdAt: string
   courseName?: string | null
   employeeName?: string | null
+  /** 后端计算的有效状态：VALID / EXPIRING / EXPIRED。 */
+  status?: string | null
 }
 
 /** 后端 CertificateCandidate 实体(camelCase 序列化)。 */
@@ -183,6 +185,11 @@ export interface CertificateCandidateDto {
   courseId: number
   courseName: string | null
   actualHours: number | null
+  /** 报名状态（REGISTERED/SIGNED_IN/COMPLETED/ABSENT/CANCELED）。 */
+  status?: string | null
+  /** 是否满足发证条件，Y/N。 */
+  qualified?: string | null
+  qualificationReason?: string | null
 }
 
 /** 后端 TrainerRating 实体(camelCase 序列化)。 */
@@ -214,6 +221,19 @@ export interface TrainingTestDto {
   testedAt: string
   employeeName?: string | null
   courseName?: string | null
+}
+
+/** 后端 TestScoreSummary(按员工+课程聚合，camelCase 序列化)。 */
+export interface TestScoreSummaryDto {
+  empId: number
+  employeeName?: string | null
+  courseId: number
+  courseName?: string | null
+  preScore: number | null
+  postScore: number | null
+  change?: number | null
+  improvementRate?: number | null
+  updatedAt?: string | null
 }
 
 /** 后端 BlacklistResponse(camelCase 序列化)。 */

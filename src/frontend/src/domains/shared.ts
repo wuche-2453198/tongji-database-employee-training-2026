@@ -24,6 +24,9 @@ export interface ActionEligibility {
   reason?: string
 }
 
+/** StatusTag 支持的语义色，供各领域统一状态展示。 */
+export type StatusSemantic = 'success' | 'warning' | 'error' | 'info' | 'neutral'
+
 export interface RoleContext {
   role?: AppRole
   employeeId?: number

@@ -8,12 +8,14 @@ withDefaults(
     placeholder?: string
     disabled?: boolean
     clearable?: boolean
+    filterable?: boolean
     accessibleLabel: string
   }>(),
   {
     placeholder: '请选择',
     disabled: false,
     clearable: true,
+    filterable: false,
   },
 )
 
@@ -34,6 +36,7 @@ function handleChange(value: string | number | null) {
     :placeholder="placeholder"
     :disabled="disabled"
     :clearable="clearable"
+    :filterable="filterable"
     :aria-label="accessibleLabel"
     class="app-select"
     @update:model-value="handleChange"

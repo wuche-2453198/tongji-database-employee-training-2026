@@ -8,6 +8,7 @@ import {
   Operation,
   Stamp,
   Tickets,
+  TrendCharts,
 } from '@element-plus/icons-vue'
 
 import { getActiveMenuKey, getNavigationForRoles } from '@/config/navigation'
@@ -42,6 +43,7 @@ const itemIcons = {
   'my-requests': Document,
   'my-registrations': Tickets,
   'my-certificates': Stamp,
+  'my-test-scores': TrendCharts,
   'department-approval': Stamp,
   'hr-filing': Document,
   'attendance-management': Operation,
