@@ -1,5 +1,6 @@
 namespace TrainingManagement.Api.Common.Options;
 
+/// <summary>JWT 签发与校验配置，包含签发方、受众、密钥和有效时长。</summary>
 public sealed class JwtOptions
 {
     public const string SectionName = "Jwt";

@@ -13,6 +13,7 @@ public sealed class RoleService : IRoleService
     private readonly IRoleRepository _roleRepository;
     private readonly AuthOptions _authOptions;
 
+    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
     public RoleService(
         IRoleRepository roleRepository,
         IOptions<AuthOptions> authOptions)
@@ -21,6 +22,7 @@ public sealed class RoleService : IRoleService
         _authOptions = authOptions.Value;
     }
 
+    /// <summary>优先读取数据库角色；列表为空时使用配置推导的默认角色。</summary>
     public async Task<IReadOnlyCollection<RoleResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
         var records = await _roleRepository.GetAllAsync(cancellationToken);
@@ -33,6 +35,7 @@ public sealed class RoleService : IRoleService
         return BuildDefaultRoleResponses();
     }
 
+    /// <summary>将数据库角色转换为接口响应，统一角色代码并补充默认权限。</summary>
     private static RoleResponse ToRoleResponse(RoleRecord role)
     {
         var roleCode = RoleCodes.Normalize(string.IsNullOrWhiteSpace(role.RoleCode)
@@ -48,6 +51,7 @@ public sealed class RoleService : IRoleService
         };
     }
 
+    /// <summary>数据库角色列表为空时，从演示配置推导角色；无配置时至少返回员工角色。</summary>
     private IReadOnlyCollection<RoleResponse> BuildDefaultRoleResponses()
     {
         var configuredRoles = _authOptions.LocalDemoUsers

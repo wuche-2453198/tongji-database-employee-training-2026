@@ -10,16 +10,20 @@ public sealed class OracleDbSession : IDbSession
     private readonly DbTransaction _transaction;
     private bool _completed;
 
+    /// <summary>接管已打开连接及其事务的生命周期。</summary>
     public OracleDbSession(DbConnection connection, DbTransaction transaction)
     {
         _connection = connection;
         _transaction = transaction;
     }
 
+    /// <summary>返回仓储执行 SQL 时共用的连接。</summary>
     public DbConnection Connection => _connection;
 
+    /// <summary>返回仓储命令必须绑定的同一事务。</summary>
     public DbTransaction Transaction => _transaction;
 
+    /// <summary>仅提交一次；重复调用不会再次操作已完成事务。</summary>
     public async Task CommitAsync(CancellationToken cancellationToken)
     {
         if (_completed)
@@ -31,6 +35,7 @@ public sealed class OracleDbSession : IDbSession
         _completed = true;
     }
 
+    /// <summary>尝试回滚一次；回滚异常不会覆盖触发回滚的原始业务异常。</summary>
     public async Task RollbackAsync(CancellationToken cancellationToken)
     {
         if (_completed)

@@ -12,6 +12,7 @@ public sealed class HealthService : IHealthService
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<HealthService> _logger;
 
+    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
     public HealthService(
         IHealthRepository healthRepository,
         IWebHostEnvironment environment,
@@ -22,6 +23,7 @@ public sealed class HealthService : IHealthService
         _logger = logger;
     }
 
+    /// <summary>返回应用环境、程序集版本及当前时间，不访问数据库。</summary>
     public SystemHealthResponse GetSystemHealth()
     {
         return new SystemHealthResponse
@@ -32,6 +34,7 @@ public sealed class HealthService : IHealthService
         };
     }
 
+    /// <summary>执行数据库探测并计时，区分未配置、连接成功和探测失败。</summary>
     public async Task<DatabaseHealthResponse> GetDatabaseHealthAsync(
         CancellationToken cancellationToken)
     {

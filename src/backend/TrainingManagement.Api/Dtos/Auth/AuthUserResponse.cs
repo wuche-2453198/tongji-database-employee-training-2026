@@ -1,5 +1,6 @@
 namespace TrainingManagement.Api.Dtos.Auth;
 
+/// <summary>对外返回的用户资料及角色权限，不包含密码哈希。</summary>
 public sealed class AuthUserResponse
 {
     public long EmpId { get; init; }

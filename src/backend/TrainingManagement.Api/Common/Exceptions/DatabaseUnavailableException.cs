@@ -6,6 +6,7 @@ namespace TrainingManagement.Api.Common.Exceptions;
 /// </summary>
 public sealed class DatabaseUnavailableException : Exception
 {
+    /// <summary>保存面向客户端的提示，并保留底层 Oracle 异常供服务端日志诊断。</summary>
     public DatabaseUnavailableException(string message, Exception? innerException = null)
         : base(message, innerException)
     {

@@ -14,11 +14,13 @@ public sealed class JwtTokenService : ITokenService
 {
     private readonly JwtOptions _options;
 
+    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
     public JwtTokenService(IOptions<JwtOptions> options)
     {
         _options = options.Value;
     }
 
+    /// <summary>生成带身份、角色、权限和有效期的 HMAC-SHA256 JWT；签名用于防篡改，不用于加密资料。</summary>
     public (string Token, DateTimeOffset ExpiresAt) CreateToken(AuthUserResponse user)
     {
         var now = DateTimeOffset.UtcNow;
@@ -62,6 +64,7 @@ public sealed class JwtTokenService : ITokenService
         return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
     }
 
+    /// <summary>仅为非空资料添加令牌声明，避免写入无意义的空值。</summary>
     private static void AddIfNotEmpty(List<Claim> claims, string type, string? value)
     {
         if (!string.IsNullOrWhiteSpace(value))

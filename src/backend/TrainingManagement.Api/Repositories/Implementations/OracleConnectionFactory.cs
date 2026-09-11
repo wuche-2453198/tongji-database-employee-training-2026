@@ -7,12 +7,17 @@ using TrainingManagement.Api.Repositories.Interfaces;
 
 namespace TrainingManagement.Api.Repositories.Implementations;
 
+/// <summary>
+/// Oracle 连接工厂：为每次仓储操作创建独立连接，并在连接打开后切换到业务 Schema。
+/// Repository 使用 await using 释放连接，避免跨请求共享连接造成并发和生命周期问题。
+/// </summary>
 public sealed class OracleConnectionFactory : IDbConnectionFactory
 {
     private readonly string _connectionString;
     private readonly string _currentSchema;
     private readonly int _connectionTimeoutSeconds;
 
+    /// <summary>读取运行账号连接字符串和业务表所属 Schema，构造时不立即连接数据库。</summary>
     public OracleConnectionFactory(
         IOptions<DatabaseOptions> databaseOptions,
         IOptions<OracleOptions> oracleOptions)
@@ -49,8 +54,10 @@ public sealed class OracleConnectionFactory : IDbConnectionFactory
         }
     }
 
+    /// <summary>判断连接字符串是否已经配置；这里只检查非空，不代表数据库一定可达。</summary>
     public bool IsConfigured => !string.IsNullOrWhiteSpace(_connectionString);
 
+    /// <summary>打开 Oracle 连接并设置当前架构；返回的连接由调用方负责释放。</summary>
     public async Task<DbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken)
     {
         if (!IsConfigured)
@@ -77,6 +84,10 @@ public sealed class OracleConnectionFactory : IDbConnectionFactory
         return connection;
     }
 
+    /// <summary>
+    /// 创建带事务的数据库会话，供需要多条 SQL 原子提交的业务使用。
+    /// 若事务创建失败，会立即释放已经打开的连接，避免连接池资源泄漏。
+    /// </summary>
     public async Task<IDbSession> BeginSessionAsync(CancellationToken cancellationToken)
     {
         var connection = await CreateOpenConnectionAsync(cancellationToken);
@@ -93,6 +104,7 @@ public sealed class OracleConnectionFactory : IDbConnectionFactory
         }
     }
 
+    /// <summary>设置当前会话的默认架构，使无表前缀 SQL 能访问业务表；该设置不会授予额外权限。</summary>
     private async Task SetCurrentSchemaAsync(
         OracleConnection connection,
         CancellationToken cancellationToken)
@@ -112,6 +124,7 @@ public sealed class OracleConnectionFactory : IDbConnectionFactory
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
+    /// <summary>限定拼接进架构名的字符和长度，阻止引号、空格等进入会话 SQL。</summary>
     private static bool IsSafeOracleIdentifier(string value)
     {
         return value.Length <= 128

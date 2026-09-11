@@ -8,11 +8,13 @@ public sealed class OracleAuthRepository : IAuthRepository
 {
     private readonly IDbConnectionFactory _connectionFactory;
 
+    /// <summary>通过依赖注入保存本类所需协作对象，供后续方法使用。</summary>
     public OracleAuthRepository(IDbConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }
 
+    /// <summary>按登录名、编号、邮箱、电话或姓名参数化查询员工，未匹配时返回空。</summary>
     public async Task<EmployeeAuthRecord?> FindEmployeeForLoginAsync(
         string identifier,
         CancellationToken cancellationToken)
@@ -59,6 +61,7 @@ public sealed class OracleAuthRepository : IAuthRepository
                 cancellationToken: cancellationToken));
     }
 
+    /// <summary>按真实员工主键读取认证所需资料及部门名称。</summary>
     public async Task<EmployeeAuthRecord?> GetEmployeeByIdAsync(
         long empId,
         CancellationToken cancellationToken)
@@ -93,6 +96,7 @@ public sealed class OracleAuthRepository : IAuthRepository
                 cancellationToken: cancellationToken));
     }
 
+    /// <summary>通过用户角色关联表读取员工角色；当前表结构不存储权限列表，交给服务层映射。</summary>
     public async Task<IReadOnlyCollection<RoleRecord>> GetRolesByEmployeeIdAsync(
         long empId,
         CancellationToken cancellationToken)

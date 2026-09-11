@@ -11,6 +11,7 @@ public static class RoleCodes
     private const string DepartmentManagerCn = "\u90e8\u95e8\u4e3b\u7ba1";
     private const string EmployeeCn = "\u5458\u5de5";
 
+    /// <summary>将中英文角色名称转换为统一代码，兼容 MANAGER，空角色按员工处理。</summary>
     public static string Normalize(string? roleName)
     {
         if (string.IsNullOrWhiteSpace(roleName))

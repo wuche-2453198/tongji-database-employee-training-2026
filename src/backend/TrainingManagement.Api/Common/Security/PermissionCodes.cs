@@ -23,6 +23,7 @@ public static class PermissionCodes
     public const string CertificateRead = "certificate.read";
     public const string CertificateWrite = "certificate.write";
 
+    /// <summary>根据角色返回默认权限代码；接口是否放行仍由服务端授权策略决定。</summary>
     public static IReadOnlyCollection<string> GetDefaultPermissions(string roleCode)
     {
         return roleCode switch

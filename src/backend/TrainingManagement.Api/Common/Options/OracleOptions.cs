@@ -1,9 +1,12 @@
 namespace TrainingManagement.Api.Common.Options;
 
+/// <summary>Oracle 会话配置，指定业务表所属的默认架构。</summary>
 public sealed class OracleOptions
 {
+    /// <summary>对应配置文件中的 Oracle 节点名称。</summary>
     public const string SectionName = "Oracle";
 
+    /// <summary>运行账号连接后切换到的业务表所有者 Schema。</summary>
     public string CurrentSchema { get; init; } = string.Empty;
 
     /// <summary>

@@ -1,5 +1,6 @@
 namespace TrainingManagement.Api.Dtos.Health;
 
+/// <summary>应用自身健康信息，不作为数据库可用性的证明。</summary>
 public sealed class SystemHealthResponse
 {
     public string Status { get; init; } = "ok";
