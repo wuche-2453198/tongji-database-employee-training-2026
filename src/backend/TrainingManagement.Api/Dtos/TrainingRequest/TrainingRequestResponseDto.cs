@@ -10,6 +10,8 @@ public class TrainingRequestResponseDto
 
     public int? DeptId { get; set; }
 
+    public string? DepartmentName { get; set; }
+
     public int CourseId { get; set; }
 
     public string? CourseName { get; set; }

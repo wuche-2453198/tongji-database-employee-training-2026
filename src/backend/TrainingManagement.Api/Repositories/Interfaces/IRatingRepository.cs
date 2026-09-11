@@ -9,6 +9,10 @@ public interface IRatingRepository
     Task<(IReadOnlyList<TrainerRating> Items, int Total)> GetListAsync(
         int? courseId, int? trainerId, int page, int pageSize);
 
+    /// <summary>本人评分列表:按员工过滤,支持课程/讲师关键词与评分日期区间。</summary>
+    Task<(IReadOnlyList<TrainerRating> Items, int Total)> GetMyListAsync(
+        int employeeId, string? keyword, DateTime? startDateFrom, DateTime? startDateTo, int page, int pageSize);
+
     Task<bool> ExistsByEmployeeAndCourseAsync(int employeeId, int courseId);
 
     Task<TrainerRating?> GetByIdAsync(int ratingId);

@@ -37,6 +37,10 @@ public sealed class TestsController : ApiControllerBase
         [FromQuery] int? employeeId,
         [FromQuery] int? courseId,
         [FromQuery] string? testType,
+        [FromQuery] string? employeeName,
+        [FromQuery] string? courseName,
+        [FromQuery] DateTime? startDateFrom,
+        [FromQuery] DateTime? startDateTo,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -49,7 +53,8 @@ public sealed class TestsController : ApiControllerBase
             employeeId = currentEmployeeId;
         }
 
-        var result = await _testService.GetTestListAsync(employeeId, courseId, testType, page, pageSize);
+        var result = await _testService.GetTestListAsync(
+            employeeId, courseId, testType, employeeName, courseName, startDateFrom, startDateTo, page, pageSize);
         return OkResponse(result, "查询成功");
     }
 

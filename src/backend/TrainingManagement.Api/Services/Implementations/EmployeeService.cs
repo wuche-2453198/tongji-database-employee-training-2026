@@ -1,5 +1,7 @@
-﻿using TrainingManagement.Api.Common;
+﻿using System.Security.Claims;
+using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Exceptions;
+using TrainingManagement.Api.Common.Extensions;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Common.Security;
 using TrainingManagement.Api.Dtos.Organization;
@@ -21,8 +23,34 @@ public sealed class EmployeeService : IEmployeeService
 
     public async Task<PagedResult<EmployeeResponse>> GetPagedAsync(
         EmployeeQuery query,
+        ClaimsPrincipal principal,
         CancellationToken cancellationToken = default)
     {
+        // 部门主管仅能查看本部门员工，范围由服务端强制注入。
+        if (!principal.IsInRole(RoleCodes.Hr) && !principal.IsInRole(RoleCodes.Admin))
+        {
+            if (!principal.IsInRole(RoleCodes.DepartmentManager))
+            {
+                throw new ForbiddenApiException("无权查看员工列表。");
+            }
+
+            var empId = principal.GetEmployeeId()
+                ?? throw new UnauthorizedApiException("无法识别当前登录用户。");
+
+            var operatorEmployee = await _employeeRepository.GetByIdAsync(empId, cancellationToken);
+            var department = operatorEmployee?.DeptName;
+            if (string.IsNullOrWhiteSpace(department))
+            {
+                return new PagedResult<EmployeeResponse>(
+                    Array.Empty<EmployeeResponse>(),
+                    query.Page,
+                    query.PageSize,
+                    0);
+            }
+
+            query.DeptName = department;
+        }
+
         var result = await _employeeRepository.GetPagedAsync(query, cancellationToken);
 
         return new PagedResult<EmployeeResponse>

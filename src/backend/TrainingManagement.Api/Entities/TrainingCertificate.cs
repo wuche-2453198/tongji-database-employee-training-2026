@@ -11,4 +11,6 @@ public class TrainingCertificate
     public DateTime? NotifiedAt { get; set; }
     public int IssuedByEmpId { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? CourseName { get; set; }
+    public string? EmployeeName { get; set; }
 }

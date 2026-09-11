@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Dapper;
 using TrainingManagement.Api.Dtos.Course;
 using TrainingManagement.Api.Entities;
@@ -86,6 +86,16 @@ public sealed class OracleCourseRepository : ICourseRepository
                 c.TRAINER_ID AS "TrainerId",
                 t.TRAINER_NAME AS "TrainerName",
                 c.MAX_STUDENTS AS "MaxStudents",
+                (
+                    SELECT COUNT(1)
+                    FROM TRAINING_REGISTRATIONS r
+                    WHERE r.COURSE_ID = c.COURSE_ID
+                      AND r.STATUS IN (
+                          'REGISTERED',
+                          'SIGNED_IN',
+                          'COMPLETED',
+                          'ABSENT')
+                ) AS "RegisteredCount",
                 c.START_AT AS "StartAt",
                 c.END_AT AS "EndAt",
                 c.LOCATION AS "Location",
@@ -154,6 +164,16 @@ public sealed class OracleCourseRepository : ICourseRepository
                 c.TRAINER_ID AS "TrainerId",
                 t.TRAINER_NAME AS "TrainerName",
                 c.MAX_STUDENTS AS "MaxStudents",
+                (
+                    SELECT COUNT(1)
+                    FROM TRAINING_REGISTRATIONS r
+                    WHERE r.COURSE_ID = c.COURSE_ID
+                      AND r.STATUS IN (
+                          'REGISTERED',
+                          'SIGNED_IN',
+                          'COMPLETED',
+                          'ABSENT')
+                ) AS "RegisteredCount",
                 c.START_AT AS "StartAt",
                 c.END_AT AS "EndAt",
                 c.LOCATION AS "Location",
@@ -423,34 +443,59 @@ public sealed class OracleCourseRepository : ICourseRepository
             : (capacity.MaxStudents, capacity.ValidRegistrationCount);
     }
 
+    private const string UpdateStatusSql = """
+        UPDATE TRAINING_COURSES
+        SET
+            COURSE_STATUS = :NewStatus,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE COURSE_ID = :CourseId
+          AND COURSE_STATUS = :ExpectedStatus
+        """;
+
     public async Task<bool> UpdateStatusAsync(
         long courseId,
         string expectedStatus,
         string newStatus,
         CancellationToken cancellationToken)
     {
-        const string sql = """
-            UPDATE TRAINING_COURSES
-            SET
-                COURSE_STATUS = :NewStatus,
-                UPDATED_AT = SYSTIMESTAMP
-            WHERE COURSE_ID = :CourseId
-              AND COURSE_STATUS = :ExpectedStatus
-            """;
-
         await using var connection =
             await _connectionFactory.CreateOpenConnectionAsync(
                 cancellationToken);
 
         var affectedRows = await connection.ExecuteAsync(
             new CommandDefinition(
-                sql,
+                UpdateStatusSql,
                 new
                 {
                     CourseId = courseId,
                     ExpectedStatus = expectedStatus,
                     NewStatus = newStatus
                 },
+                cancellationToken: cancellationToken));
+
+        return affectedRows > 0;
+    }
+
+    /// <summary>
+    /// 在调用方事务内做带前置状态的发布更新，行数 0 表示状态已被并发修改。
+    /// </summary>
+    public async Task<bool> UpdateStatusAsync(
+        long courseId,
+        string expectedStatus,
+        string newStatus,
+        IDbSession session,
+        CancellationToken cancellationToken)
+    {
+        var affectedRows = await session.Connection.ExecuteAsync(
+            new CommandDefinition(
+                UpdateStatusSql,
+                new
+                {
+                    CourseId = courseId,
+                    ExpectedStatus = expectedStatus,
+                    NewStatus = newStatus
+                },
+                transaction: session.Transaction,
                 cancellationToken: cancellationToken));
 
         return affectedRows > 0;

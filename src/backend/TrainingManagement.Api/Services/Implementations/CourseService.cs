@@ -1,4 +1,4 @@
-﻿using TrainingManagement.Api.Common.Exceptions;
+using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Course;
 using TrainingManagement.Api.Entities;
@@ -23,13 +23,19 @@ public sealed class CourseService : ICourseService
 
     private readonly ICourseRepository _courseRepository;
     private readonly ITrainerRepository _trainerRepository;
+    private readonly IDepartmentTrainingService _departmentTrainingService;
+    private readonly IDbConnectionFactory _connectionFactory;
 
     public CourseService(
         ICourseRepository courseRepository,
-        ITrainerRepository trainerRepository)
+        ITrainerRepository trainerRepository,
+        IDepartmentTrainingService departmentTrainingService,
+        IDbConnectionFactory connectionFactory)
     {
         _courseRepository = courseRepository;
         _trainerRepository = trainerRepository;
+        _departmentTrainingService = departmentTrainingService;
+        _connectionFactory = connectionFactory;
     }
 
     public async Task<PagedResult<CourseResponse>> GetAllAsync(
@@ -78,9 +84,12 @@ public sealed class CourseService : ICourseService
             courseId,
             cancellationToken);
 
-        return course is null
-            ? null
-            : ToResponse(course);
+        if (course is null)
+        {
+            return null;
+        }
+
+        return ToResponse(course);
     }
 
     public async Task<CourseResponse> CreateAsync(
@@ -212,7 +221,7 @@ public sealed class CourseService : ICourseService
                 capacity.Value.MaxStudents - capacity.Value.ValidRegistrationCount));
     }
 
-    public async Task PublishAsync(
+    public async Task<PublishCourseResponse> PublishAsync(
         long courseId,
         CancellationToken cancellationToken)
     {
@@ -234,8 +243,46 @@ public sealed class CourseService : ICourseService
 
         CheckPublishRequiredFields(course);
 
-        throw new ConflictApiException(
-            "课程发布需要和部门预算占用放在同一个事务中，当前等待组织模块提供预算占用方法。");
+        var deptId = course.DeptId
+            ?? throw new BusinessException("课程缺少主办部门，不能发布。");
+
+        // D-011：课程发布与部门预算占用必须在同一事务内提交，任一失败整体回滚。
+        await using var session = await _connectionFactory.BeginSessionAsync(
+            cancellationToken);
+
+        var published = await _courseRepository.UpdateStatusAsync(
+            courseId,
+            DraftStatus,
+            PublishedStatus,
+            session,
+            cancellationToken);
+
+        if (!published)
+        {
+            throw new ConflictApiException(
+                "课程状态已发生变化，请刷新后重试。");
+        }
+
+        var occupied = await _departmentTrainingService.TryOccupyBudgetAsync(
+            deptId,
+            course.BudgetAmount,
+            session,
+            cancellationToken);
+
+        if (!occupied)
+        {
+            throw new ConflictApiException(
+                "主办部门不存在或年度预算不足，无法发布课程。");
+        }
+
+        await session.CommitAsync(cancellationToken);
+
+        var publishedCourse = await _courseRepository.GetByIdAsync(
+            courseId,
+            cancellationToken)
+            ?? throw new BusinessException("课程发布后读取失败。");
+
+        return ToPublishResponse(publishedCourse);
     }
 
     public async Task CloseAsync(
@@ -502,6 +549,10 @@ public sealed class CourseService : ICourseService
             TrainerId = course.TrainerId,
             TrainerName = course.TrainerName,
             MaxStudents = course.MaxStudents,
+            RegisteredCount = course.RegisteredCount,
+            RemainingSeats = course.RegisteredCount.HasValue
+                ? Math.Max(0, course.MaxStudents - course.RegisteredCount.Value)
+                : null,
             StartAt = course.StartAt,
             EndAt = course.EndAt,
             Location = course.Location,
@@ -514,6 +565,24 @@ public sealed class CourseService : ICourseService
             MaterialUrl = course.MaterialUrl,
             CreatedAt = course.CreatedAt,
             UpdatedAt = course.UpdatedAt
+        };
+    }
+
+    private static PublishCourseResponse ToPublishResponse(
+        TrainingCourse course)
+    {
+        var response = ToResponse(course);
+
+        return new PublishCourseResponse
+        {
+            Published = true,
+            CourseId = course.CourseId,
+            CourseName = course.CourseName,
+            CourseStatus = course.CourseStatus,
+            MaxStudents = course.MaxStudents,
+            RegisteredCount = course.RegisteredCount ?? 0,
+            RemainingSeats = response.RemainingSeats ?? 0,
+            PublishTime = course.UpdatedAt
         };
     }
 

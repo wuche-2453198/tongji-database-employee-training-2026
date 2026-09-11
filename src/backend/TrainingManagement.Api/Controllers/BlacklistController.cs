@@ -22,14 +22,15 @@ public sealed class BlacklistController : ApiControllerBase
 
     // 分页查询黑名单列表
     [HttpGet]
-    [Authorize(Policy = AuthorizationPolicies.HrOrAdmin)]
+    [Authorize(Policy = AuthorizationPolicies.ManagerHrOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<BlacklistResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ApiResponse<PagedResult<BlacklistResponse>>>> GetList(
         [FromQuery] BlacklistQuery query,
         CancellationToken cancellationToken = default)
     {
-        var result = await _service.GetPagedAsync(query, cancellationToken);
+        var result = await _service.GetPagedAsync(query, User, cancellationToken);
         return OkResponse(result);
     }
 
@@ -53,15 +54,18 @@ public sealed class BlacklistController : ApiControllerBase
 
     // 新增黑名单记录
     [HttpPost]
-    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrManager)]
     [ProducesResponseType(typeof(ApiResponse<BlacklistResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ApiResponse<BlacklistResponse>>> Create(
         [FromBody] CreateBlacklistRequest request,
         CancellationToken cancellationToken = default)
     {
-        var result = await _service.CreateAsync(request, cancellationToken);
+        var result = await _service.CreateAsync(request, User, cancellationToken);
         return OkResponse(result);
     }
 

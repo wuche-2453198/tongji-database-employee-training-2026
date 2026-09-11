@@ -1,4 +1,4 @@
-﻿using TrainingManagement.Api.Common.Responses;
+using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Organization;
 using TrainingManagement.Api.Entities;
 
@@ -46,5 +46,15 @@ public interface IDepartmentTrainingRepository
     // 删除部门培训预算
     Task<bool> DeleteAsync(
         long deptId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 在调用方事务内占用部门预算。仅当“已用预算 + 本次金额”不超过年度预算时更新成功，
+    /// 返回 false 表示预算不足或部门不存在（由调用方回滚整个事务）。
+    /// </summary>
+    Task<bool> TryOccupyBudgetAsync(
+        long deptId,
+        decimal amount,
+        IDbSession session,
         CancellationToken cancellationToken = default);
 }

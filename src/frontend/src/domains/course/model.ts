@@ -77,6 +77,28 @@ export interface CourseDetail extends CourseSummary {
   trainer: CourseTrainer
   materials: CourseMaterial[]
   eligibility: CourseActionEligibility
+  trainerId?: string
+  deptId?: string
+  budgetAmount?: number
+  preTestUrl?: string | null
+  postTestUrl?: string | null
+  materialUrl?: string | null
+}
+
+export interface CourseEditorInput {
+  name: string
+  type: Exclude<CourseType, 'UNKNOWN'>
+  durationHours: number
+  trainerId: string
+  maxStudents: number
+  startAt: string
+  endAt: string
+  location: string
+  budgetAmount: number
+  deptId: string
+  preTestUrl?: string
+  postTestUrl?: string
+  materialUrl?: string
 }
 
 export interface CourseService {
@@ -89,4 +111,12 @@ export interface CourseService {
     courseId: string,
     options?: ServiceRequestOptions,
   ): Promise<CourseActionEligibility>
+  publishCourse(courseId: string, options?: ServiceRequestOptions): Promise<void>
+  closeCourse(courseId: string, options?: ServiceRequestOptions): Promise<void>
+  createCourse(input: CourseEditorInput, options?: ServiceRequestOptions): Promise<CourseDetail>
+  updateCourse(
+    courseId: string,
+    input: CourseEditorInput,
+    options?: ServiceRequestOptions,
+  ): Promise<CourseDetail>
 }

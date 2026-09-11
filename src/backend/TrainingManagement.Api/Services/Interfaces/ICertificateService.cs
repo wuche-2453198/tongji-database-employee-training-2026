@@ -11,6 +11,10 @@ public interface ICertificateService
 
     Task<IEnumerable<TrainingCertificate>> GetMyCertificatesAsync(int employeeId);
 
+    Task<PagedResult<TrainingCertificate>> GetManagedCertificatesAsync(CertificateQueryDto query);
+
+    Task<PagedResult<CertificateCandidate>> GetCertificateCandidatesAsync(CertificateQueryDto query);
+
     Task<TrainingCertificate> GetCertificateByIdAsync(ActorContext actor, int id);
 
     Task<bool> MarkNotifiedAsync(int id);

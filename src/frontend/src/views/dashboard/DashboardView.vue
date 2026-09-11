@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { Component } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
@@ -17,6 +17,8 @@ import {
 import PageHeader from '@/components/common/PageHeader.vue'
 import StatCard from '@/components/common/StatCard.vue'
 import { getNavigationForRoles } from '@/config/navigation'
+import type { DashboardStats } from '@/domains/dashboard'
+import { getDashboardService } from '@/services/dashboard'
 import { useAuthStore } from '@/stores/auth'
 import type { AppRole } from '@/types/navigation'
 
@@ -33,35 +35,81 @@ const roleLabels: Record<AppRole, string> = {
 
 interface RoleStat {
   label: string
-  value: number
+  key: keyof DashboardStats
   icon: Component
   to: string
 }
 
 const roleStats: Record<AppRole, RoleStat[]> = {
   EMPLOYEE: [
-    { label: '待开始课程', value: 3, icon: Calendar, to: '/courses' },
-    { label: '处理中申请', value: 1, icon: DocumentChecked, to: '/my/requests' },
-    { label: '有效证书', value: 2, icon: Medal, to: '/my/certificates' },
+    { label: '待开始课程', key: 'upcomingCourses', icon: Calendar, to: '/courses' },
+    { label: '处理中申请', key: 'activeRequests', icon: DocumentChecked, to: '/my/requests' },
+    { label: '有效证书', key: 'validCertificates', icon: Medal, to: '/my/certificates' },
   ],
   DEPT_MANAGER: [
-    { label: '待审批申请', value: 5, icon: DocumentChecked, to: '/approvals/department' },
-    { label: '本周已处理', value: 12, icon: CircleCheck, to: '/approvals/department' },
-    { label: '逾期申请', value: 2, icon: AlarmClock, to: '/approvals/department' },
+    {
+      label: '待审批申请',
+      key: 'pendingApprovals',
+      icon: DocumentChecked,
+      to: '/approvals/department?status=PENDING',
+    },
+    {
+      label: '本周已处理',
+      key: 'handledThisWeek',
+      icon: CircleCheck,
+      to: '/approvals/department?status=DEPT_APPROVED',
+    },
+    {
+      label: '逾期申请',
+      key: 'overdueRequests',
+      icon: AlarmClock,
+      to: '/approvals/department?status=PENDING',
+    },
   ],
   HR: [
-    { label: '待备案申请', value: 4, icon: DocumentChecked, to: '/filings/hr' },
-    { label: '待签到报名', value: 3, icon: Clock, to: '/operations/attendance' },
-    { label: '待生成证书', value: 2, icon: Medal, to: '/operations/certificates' },
+    { label: '待备案申请', key: 'pendingFilings', icon: DocumentChecked, to: '/filings/hr' },
+    { label: '待签到报名', key: 'pendingSignIn', icon: Clock, to: '/operations/attendance' },
+    {
+      label: '待生成证书',
+      key: 'pendingCertificates',
+      icon: Medal,
+      to: '/operations/certificates',
+    },
   ],
   ADMIN: [
-    { label: '课程总数', value: 24, icon: Reading, to: '/courses' },
-    { label: '待审批申请', value: 5, icon: DocumentChecked, to: '/approvals/department' },
-    { label: '待生成证书', value: 2, icon: Medal, to: '/operations/certificates' },
+    { label: '课程总数', key: 'totalCourses', icon: Reading, to: '/courses' },
+    {
+      label: '待审批申请',
+      key: 'pendingApprovals',
+      icon: DocumentChecked,
+      to: '/approvals/department?status=PENDING',
+    },
+    {
+      label: '待生成证书',
+      key: 'pendingCertificates',
+      icon: Medal,
+      to: '/operations/certificates',
+    },
   ],
 }
 
-const stats = computed(() => (currentUser.value ? roleStats[currentUser.value.primaryRole] : []))
+const statsData = ref<DashboardStats | null>(null)
+
+const stats = computed(() => {
+  const template = currentUser.value ? roleStats[currentUser.value.primaryRole] : []
+  return template.map((item) => ({
+    ...item,
+    value: statsData.value ? statsData.value[item.key] : 0,
+  }))
+})
+
+onMounted(async () => {
+  try {
+    statsData.value = await (await getDashboardService()).getStats()
+  } catch {
+    statsData.value = null
+  }
+})
 const quickLinks = computed(() => {
   if (!currentUser.value) return []
   return getNavigationForRoles(currentUser.value.roles)

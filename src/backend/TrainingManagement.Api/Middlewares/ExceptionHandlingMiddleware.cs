@@ -42,6 +42,18 @@ public sealed class ExceptionHandlingMiddleware
                 exception.Message,
                 exception.Errors);
         }
+        catch (DatabaseUnavailableException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Database unavailable. TraceId: {TraceId}, Path: {Path}",
+                context.TraceIdentifier,
+                context.Request.Path);
+
+            await context.WriteErrorResponseAsync(
+                StatusCodes.Status503ServiceUnavailable,
+                exception.Message);
+        }
         catch (Exception exception)
         {
             // 未分类异常不向客户端暴露内部细节，完整异常只写入服务端日志。

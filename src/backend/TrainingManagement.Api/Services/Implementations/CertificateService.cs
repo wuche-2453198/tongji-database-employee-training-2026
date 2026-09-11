@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TrainingManagement.Api.Common.Exceptions;
+using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Certificates;
 using TrainingManagement.Api.Dtos.TrainingRequest;
 using TrainingManagement.Api.Entities;
@@ -61,6 +62,32 @@ public sealed class CertificateService : ICertificateService
     public async Task<IEnumerable<TrainingCertificate>> GetMyCertificatesAsync(int employeeId)
     {
         return await _certificateRepository.GetByEmployeeIdAsync(employeeId);
+    }
+
+    public async Task<PagedResult<TrainingCertificate>> GetManagedCertificatesAsync(CertificateQueryDto query)
+    {
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1 ? 20 : Math.Min(query.PageSize, 100);
+        var (items, total) = await _certificateRepository.GetPagedListAsync(
+            query.EmployeeName,
+            query.CourseName,
+            query.StartDateFrom,
+            query.StartDateTo,
+            page,
+            pageSize);
+        return new PagedResult<TrainingCertificate>(items, page, pageSize, total);
+    }
+
+    public async Task<PagedResult<CertificateCandidate>> GetCertificateCandidatesAsync(CertificateQueryDto query)
+    {
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1 ? 20 : Math.Min(query.PageSize, 100);
+        var (items, total) = await _certificateRepository.GetCandidatesAsync(
+            query.EmployeeName,
+            query.CourseName,
+            page,
+            pageSize);
+        return new PagedResult<CertificateCandidate>(items, page, pageSize, total);
     }
 
     public async Task<TrainingCertificate> GetCertificateByIdAsync(ActorContext actor, int id)

@@ -244,7 +244,18 @@ public sealed class TrainingRequestService : ITrainingRequestService
         var pageSize = query.PageSize < 1 ? DefaultPageSize : Math.Min(query.PageSize, MaxPageSize);
 
         var (items, total) = await _repository.SearchAsync(
-            status, employeeId, courseId, deptId, page, pageSize, cancellationToken);
+            status,
+            employeeId,
+            courseId,
+            deptId,
+            query.EmployeeName,
+            query.CourseName,
+            query.DepartmentName,
+            query.StartDateFrom,
+            query.StartDateTo,
+            page,
+            pageSize,
+            cancellationToken);
 
         return new PagedResult<TrainingRequestResponseDto>
         {
@@ -263,6 +274,7 @@ public sealed class TrainingRequestService : ITrainingRequestService
             EmployeeId = entity.EmployeeId,
             EmployeeName = entity.EmployeeName,
             DeptId = entity.DeptId,
+            DepartmentName = entity.DepartmentName,
             CourseId = entity.CourseId,
             CourseName = entity.CourseName,
             RequestReason = entity.RequestReason,

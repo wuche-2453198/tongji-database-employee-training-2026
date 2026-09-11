@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Organization;
@@ -237,6 +237,35 @@ public sealed class OracleDepartmentTrainingRepository : IDepartmentTrainingRepo
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var affected = await connection.ExecuteAsync(
             new CommandDefinition(sql, entity, cancellationToken: cancellationToken));
+        return affected > 0;
+    }
+
+    /// <summary>
+    /// 在调用方事务内占用预算：带余额前置条件的原子更新，行数 0 表示预算不足或部门不存在。
+    /// REMAIN_BUDGET 是虚拟列，无需也不允许单独维护。
+    /// </summary>
+    public async Task<bool> TryOccupyBudgetAsync(
+        long deptId,
+        decimal amount,
+        IDbSession session,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            UPDATE DEPARTMENTS_TRAINING
+            SET
+                USED_BUDGET = USED_BUDGET + :Amount,
+                UPDATED_AT = SYSTIMESTAMP
+            WHERE DEPT_ID = :DeptId
+              AND USED_BUDGET + :Amount <= ANNUAL_BUDGET
+            """;
+
+        var affected = await session.Connection.ExecuteAsync(
+            new CommandDefinition(
+                sql,
+                new { DeptId = deptId, Amount = amount },
+                transaction: session.Transaction,
+                cancellationToken: cancellationToken));
+
         return affected > 0;
     }
 

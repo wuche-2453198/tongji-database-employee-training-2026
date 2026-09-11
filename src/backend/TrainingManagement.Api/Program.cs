@@ -191,6 +191,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy(AuthorizationPolicies.ManagerHrOrAdmin, policy =>
         policy.RequireRole(RoleCodes.DepartmentManager, RoleCodes.Hr, RoleCodes.Admin));
+
+    options.AddPolicy(AuthorizationPolicies.AdminOrManager, policy =>
+        policy.RequireRole(RoleCodes.Admin, RoleCodes.DepartmentManager));
 });
 
 // 基础设施服务：令牌服务不保存用户状态，可全局复用；数据库连接工厂按请求创建。
@@ -211,6 +214,7 @@ builder.Services.AddScoped<IAttendanceRepository, OracleAttendanceRepository>();
 builder.Services.AddScoped<IRatingRepository, OracleRatingRepository>();
 builder.Services.AddScoped<ITestRepository, OracleTestRepository>();
 builder.Services.AddScoped<ICertificateRepository, OracleCertificateRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 
 // 业务服务层：负责业务校验、状态流转和数据范围；Controller 不直接访问 Repository。
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -224,6 +228,7 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // 员工模块的仓储与业务服务。
 builder.Services.AddScoped<IEmployeeRepository, OracleEmployeeRepository>();

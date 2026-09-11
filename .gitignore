@@ -31,6 +31,7 @@ secrets.json
 
 # Node / frontend
 node_modules/
+.pnpm-store/
 dist/
 build/
 coverage/
@@ -65,6 +66,8 @@ pnpm-debug.log*
 tmp/
 temp/
 *.tmp
+# Office lock files (Word/Excel 打开文档时生成)
+~$*
 *.swp
 *.swo
 

@@ -26,7 +26,7 @@ public interface ICourseService
         long courseId,
         CancellationToken cancellationToken);
 
-    Task PublishAsync(
+    Task<PublishCourseResponse> PublishAsync(
         long courseId,
         CancellationToken cancellationToken);
 

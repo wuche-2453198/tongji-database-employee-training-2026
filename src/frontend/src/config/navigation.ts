@@ -70,9 +70,45 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
+    label: '组织管理',
+    key: 'organization-management',
+    items: [
+      {
+        label: '员工管理',
+        path: '/organization/employees',
+        menuKey: 'employee-management',
+        roles: ['ADMIN'],
+      },
+      {
+        label: '部门预算管理',
+        path: '/organization/budgets',
+        menuKey: 'department-budget-management',
+        roles: ['HR', 'ADMIN'],
+      },
+      {
+        label: '黑名单管理',
+        path: '/organization/blacklist',
+        menuKey: 'blacklist-management',
+        roles: ['DEPT_MANAGER', 'HR', 'ADMIN'],
+      },
+    ],
+  },
+  {
     label: '培训运营',
     key: 'training-operations',
     items: [
+      {
+        label: '讲师管理',
+        path: '/operations/trainers',
+        menuKey: 'trainer-management',
+        roles: ['HR', 'ADMIN'],
+      },
+      {
+        label: '讲师评分管理',
+        path: '/operations/ratings',
+        menuKey: 'rating-management',
+        roles: ['HR', 'ADMIN'],
+      },
       {
         label: '报名与签到',
         path: '/operations/attendance',

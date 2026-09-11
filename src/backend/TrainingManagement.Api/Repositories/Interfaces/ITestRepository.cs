@@ -13,7 +13,10 @@ public interface ITestRepository
     Task<bool> ExistsByEmployeeCourseAndTypeAsync(int employeeId, int courseId, string testType);
 
     Task<PagedResult<TrainingTest>> GetPagedListAsync(
-        int? employeeId, int? courseId, string? testType, int page, int pageSize);
+        int? employeeId, int? courseId, string? testType,
+        string? employeeName, string? courseName,
+        DateTime? startDateFrom, DateTime? startDateTo,
+        int page, int pageSize);
 
     /// <summary>课程门禁:起止时间,用于 PRE/POST 录入时点校验。</summary>
     Task<ResultCourseGate> GetCourseGateAsync(int courseId);

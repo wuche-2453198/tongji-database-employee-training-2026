@@ -4,6 +4,8 @@ import type { TrainingRequest } from '@/domains/training-request'
 import type { Registration } from '@/domains/registration'
 import type { CourseRating } from '@/domains/rating'
 import type { TrainingTest } from '@/domains/test'
+import type { BlacklistRecord } from '@/domains/blacklist'
+import type { EmployeeSummary } from '@/domains/employee'
 
 export type FlowSnapshotId =
   | 'FLOW-SNAPSHOT-01'
@@ -24,6 +26,8 @@ export interface MockBusinessState {
   certificates: Certificate[]
   ratings: CourseRating[]
   tests: TrainingTest[]
+  blacklist: BlacklistRecord[]
+  employees: EmployeeSummary[]
 }
 
 const STORAGE_KEY = 'training-management.mock-business-state'
@@ -174,6 +178,38 @@ const createCourse = (): CourseDetail[] => [
       },
     },
   },
+  {
+    id: '4005',
+    name: '数据分析入门实战',
+    type: '技术培训',
+    typeLabel: '技术培训',
+    trainerName: '赵老师',
+    startTime: '2026-10-10T09:00:00+08:00',
+    endTime: '2026-10-10T17:00:00+08:00',
+    location: '培训中心 A202',
+    status: 'DRAFT',
+    statusLabel: '草稿',
+    maxStudents: 25,
+    registeredCount: 0,
+    remainingSeats: 25,
+    description: '面向零基础员工的数据分析入门课程，目前仍为草稿。',
+    objectives: ['理解数据分析基本流程', '掌握常用分析工具'],
+    hours: 8,
+    organizer: '培训发展部',
+    trainer: {
+      id: '3005',
+      name: '赵老师',
+      title: '数据分析讲师',
+      department: '技术平台部',
+      expertise: '数据分析、可视化',
+      rating: 4.7,
+    },
+    materials: [],
+    eligibility: {
+      apply: { allowed: false, reasonCode: 'COURSE_CLOSED', reason: '课程尚未发布。' },
+      register: { allowed: false, reasonCode: 'COURSE_CLOSED', reason: '课程尚未发布。' },
+    },
+  },
 ]
 
 const baseRequest = (): TrainingRequest => ({
@@ -257,6 +293,45 @@ const baseTests = (): TrainingTest[] => [
   },
 ]
 
+const baseEmployees = (): EmployeeSummary[] => [
+  { empId: 55, empName: '张三', deptName: '技术部', position: '前端工程师', email: 'zhangsan@example.com', phone: null, hireDate: '2024-01-10', status: 'ACTIVE', createdAt: '2024-01-10T09:00:00+08:00' },
+  { empId: 56, empName: '李主管', deptName: '技术部', position: '部门主管', email: 'manager@example.com', phone: null, hireDate: '2020-04-12', status: 'ACTIVE', createdAt: '2020-04-12T09:00:00+08:00' },
+  { empId: 58, empName: '王五', deptName: '技术部', position: '后端工程师', email: null, phone: null, hireDate: '2023-08-01', status: 'ACTIVE', createdAt: '2023-08-01T09:00:00+08:00' },
+  { empId: 59, empName: '赵六', deptName: '技术部', position: '测试工程师', email: null, phone: null, hireDate: '2023-06-01', status: 'ACTIVE', createdAt: '2023-06-01T09:00:00+08:00' },
+  { empId: 57, empName: '王 HR', deptName: '人力资源部', position: '培训专员', email: null, phone: null, hireDate: '2021-05-12', status: 'ACTIVE', createdAt: '2021-05-12T09:00:00+08:00' },
+  { empId: 54, empName: '赵管理员', deptName: '信息管理部', position: '系统管理员', email: null, phone: null, hireDate: '2019-09-12', status: 'ACTIVE', createdAt: '2019-09-12T09:00:00+08:00' },
+  { empId: 60, empName: '钱七', deptName: '市场部', position: '市场专员', email: null, phone: null, hireDate: '2022-07-12', status: 'ACTIVE', createdAt: '2022-07-12T09:00:00+08:00' },
+]
+
+const baseBlacklist = (): BlacklistRecord[] => [
+  {
+    id: '9001',
+    empId: 55,
+    empName: '张三',
+    deptName: '技术部',
+    reason: '违规缺勤',
+    startDate: '2026-08-01',
+    endDate: '2026-08-31',
+    status: 'ACTIVE',
+    statusLabel: '生效中',
+    operatorEmpId: 56,
+    createdAt: '2026-08-01T09:00:00+08:00',
+  },
+  {
+    id: '9002',
+    empId: 60,
+    empName: '钱七',
+    deptName: '市场部',
+    reason: '泄密事件',
+    startDate: '2026-07-15',
+    endDate: '2026-08-15',
+    status: 'RELEASED',
+    statusLabel: '已解除',
+    operatorEmpId: 54,
+    createdAt: '2026-07-15T10:00:00+08:00',
+  },
+]
+
 function buildSnapshot(snapshotId: FlowSnapshotId): MockBusinessState {
   const requests = snapshotId === 'FLOW-SNAPSHOT-01' ? [] : [baseRequest()]
   const registrations = [
@@ -295,7 +370,18 @@ function buildSnapshot(snapshotId: FlowSnapshotId): MockBusinessState {
     courses[0].registeredCount = (courses[0].registeredCount ?? 0) + registrations.length
     courses[0].remainingSeats = (courses[0].remainingSeats ?? 0) - registrations.length
   }
-  return { snapshotId, version: 1, courses, requests, registrations, certificates, ratings, tests }
+  return {
+    snapshotId,
+    version: 1,
+    courses,
+    requests,
+    registrations,
+    certificates,
+    ratings,
+    tests,
+    blacklist: baseBlacklist(),
+    employees: baseEmployees(),
+  }
 }
 
 export const FLOW_SNAPSHOTS: Record<FlowSnapshotId, MockBusinessState> = {

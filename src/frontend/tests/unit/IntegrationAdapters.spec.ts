@@ -138,6 +138,96 @@ describe('整合分支真实 HTTP 适配器', () => {
     expect(result.items[0]).toMatchObject({ id: '4001', registeredCount: 3, remainingSeats: 17 })
   })
 
+  it('课程详情按后端状态与剩余名额派生资格，并在后端提供 eligibility 时以后端为准', async () => {
+    const published = {
+      courseId: 4001,
+      courseName: '数据库实践',
+      courseType: '技术培训',
+      trainerName: '讲师',
+      startAt: '2099-09-01T09:00:00+08:00',
+      endAt: '2099-09-01T17:00:00+08:00',
+      location: 'A101',
+      courseStatus: 'PUBLISHED',
+      maxStudents: 20,
+      registeredCount: 18,
+      remainingSeats: 2,
+    }
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, { success: true, message: 'ok', data: published })
+
+    const open = await httpCourseService.getCourse('4001')
+    expect(open).toMatchObject({ id: '4001', remainingSeats: 2 })
+    expect(open.eligibility.apply.allowed).toBe(true)
+    expect(open.eligibility.register.allowed).toBe(true)
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, {
+        success: true,
+        message: 'ok',
+        data: { ...published, registeredCount: 20, remainingSeats: 0 },
+      })
+    const full = await httpCourseService.getCourse('4001')
+    expect(full.eligibility.apply.allowed).toBe(true)
+    expect(full.eligibility.register.allowed).toBe(false)
+    expect(full.eligibility.register.reason).toContain('名额已满')
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, {
+        success: true,
+        message: 'ok',
+        data: { ...published, courseStatus: 'CLOSED' },
+      })
+    const closed = await httpCourseService.getCourse('4001')
+    expect(closed.eligibility.apply.allowed).toBe(false)
+    expect(closed.eligibility.register.allowed).toBe(false)
+
+    httpTransport.defaults.adapter = async (config) =>
+      response(config, {
+        success: true,
+        message: 'ok',
+        data: {
+          ...published,
+          remainingSeats: 0,
+          eligibility: {
+            apply: { allowed: false, reason: '已有待审批申请' },
+            register: { allowed: true },
+          },
+        },
+      })
+    const backendWins = await httpCourseService.getCourse('4001')
+    expect(backendWins.eligibility.apply).toMatchObject({
+      allowed: false,
+      reason: '已有待审批申请',
+    })
+    expect(backendWins.eligibility.register.allowed).toBe(true)
+  })
+
+  it('发布课程使用 PATCH 动作路径', async () => {
+    const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
+      expect(config.url).toBe('/api/courses/4001/publish')
+      expect(config.method).toBe('patch')
+      return response(config, {
+        success: true,
+        message: 'ok',
+        data: {
+          published: true,
+          courseId: 4001,
+          courseName: '数据库实践',
+          courseStatus: 'PUBLISHED',
+          maxStudents: 20,
+          registeredCount: 3,
+          remainingSeats: 17,
+          publishTime: '2026-08-26T00:00:00+08:00',
+        },
+      })
+    })
+    httpTransport.defaults.adapter = adapter
+
+    await expect(httpCourseService.publishCourse('4001')).resolves.toBeUndefined()
+    expect(adapter).toHaveBeenCalledOnce()
+  })
+
   it('申请列表使用 /my 路径，主管审批使用 dept-approve 动作路径', async () => {
     const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
       if (config.url === '/api/training-requests/my') {
@@ -152,23 +242,26 @@ describe('整合分支真实 HTTP 适配器', () => {
         return response(config, {
           success: true,
           message: 'ok',
-          data: { requestId: 5001 },
+          data: { id: 5001, courseId: 4001, status: 'DEPT_APPROVED' },
         })
       }
       if (config.url === '/api/training-requests/5001') {
+        // 字段与后端 TrainingRequestResponseDto 的真实 JSON 一致：id/createTime/hrFileComment。
         return response(config, {
           success: true,
           message: 'ok',
           data: {
-            requestId: 5001,
+            id: 5001,
             courseId: 4001,
             courseName: '数据库实践',
             employeeId: 1,
             employeeName: '员工',
-            departmentName: '技术部',
+            deptId: 10,
             requestReason: '提升能力',
             status: 'DEPT_APPROVED',
-            createdAt: '2026-08-25T09:00:00+08:00',
+            createTime: '2026-08-25T09:00:00+08:00',
+            deptApproveComment: '同意',
+            hrFileComment: null,
           },
         })
       }
@@ -182,11 +275,59 @@ describe('整合分支真实 HTTP 适配器', () => {
     await expect(httpTrainingRequestService.approve('5001', '同意')).resolves.toMatchObject({
       id: '5001',
       status: 'DEPT_APPROVED',
+      submittedAt: '2026-08-25T09:00:00+08:00',
+      departmentOpinion: '同意',
     })
     expect(adapter.mock.calls.map(([config]) => config.url)).toEqual([
       '/api/training-requests/my',
       '/api/training-requests/5001/dept-approve',
       '/api/training-requests/5001',
+    ])
+    clearAccessToken()
+  })
+
+  it('HR 备案提交 Comment，并按后端 id/hrFileComment/createTime 字段映射', async () => {
+    const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
+      if (config.url === '/api/training-requests/5002/hr-file') {
+        expect(JSON.parse(String(config.data))).toEqual({ Comment: '材料齐全' })
+        return response(config, {
+          success: true,
+          message: 'ok',
+          data: { id: 5002, courseId: 4002, status: 'HR_FILED' },
+        })
+      }
+      if (config.url === '/api/training-requests/5002') {
+        return response(config, {
+          success: true,
+          message: 'ok',
+          data: {
+            id: 5002,
+            courseId: 4002,
+            courseName: '架构设计',
+            employeeId: 7,
+            employeeName: '员工乙',
+            deptId: 11,
+            requestReason: '项目需要',
+            status: 'HR_FILED',
+            createTime: '2026-08-26T09:00:00+08:00',
+            deptApproveComment: '同意',
+            hrFileComment: '材料齐全',
+          },
+        })
+      }
+      throw new Error(`unexpected request: ${config.url}`)
+    })
+    httpTransport.defaults.adapter = adapter
+
+    await expect(httpTrainingRequestService.file('5002', '材料齐全')).resolves.toMatchObject({
+      id: '5002',
+      status: 'HR_FILED',
+      submittedAt: '2026-08-26T09:00:00+08:00',
+      hrOpinion: '材料齐全',
+    })
+    expect(adapter.mock.calls.map(([config]) => config.url)).toEqual([
+      '/api/training-requests/5002/hr-file',
+      '/api/training-requests/5002',
     ])
     clearAccessToken()
   })

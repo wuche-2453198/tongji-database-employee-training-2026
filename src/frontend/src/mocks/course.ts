@@ -100,6 +100,10 @@ export function createMockCourseService(
       if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw createMockError(scenario)
       const state = mockBusinessRepository.getState()
       const keyword = normalize(query.keyword)
+      // 与后端一致：非 HR/管理员仅能查看已发布课程。
+      const actor = getMockActor()
+      const effectiveStatus =
+        actor.role === 'HR' || actor.role === 'ADMIN' ? query.status : 'PUBLISHED'
       const matching =
         scenario === 'empty'
           ? []
@@ -108,7 +112,11 @@ export function createMockCourseService(
                 if (keyword && !course.name.toLowerCase().includes(keyword)) return false
                 if (query.type && query.type !== 'UNKNOWN' && course.type !== query.type)
                   return false
-                if (query.status && query.status !== 'UNKNOWN' && course.status !== query.status)
+                if (
+                  effectiveStatus &&
+                  effectiveStatus !== 'UNKNOWN' &&
+                  course.status !== effectiveStatus
+                )
                   return false
                 if (query.startDateFrom && course.startTime.slice(0, 10) < query.startDateFrom)
                   return false
@@ -130,6 +138,10 @@ export function createMockCourseService(
         throw createMockError(scenario)
       const course = mockBusinessRepository.getState().courses.find((item) => item.id === courseId)
       if (!course) throw domainError('COURSE_NOT_FOUND')
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN' && course.status === 'DRAFT') {
+        throw domainError('COURSE_FORBIDDEN', { message: '课程尚未发布。' })
+      }
       return { ...course, eligibility: actorEligibility(course) }
     },
 
@@ -138,6 +150,92 @@ export function createMockCourseService(
       const course = mockBusinessRepository.getState().courses.find((item) => item.id === courseId)
       if (!course) throw domainError('COURSE_NOT_FOUND')
       return actorEligibility(course)
+    },
+
+    async publishCourse(courseId, options) {
+      await mockWait(options?.signal)
+      const scenario = getScenario()
+      if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw createMockError(scenario)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') {
+        throw domainError('COURSE_FORBIDDEN', { message: '只有 HR 或管理员可以发布课程。' })
+      }
+      const state = mockBusinessRepository.getState()
+      const course = state.courses.find((item) => item.id === courseId)
+      if (!course) throw domainError('COURSE_NOT_FOUND')
+      if (course.status !== 'DRAFT') {
+        throw domainError('COURSE_CLOSED', { message: '只有草稿课程可以发布。' })
+      }
+      mockBusinessRepository.update((next) => {
+        const target = next.courses.find((item) => item.id === courseId)
+        if (target) {
+          target.status = 'PUBLISHED'
+          target.statusLabel = '已发布'
+        }
+      })
+    },
+
+    async closeCourse(courseId, options) {
+      await mockWait(options?.signal)
+      const scenario = getScenario()
+      if (['failure', 'forbidden', 'not-found'].includes(scenario)) throw createMockError(scenario)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') {
+        throw domainError('COURSE_FORBIDDEN', { message: '只有 HR 或管理员可以关闭课程。' })
+      }
+      const state = mockBusinessRepository.getState()
+      const course = state.courses.find((item) => item.id === courseId)
+      if (!course) throw domainError('COURSE_NOT_FOUND')
+      if (course.status !== 'PUBLISHED') {
+        throw domainError('COURSE_CLOSED', { message: '只有已发布课程可以关闭。' })
+      }
+      mockBusinessRepository.update((next) => {
+        const target = next.courses.find((item) => item.id === courseId)
+        if (target) {
+          target.status = 'CLOSED'
+          target.statusLabel = '已关闭'
+        }
+      })
+    },
+
+    async createCourse(input, options) {
+      await mockWait(options?.signal)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') throw domainError('COURSE_FORBIDDEN')
+      const id = String(Math.max(...mockBusinessRepository.getState().courses.map((item) => Number(item.id)), 4000) + 1)
+      const course: CourseDetail = {
+        id, name: input.name, type: input.type, typeLabel: input.type, trainerName: `讲师 ${input.trainerId}`,
+        startTime: input.startAt, endTime: input.endAt, location: input.location, status: 'DRAFT', statusLabel: '草稿',
+        maxStudents: input.maxStudents, registeredCount: 0, remainingSeats: input.maxStudents, description: '暂无课程介绍。',
+        objectives: [], hours: input.durationHours, organizer: `部门 ${input.deptId}`,
+        trainer: { id: input.trainerId, name: `讲师 ${input.trainerId}`, title: '—', department: '—', expertise: '—' },
+        materials: [], eligibility: { apply: { allowed: false, reason: '课程尚未发布。' }, register: { allowed: false, reason: '课程尚未发布。' } },
+        trainerId: input.trainerId, deptId: input.deptId, budgetAmount: input.budgetAmount,
+        preTestUrl: input.preTestUrl || null, postTestUrl: input.postTestUrl || null, materialUrl: input.materialUrl || null,
+      }
+      mockBusinessRepository.update((next) => { next.courses.unshift(course) })
+      return course
+    },
+
+    async updateCourse(courseId, input, options) {
+      await mockWait(options?.signal)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') throw domainError('COURSE_FORBIDDEN')
+      let updated: CourseDetail | undefined
+      mockBusinessRepository.update((next) => {
+        const course = next.courses.find((item) => item.id === courseId)
+        if (!course) return
+        Object.assign(course, { name: input.name, type: input.type, typeLabel: input.type, trainerName: `讲师 ${input.trainerId}`,
+          startTime: input.startAt, endTime: input.endAt, location: input.location, maxStudents: input.maxStudents,
+          remainingSeats: Math.max(0, input.maxStudents - (course.registeredCount ?? 0)), hours: input.durationHours,
+          organizer: `部门 ${input.deptId}`, trainerId: input.trainerId, deptId: input.deptId,
+          budgetAmount: input.budgetAmount, preTestUrl: input.preTestUrl || null, postTestUrl: input.postTestUrl || null,
+          materialUrl: input.materialUrl || null,
+          trainer: { ...course.trainer, id: input.trainerId, name: `讲师 ${input.trainerId}` } })
+        updated = course
+      })
+      if (!updated) throw domainError('COURSE_NOT_FOUND')
+      return updated
     },
   }
 }

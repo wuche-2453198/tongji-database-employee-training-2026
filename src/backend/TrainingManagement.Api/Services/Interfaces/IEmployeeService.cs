@@ -1,4 +1,5 @@
-﻿using TrainingManagement.Api.Common;
+﻿using System.Security.Claims;
+using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Organization;
 
@@ -10,6 +11,7 @@ public interface IEmployeeService
     // 分页查询员工列表
     Task<PagedResult<EmployeeResponse>> GetPagedAsync(
         EmployeeQuery query,
+        ClaimsPrincipal principal,
         CancellationToken cancellationToken = default);
 
     // 根据ID获取员工

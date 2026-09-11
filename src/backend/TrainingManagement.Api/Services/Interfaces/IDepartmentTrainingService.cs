@@ -1,6 +1,7 @@
-﻿using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Organization;
+using TrainingManagement.Api.Repositories.Interfaces;
 
 namespace TrainingManagement.Api.Services.Interfaces;
 
@@ -31,5 +32,14 @@ public interface IDepartmentTrainingService
     // 删除部门培训预算
     Task<bool> DeleteAsync(
         long deptId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 在调用方事务会话内占用部门预算，供课程发布使用（D-011：发布与预算占用必须同一事务）。
+    /// </summary>
+    Task<bool> TryOccupyBudgetAsync(
+        long deptId,
+        decimal amount,
+        IDbSession session,
         CancellationToken cancellationToken = default);
 }

@@ -39,7 +39,13 @@ export interface CourseSummaryDto {
   enrolledCount?: number
   remainingSeats?: number
   durationHours?: number | null
+  trainerId?: number | null
+  deptId?: number | null
   deptName?: string | null
+  budgetAmount?: number | null
+  preTestUrl?: string | null
+  postTestUrl?: string | null
+  materialUrl?: string | null
 }
 
 /** TODO(API-Q-009): 课程详情、讲师和 ActionEligibility 字段等待 OpenAPI 冻结。 */
@@ -123,15 +129,21 @@ export interface RegistrationSummaryDto {
   remainingSeats?: number | null
 }
 
-/** TODO(API-Q-005/006/013): 申请字段和分页包络等待后端 OpenAPI 冻结。 */
+/**
+ * 申请响应 DTO。`id`/`createTime`/`deptApproveComment`/`hrFileComment` 是后端
+ * TrainingRequestResponseDto 的实际字段；`requestId`/`createdAt`/`hrFilingComment`
+ * 只作历史别名兼容，映射时后端字段优先。
+ */
 export interface TrainingRequestDto {
-  requestId: string | number
+  id?: string | number
+  requestId?: string | number
   courseId: string | number
   courseName?: string | null
   employeeId?: number
   empId?: number
   employeeName?: string | null
   empName?: string | null
+  deptId?: number | null
   departmentName?: string | null
   deptName?: string | null
   reason?: string | null
@@ -139,7 +151,117 @@ export interface TrainingRequestDto {
   status: string
   submittedAt?: string
   createdAt?: string
+  createTime?: string
   updatedAt?: string | null
   deptApproveComment?: string | null
+  hrFileComment?: string | null
   hrFilingComment?: string | null
+}
+
+/** 后端 TrainingCertificate 实体(camelCase 序列化)。 */
+export interface CertificateDto {
+  certId: number
+  empId: number
+  courseId: number
+  certCode: string
+  issueDate: string
+  expireDate: string | null
+  notified: string
+  notifiedAt: string | null
+  issuedByEmpId: number
+  createdAt: string
+  courseName?: string | null
+  employeeName?: string | null
+}
+
+/** 后端 CertificateCandidate 实体(camelCase 序列化)。 */
+export interface CertificateCandidateDto {
+  regId: number
+  empId: number
+  employeeName: string | null
+  departmentName: string | null
+  courseId: number
+  courseName: string | null
+  actualHours: number | null
+}
+
+/** 后端 TrainerRating 实体(camelCase 序列化)。 */
+export interface TrainerRatingDto {
+  ratingId: number
+  courseId: number
+  trainerId: number
+  empId: number
+  score: number
+  ratingComment: string | null
+  hrVerified: string
+  hrVerifierEmpId: number | null
+  verifiedAt: string | null
+  hrComment: string | null
+  ratedAt: string
+  courseName?: string | null
+  trainerName?: string | null
+  employeeName?: string | null
+}
+
+/** 后端 TrainingTest 实体(camelCase 序列化)。 */
+export interface TrainingTestDto {
+  testId: number
+  empId: number
+  courseId: number
+  testType: string
+  score: number
+  recordedByEmpId: number
+  testedAt: string
+  employeeName?: string | null
+  courseName?: string | null
+}
+
+/** 后端 BlacklistResponse(camelCase 序列化)。 */
+export interface BlacklistDto {
+  blackId: number
+  empId: number
+  empName: string
+  deptName: string
+  reason: string
+  startDate: string
+  endDate: string | null
+  status: string
+  operatorEmpId: number | null
+  createdAt: string
+}
+
+/** 后端 EmployeeResponse 中用于选择器的最小字段(camelCase 序列化)。 */
+export interface EmployeeSummaryDto {
+  empId: number
+  empName: string
+  deptName: string
+  position: string | null
+  email?: string | null
+  phone?: string | null
+  hireDate?: string | null
+  status?: string | null
+  createdAt?: string | null
+}
+
+/** 后端 DepartmentTrainingResponse(camelCase 序列化)。 */
+export interface DepartmentBudgetDto {
+  deptId: number
+  deptName: string
+  annualBudget: number
+  usedBudget: number
+  remainBudget: number
+}
+
+/** 后端 TrainerResponse(camelCase 序列化)。 */
+export interface TrainerDto {
+  trainerId: number
+  trainerName: string
+  title: string | null
+  company: string | null
+  phone: string | null
+  email: string | null
+  starLevel: number
+  isInternal: string
+  createdAt: string
+  updatedAt: string | null
 }

@@ -1,4 +1,4 @@
-﻿using TrainingManagement.Api.Common;
+using TrainingManagement.Api.Common;
 using TrainingManagement.Api.Common.Exceptions;
 using TrainingManagement.Api.Common.Responses;
 using TrainingManagement.Api.Dtos.Organization;
@@ -134,6 +134,28 @@ public sealed class DepartmentTrainingService : IDepartmentTrainingService
 
         // 执行删除
         return await _repository.DeleteAsync(deptId, cancellationToken);
+    }
+
+    /// <summary>
+    /// 在调用方事务会话内占用部门预算（课程发布专用，D-011）。
+    /// 余额不足或部门不存在时返回 false，由调用方回滚整个事务。
+    /// </summary>
+    public async Task<bool> TryOccupyBudgetAsync(
+        long deptId,
+        decimal amount,
+        IDbSession session,
+        CancellationToken cancellationToken = default)
+    {
+        if (amount < 0)
+        {
+            throw new BusinessException("占用预算金额不能为负数");
+        }
+
+        return await _repository.TryOccupyBudgetAsync(
+            deptId,
+            amount,
+            session,
+            cancellationToken);
     }
 
     // 将DepartmentTraining实体映射为DepartmentTrainingResponse DTO

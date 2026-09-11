@@ -4,12 +4,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { LatestRequestController, SingleFlightController } from '@/api/request-control'
 import AppButton from '@/components/common/AppButton.vue'
 import AppDescriptions from '@/components/common/AppDescriptions.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import CourseSummary from '@/components/business/CourseSummary.vue'
+import CourseEditorDialog from '@/components/business/CourseEditorDialog.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import PageState from '@/components/common/PageState.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
+import { hasAnyRole } from '@/config/permissions'
 import { getCourseService } from '@/services/course'
 import { getRegistrationService } from '@/services/registration'
+import { getRatingService } from '@/services/rating'
 import { useAuthStore } from '@/stores/auth'
 import { resolveCourseCover } from '@/utils/course-cover'
 import { isServiceError, type UiError } from '@/types/api'
@@ -34,6 +38,23 @@ const conflictMessage = computed(() =>
 
 const courseId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''))
 const isEmployee = computed(() => authStore.can('request.create'))
+const canPublish = computed(
+  () => course.value?.status === 'DRAFT' && hasAnyRole(authStore.currentUser, ['HR', 'ADMIN']),
+)
+const canClose = computed(
+  () => course.value?.status === 'PUBLISHED' && hasAnyRole(authStore.currentUser, ['HR', 'ADMIN']),
+)
+const publishing = ref(false)
+const publishDialogVisible = ref(false)
+const closing = ref(false)
+const closeDialogVisible = ref(false)
+const editorVisible = ref(false)
+const ratingVisible = ref(false)
+const ratingScore = ref(5)
+const ratingComment = ref('')
+const ratingSaving = ref(false)
+const ratingError = ref('')
+const canEdit = computed(() => hasAnyRole(authStore.currentUser, ['HR', 'ADMIN']))
 const courseInfo = computed<CourseInfo | null>(() =>
   course.value
     ? {
@@ -152,6 +173,85 @@ async function confirmRegistration(): Promise<void> {
   }
 }
 
+function openPublishDialog(): void {
+  publishDialogVisible.value = true
+}
+
+function openCloseDialog(): void {
+  closeDialogVisible.value = true
+}
+
+async function confirmClose(): Promise<void> {
+  closing.value = true
+  actionMessage.value = ''
+  try {
+    const service = await getCourseService()
+    await service.closeCourse(courseId.value)
+    closeDialogVisible.value = false
+    actionMessage.value = '课程已关闭。'
+    await loadCourse()
+  } catch (caught) {
+    if (isServiceError(caught)) {
+      if (caught.ui.kind === 'conflict') await loadCourse()
+      else error.value = caught.ui
+    } else {
+      error.value = {
+        kind: 'unknown',
+        code: 'UNKNOWN',
+        message: '关闭失败，请稍后重试。',
+        fieldErrors: [],
+        retryable: false,
+        resultUnknown: false,
+      }
+    }
+  } finally {
+    closing.value = false
+  }
+}
+
+async function confirmPublish(): Promise<void> {
+  publishing.value = true
+  actionMessage.value = ''
+  try {
+    const service = await getCourseService()
+    await service.publishCourse(courseId.value)
+    publishDialogVisible.value = false
+    actionMessage.value = '课程已发布。'
+    await loadCourse()
+  } catch (caught) {
+    if (isServiceError(caught)) {
+      if (caught.ui.kind === 'conflict') {
+        // 状态已被并发修改，刷新展示最新状态即可。
+        await loadCourse()
+      } else {
+        error.value = caught.ui
+      }
+    } else {
+      error.value = {
+        kind: 'unknown',
+        code: 'UNKNOWN',
+        message: '发布失败，请稍后重试。',
+        fieldErrors: [],
+        retryable: false,
+        resultUnknown: false,
+      }
+    }
+  } finally {
+    publishing.value = false
+  }
+}
+
+async function submitRating() {
+  if (!course.value || !course.value.trainer.id || course.value.trainer.id === 'UNKNOWN') {
+    ratingError.value = '当前课程缺少讲师信息，无法提交评分。'; return
+  }
+  ratingSaving.value = true; ratingError.value = ''
+  try {
+    await (await getRatingService()).create({ courseId: course.value.id, trainerId: course.value.trainer.id, score: ratingScore.value, comment: ratingComment.value })
+    ratingVisible.value = false; ratingComment.value = ''; actionMessage.value = '讲师评分已提交，等待 HR 复核。'
+  } catch (caught) { ratingError.value = isServiceError(caught) ? caught.ui.message : '提交评分失败。' } finally { ratingSaving.value = false }
+}
+
 onMounted(loadCourse)
 onBeforeUnmount(() => latestQuery.cancel())
 </script>
@@ -209,6 +309,15 @@ onBeforeUnmount(() => latestQuery.cancel())
               loading-text="报名中…"
               @click="confirmRegistration"
             />
+            <AppButton
+              v-if="canPublish"
+              label="发布课程"
+              variant="primary"
+              @click="openPublishDialog"
+            />
+            <AppButton v-if="canClose" label="关闭课程" variant="danger" @click="openCloseDialog" />
+            <AppButton v-if="canEdit" label="编辑课程" @click="editorVisible = true" />
+            <AppButton v-if="isEmployee" label="评价讲师" @click="ratingVisible = true" />
           </div>
         </template>
       </CourseSummary>
@@ -314,6 +423,34 @@ onBeforeUnmount(() => latestQuery.cancel())
         当前角色仅可浏览课程详情，申请与报名入口仅对员工本人开放。
       </p>
     </template>
+
+    <ConfirmDialog
+      v-model="publishDialogVisible"
+      title="发布课程"
+      :description="`确认发布课程「${course?.name ?? ''}」吗？发布后将占用主办部门预算，且不可恢复为草稿。`"
+      confirm-label="确认发布"
+      :loading="publishing"
+      loading-text="发布中…"
+      @confirm="confirmPublish"
+    />
+
+    <ConfirmDialog
+      v-model="closeDialogVisible"
+      title="关闭课程"
+      :description="`确定关闭课程「${course?.name ?? ''}」吗？关闭后员工将无法继续报名。`"
+      confirm-label="确认关闭"
+      type="danger"
+      :loading="closing"
+      loading-text="关闭中…"
+      @confirm="confirmClose"
+    />
+    <CourseEditorDialog v-model="editorVisible" :course="course" @saved="loadCourse" />
+    <el-dialog v-model="ratingVisible" title="评价讲师" width="480px" :close-on-click-modal="!ratingSaving">
+      <el-alert v-if="ratingError" :title="ratingError" type="error" show-icon :closable="false" />
+      <p>课程：{{ course?.name }}；讲师：{{ course?.trainer.name }}</p>
+      <el-rate v-model="ratingScore" :max="5" show-score /><el-input v-model="ratingComment" class="course-detail-view__rating-input" type="textarea" :rows="4" maxlength="500" show-word-limit placeholder="请填写评价（选填）" />
+      <template #footer><AppButton label="取消" :disabled="ratingSaving" @click="ratingVisible = false" /><AppButton label="提交评分" variant="primary" :loading="ratingSaving" @click="submitRating" /></template>
+    </el-dialog>
   </section>
 </template>
 
@@ -322,6 +459,7 @@ onBeforeUnmount(() => latestQuery.cancel())
   display: grid;
   gap: var(--space-6);
 }
+.course-detail-view__rating-input { margin-top: var(--space-4); }
 .course-detail-view__actions {
   display: flex;
   flex-wrap: wrap;

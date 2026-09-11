@@ -8,4 +8,6 @@ public class TrainingTest
     public decimal Score { get; set; }
     public int RecordedByEmpId { get; set; }
     public DateTime TestedAt { get; set; }
+    public string? EmployeeName { get; set; }
+    public string? CourseName { get; set; }
 }
