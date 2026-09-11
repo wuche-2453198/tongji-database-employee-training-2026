@@ -39,7 +39,13 @@ export interface CourseSummaryDto {
   enrolledCount?: number
   remainingSeats?: number
   durationHours?: number | null
+  trainerId?: number | null
+  deptId?: number | null
   deptName?: string | null
+  budgetAmount?: number | null
+  preTestUrl?: string | null
+  postTestUrl?: string | null
+  materialUrl?: string | null
 }
 
 /** TODO(API-Q-009): 课程详情、讲师和 ActionEligibility 字段等待 OpenAPI 冻结。 */
@@ -230,4 +236,32 @@ export interface EmployeeSummaryDto {
   empName: string
   deptName: string
   position: string | null
+  email?: string | null
+  phone?: string | null
+  hireDate?: string | null
+  status?: string | null
+  createdAt?: string | null
+}
+
+/** 后端 DepartmentTrainingResponse(camelCase 序列化)。 */
+export interface DepartmentBudgetDto {
+  deptId: number
+  deptName: string
+  annualBudget: number
+  usedBudget: number
+  remainBudget: number
+}
+
+/** 后端 TrainerResponse(camelCase 序列化)。 */
+export interface TrainerDto {
+  trainerId: number
+  trainerName: string
+  title: string | null
+  company: string | null
+  phone: string | null
+  email: string | null
+  starLevel: number
+  isInternal: string
+  createdAt: string
+  updatedAt: string | null
 }

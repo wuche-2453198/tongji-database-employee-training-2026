@@ -33,6 +33,12 @@ export interface CreateBlacklistInput {
   endDate?: string
 }
 
+export interface UpdateBlacklistInput {
+  reason?: string
+  endDate?: string | null
+  status?: 'ACTIVE' | 'RELEASED'
+}
+
 export interface BlacklistService {
   listBlacklists(
     query: BlacklistQuery,
@@ -42,4 +48,10 @@ export interface BlacklistService {
     input: CreateBlacklistInput,
     options?: ServiceRequestOptions,
   ): Promise<BlacklistRecord>
+  updateBlacklist(
+    id: string,
+    input: UpdateBlacklistInput,
+    options?: ServiceRequestOptions,
+  ): Promise<BlacklistRecord>
+  deleteBlacklist(id: string, options?: ServiceRequestOptions): Promise<void>
 }

@@ -82,4 +82,32 @@ export const mockBlacklistService: BlacklistService = {
 
     return record
   },
+
+  async updateBlacklist(id, input, options) {
+    await mockWait(options?.signal)
+    const actor = getMockActor()
+    if (actor.role !== 'ADMIN') throw domainError('BLACKLIST_FORBIDDEN')
+    let updated: BlacklistRecord | undefined
+    mockBusinessRepository.update((next) => {
+      const record = next.blacklist.find((item) => item.id === id)
+      if (!record) return
+      if (input.reason !== undefined) record.reason = input.reason.trim()
+      if (input.endDate !== undefined) record.endDate = input.endDate
+      if (input.status !== undefined) {
+        record.status = input.status
+        record.statusLabel = input.status === 'ACTIVE' ? '生效中' : '已解除'
+      }
+      updated = record
+    })
+    if (!updated) throw createMockError('not-found')
+    return updated
+  },
+
+  async deleteBlacklist(id, options) {
+    await mockWait(options?.signal)
+    if (getMockActor().role !== 'ADMIN') throw domainError('BLACKLIST_FORBIDDEN')
+    const exists = mockBusinessRepository.getState().blacklist.some((item) => item.id === id)
+    if (!exists) throw createMockError('not-found')
+    mockBusinessRepository.update((next) => { next.blacklist = next.blacklist.filter((item) => item.id !== id) })
+  },
 }

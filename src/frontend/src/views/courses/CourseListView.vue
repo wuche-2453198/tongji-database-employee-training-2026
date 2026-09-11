@@ -7,6 +7,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import CourseCard from '@/components/business/CourseCard.vue'
+import CourseEditorDialog from '@/components/business/CourseEditorDialog.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import PageState from '@/components/common/PageState.vue'
 import SearchPanel from '@/components/common/SearchPanel.vue'
@@ -78,6 +79,7 @@ const hasLoaded = ref(false)
 const actionDialog = ref<{ action: CourseAction; course: CourseSummary } | null>(null)
 const actionSubmitting = ref(false)
 const actionError = ref<UiError | null>(null)
+const editorVisible = ref(false)
 
 const hasActiveFilter = computed(() =>
   Boolean(
@@ -257,7 +259,9 @@ onBeforeUnmount(() => latestQuery.cancel())
 
 <template>
   <section class="course-list-view">
-    <PageHeader title="课程中心" description="浏览已发布课程，查看培训安排与报名资格。" />
+    <PageHeader title="课程中心" description="浏览已发布课程，查看培训安排与报名资格。">
+      <template #action><AppButton v-if="canManageCourses" label="新建课程" variant="primary" @click="editorVisible = true" /></template>
+    </PageHeader>
 
     <el-alert
       v-if="actionError"
@@ -394,6 +398,7 @@ onBeforeUnmount(() => latestQuery.cancel())
       :loading-text="actionDialog?.action === 'publish' ? '发布中…' : '关闭中…'"
       @confirm="confirmAction"
     />
+    <CourseEditorDialog v-model="editorVisible" @saved="loadCourses" />
   </section>
 </template>
 

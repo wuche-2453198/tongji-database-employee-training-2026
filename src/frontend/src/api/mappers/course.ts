@@ -132,7 +132,7 @@ export function mapCourseDetail(envelope: ApiEnvelopeDto<CourseDetailDto>): Cour
     hours: envelope.data.hours ?? envelope.data.durationHours ?? null,
     organizer: envelope.data.organizer || envelope.data.deptName || '—',
     trainer: {
-      id: envelope.data.trainer?.id || 'UNKNOWN',
+      id: envelope.data.trainer?.id || String(envelope.data.trainerId ?? 'UNKNOWN'),
       name: envelope.data.trainer?.name || summary.trainerName,
       title: envelope.data.trainer?.title || '—',
       department: envelope.data.trainer?.department || '—',
@@ -146,6 +146,12 @@ export function mapCourseDetail(envelope: ApiEnvelopeDto<CourseDetailDto>): Cour
       available: material.available === true,
     })),
     eligibility,
+    trainerId: envelope.data.trainerId ? String(envelope.data.trainerId) : undefined,
+    deptId: envelope.data.deptId ? String(envelope.data.deptId) : undefined,
+    budgetAmount: envelope.data.budgetAmount ?? undefined,
+    preTestUrl: envelope.data.preTestUrl ?? null,
+    postTestUrl: envelope.data.postTestUrl ?? null,
+    materialUrl: envelope.data.materialUrl ?? null,
   }
 }
 

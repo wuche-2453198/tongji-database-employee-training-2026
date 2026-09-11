@@ -197,6 +197,46 @@ export function createMockCourseService(
         }
       })
     },
+
+    async createCourse(input, options) {
+      await mockWait(options?.signal)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') throw domainError('COURSE_FORBIDDEN')
+      const id = String(Math.max(...mockBusinessRepository.getState().courses.map((item) => Number(item.id)), 4000) + 1)
+      const course: CourseDetail = {
+        id, name: input.name, type: input.type, typeLabel: input.type, trainerName: `讲师 ${input.trainerId}`,
+        startTime: input.startAt, endTime: input.endAt, location: input.location, status: 'DRAFT', statusLabel: '草稿',
+        maxStudents: input.maxStudents, registeredCount: 0, remainingSeats: input.maxStudents, description: '暂无课程介绍。',
+        objectives: [], hours: input.durationHours, organizer: `部门 ${input.deptId}`,
+        trainer: { id: input.trainerId, name: `讲师 ${input.trainerId}`, title: '—', department: '—', expertise: '—' },
+        materials: [], eligibility: { apply: { allowed: false, reason: '课程尚未发布。' }, register: { allowed: false, reason: '课程尚未发布。' } },
+        trainerId: input.trainerId, deptId: input.deptId, budgetAmount: input.budgetAmount,
+        preTestUrl: input.preTestUrl || null, postTestUrl: input.postTestUrl || null, materialUrl: input.materialUrl || null,
+      }
+      mockBusinessRepository.update((next) => { next.courses.unshift(course) })
+      return course
+    },
+
+    async updateCourse(courseId, input, options) {
+      await mockWait(options?.signal)
+      const actor = getMockActor()
+      if (actor.role !== 'HR' && actor.role !== 'ADMIN') throw domainError('COURSE_FORBIDDEN')
+      let updated: CourseDetail | undefined
+      mockBusinessRepository.update((next) => {
+        const course = next.courses.find((item) => item.id === courseId)
+        if (!course) return
+        Object.assign(course, { name: input.name, type: input.type, typeLabel: input.type, trainerName: `讲师 ${input.trainerId}`,
+          startTime: input.startAt, endTime: input.endAt, location: input.location, maxStudents: input.maxStudents,
+          remainingSeats: Math.max(0, input.maxStudents - (course.registeredCount ?? 0)), hours: input.durationHours,
+          organizer: `部门 ${input.deptId}`, trainerId: input.trainerId, deptId: input.deptId,
+          budgetAmount: input.budgetAmount, preTestUrl: input.preTestUrl || null, postTestUrl: input.postTestUrl || null,
+          materialUrl: input.materialUrl || null,
+          trainer: { ...course.trainer, id: input.trainerId, name: `讲师 ${input.trainerId}` } })
+        updated = course
+      })
+      if (!updated) throw domainError('COURSE_NOT_FOUND')
+      return updated
+    },
   }
 }
 

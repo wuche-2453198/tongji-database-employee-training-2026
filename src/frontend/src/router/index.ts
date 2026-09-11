@@ -58,6 +58,14 @@ const protectedPage = (
                                   ? () => import('@/views/tests/TestManagementView.vue')
                                   : name === 'blacklist-management'
                                     ? () => import('@/views/blacklist/BlacklistManagementView.vue')
+                                    : name === 'employee-management'
+                                      ? () => import('@/views/employees/EmployeeManagementView.vue')
+                                      : name === 'rating-management'
+                                        ? () => import('@/views/ratings/RatingManagementView.vue')
+                                        : name === 'department-budget-management'
+                                          ? () => import('@/views/budgets/DepartmentBudgetManagementView.vue')
+                                          : name === 'trainer-management'
+                                            ? () => import('@/views/trainers/TrainerManagementView.vue')
                                     : () => import('@/views/errors/NotFoundView.vue'),
   meta: {
     title,
@@ -210,9 +218,41 @@ const routes: RouteRecordRaw[] = [
         'organization/blacklist',
         'blacklist-management',
         '黑名单管理',
-        ['DEPT_MANAGER', 'ADMIN'],
+        ['DEPT_MANAGER', 'HR', 'ADMIN'],
         'blacklist-management',
         ['组织管理', '黑名单管理'],
+      ),
+      protectedPage(
+        'organization/employees',
+        'employee-management',
+        '员工管理',
+        ['ADMIN'],
+        'employee-management',
+        ['组织管理', '员工管理'],
+      ),
+      protectedPage(
+        'organization/budgets',
+        'department-budget-management',
+        '部门预算管理',
+        ['HR', 'ADMIN'],
+        'department-budget-management',
+        ['组织管理', '部门预算管理'],
+      ),
+      protectedPage(
+        'operations/ratings',
+        'rating-management',
+        '讲师评分管理',
+        ['HR', 'ADMIN'],
+        'rating-management',
+        ['培训运营', '讲师评分管理'],
+      ),
+      protectedPage(
+        'operations/trainers',
+        'trainer-management',
+        '讲师管理',
+        ['HR', 'ADMIN'],
+        'trainer-management',
+        ['培训运营', '讲师管理'],
       ),
     ],
   },

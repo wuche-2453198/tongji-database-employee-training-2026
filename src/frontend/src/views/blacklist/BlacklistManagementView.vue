@@ -72,6 +72,14 @@ const dialogVisible = ref(false)
 const saving = ref(false)
 const submitError = ref<UiError | null>(null)
 const successMessage = ref('')
+const editing = ref<BlacklistRecord | null>(null)
+const editSaving = ref(false)
+const editError = ref('')
+const editForm = reactive<{ reason: string; endDate: string; status: 'ACTIVE' | 'RELEASED' }>({
+  reason: '', endDate: '', status: 'ACTIVE',
+})
+const deleting = ref<BlacklistRecord | null>(null)
+const editingVisible = computed({ get: () => editing.value !== null, set: (value: boolean) => { if (!value && !editSaving.value) editing.value = null } })
 
 const employees = ref<EmployeeSummary[]>([])
 const loadingEmployees = ref(false)
@@ -219,6 +227,35 @@ async function submit(): Promise<void> {
   }
 }
 
+function openEdit(record: BlacklistRecord) {
+  editing.value = record
+  editError.value = ''
+  editForm.reason = record.reason
+  editForm.endDate = record.endDate?.slice(0, 10) ?? ''
+  editForm.status = record.status === 'RELEASED' ? 'RELEASED' : 'ACTIVE'
+}
+
+async function saveEdit() {
+  if (!editing.value) return
+  if (!editForm.reason.trim()) { editError.value = '请填写黑名单原因。'; return }
+  editSaving.value = true; editError.value = ''
+  try {
+    await (await getBlacklistService()).updateBlacklist(editing.value.id, {
+      reason: editForm.reason.trim(), endDate: editForm.endDate || null, status: editForm.status,
+    })
+    editing.value = null; successMessage.value = '黑名单记录已更新。'; await load()
+  } catch (caught) { editError.value = isServiceError(caught) ? caught.ui.message : '更新黑名单记录失败。' }
+  finally { editSaving.value = false }
+}
+
+async function remove() {
+  if (!deleting.value) return
+  editSaving.value = true
+  try { await (await getBlacklistService()).deleteBlacklist(deleting.value.id); deleting.value = null; successMessage.value = '黑名单记录已删除。'; await load() }
+  catch (caught) { error.value = isServiceError(caught) ? caught.ui : error.value }
+  finally { editSaving.value = false }
+}
+
 onMounted(load)
 </script>
 
@@ -275,7 +312,7 @@ onMounted(load)
       compact
     />
     <template v-else>
-      <DataTable :columns="columns" :rows="rows">
+      <DataTable :columns="columns" :rows="rows" :has-actions="canManage">
         <template #cell="{ column, row }">
           <StatusTag
             v-if="column.key === 'statusLabel'"
@@ -283,6 +320,11 @@ onMounted(load)
             :semantic="row.status === 'ACTIVE' ? 'warning' : 'neutral'"
           />
           <span v-else>{{ row[column.key] || '—' }}</span>
+        </template>
+        <template #actions="{ row }">
+          <AppButton v-if="authStore.currentUser?.roles.includes('ADMIN')" label="编辑" variant="text" @click="openEdit(row as unknown as BlacklistRecord)" />
+          <AppButton v-if="authStore.currentUser?.roles.includes('ADMIN') && row.status === 'ACTIVE'" label="解除" variant="text" @click="openEdit({ ...(row as unknown as BlacklistRecord), status: 'RELEASED' })" />
+          <AppButton v-if="authStore.currentUser?.roles.includes('ADMIN')" label="删除" variant="text" @click="deleting = row as unknown as BlacklistRecord" />
         </template>
       </DataTable>
 
@@ -383,6 +425,12 @@ onMounted(load)
         </div>
       </template>
     </el-dialog>
+    <el-dialog v-model="editingVisible" title="编辑黑名单记录" width="520px" :close-on-click-modal="!editSaving">
+      <el-alert v-if="editError" :title="editError" type="error" show-icon :closable="false" class="blacklist-view__dialog-error" />
+      <el-form label-position="top"><FormField label="黑名单原因" required><el-input v-model="editForm.reason" type="textarea" :rows="4" maxlength="500" show-word-limit /></FormField><div class="blacklist-view__date-row"><FormField label="结束日期"><el-date-picker v-model="editForm.endDate" type="date" value-format="YYYY-MM-DD" style="width:100%" /></FormField><FormField label="状态"><el-select v-model="editForm.status" style="width:100%"><el-option label="生效中" value="ACTIVE" /><el-option label="已解除" value="RELEASED" /></el-select></FormField></div></el-form>
+      <template #footer><div class="blacklist-view__actions"><AppButton label="取消" :disabled="editSaving" @click="editing = null" /><AppButton label="保存" variant="primary" :loading="editSaving" @click="saveEdit" /></div></template>
+    </el-dialog>
+    <el-dialog :model-value="Boolean(deleting)" title="删除黑名单记录" width="440px" :close-on-click-modal="!editSaving" @update:model-value="!$event && (deleting = null)"><p>确定删除该黑名单记录吗？删除后不可恢复。</p><template #footer><AppButton label="取消" :disabled="editSaving" @click="deleting = null" /><AppButton label="确认删除" variant="danger" :loading="editSaving" @click="remove" /></template></el-dialog>
   </section>
 </template>
 

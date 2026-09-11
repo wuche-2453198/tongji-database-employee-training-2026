@@ -34,4 +34,18 @@ export const httpBlacklistService: BlacklistService = {
     })
     return mapBlacklist(response)
   },
+
+  async updateBlacklist(id, input, options) {
+    const response = await requestApi<ApiEnvelopeDto<BlacklistDto>>({
+      method: 'PUT', url: `/api/blacklists/${encodeURIComponent(id)}`, signal: options?.signal, operation: 'write',
+      data: { Reason: input.reason, EndDate: input.endDate, Status: input.status },
+    })
+    return mapBlacklist(response)
+  },
+
+  async deleteBlacklist(id, options) {
+    await requestApi<ApiEnvelopeDto<boolean>>({
+      method: 'DELETE', url: `/api/blacklists/${encodeURIComponent(id)}`, signal: options?.signal, operation: 'write',
+    })
+  },
 }
