@@ -181,6 +181,23 @@ GET /api/health/db
 
 `identifier` 支持员工编号、登录名、邮箱、手机号或姓名。
 
+## 黑名单接口
+
+路由前缀为 `/api/blacklists`（复数）。权限口径见决策日志 `D-016`。
+
+| 方法 | 路径 | 授权 | 说明 |
+| --- | --- | --- | --- |
+| `GET` | `/api/blacklists` | 部门主管 / HR / 管理员 | 分页查询；部门主管仅返回本部门（服务端强制注入，不信任前端传参） |
+| `GET` | `/api/blacklists/candidates` | 部门主管 / HR / 管理员 | 「加入黑名单」的候选员工；已排除管理员、HR、部门主管等特权账号 |
+| `GET` | `/api/blacklists/{id}` | HR / 管理员 | 黑名单详情 |
+| `POST` | `/api/blacklists` | 管理员 / 部门主管 | 新增；部门主管限本部门，且不能将自己加入 |
+| `PUT` | `/api/blacklists/{id}` | 仅管理员 | 更新原因、结束日期或状态；状态置 `RELEASED` 时写入结束时间（解除） |
+| `DELETE` | `/api/blacklists/{id}` | 仅管理员 | 删除（物理删除，历史记录不保留） |
+
+状态枚举为 `ACTIVE` / `RELEASED`，生效黑名单会阻止该员工报名课程。
+
+> 权限已定案（`D-016`、`D-017`）：黑名单保持 **HR 只读、管理员与部门主管可写**。HR 可查询列表、详情与候选名单，但没有新增/解除/删除入口（前端不渲染按钮，后端授权也不含 HR）。
+
 ## Oracle 种子测试账号
 
 数据库登录字段为 `EMPLOYEES.LOGIN_NAME` 和 `EMPLOYEES.PASSWORD_HASH`，密码使用 BCrypt 哈希保存。

@@ -44,6 +44,8 @@ coverage/
 .env.*
 !.env.example
 !.env.*.example
+# 生产构建模式配置：只含同源地址与开关，不含密钥，需要入库以保证部署可复现
+!.env.production
 
 # Logs
 logs/

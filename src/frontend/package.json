@@ -16,6 +16,7 @@
     "test:e2e": "playwright test",
     "build-only": "vite build --mode mock",
     "build:integration": "vite build --mode integration",
+    "build:prod": "vite build --mode production",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",

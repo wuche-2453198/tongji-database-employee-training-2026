@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-type AppEnvironment = 'mock' | 'local' | 'integration'
+type AppEnvironment = 'mock' | 'local' | 'integration' | 'production'
 
 interface ImportMetaEnv {
   readonly VITE_APP_ENV: AppEnvironment
