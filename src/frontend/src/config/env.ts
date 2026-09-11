@@ -1,13 +1,18 @@
-export type AppEnvironment = 'mock' | 'local' | 'integration'
+export type AppEnvironment = 'mock' | 'local' | 'integration' | 'production'
 
-const supportedEnvironments = new Set<AppEnvironment>(['mock', 'local', 'integration'])
+const supportedEnvironments = new Set<AppEnvironment>([
+  'mock',
+  'local',
+  'integration',
+  'production',
+])
 
 function parseEnvironment(value: string | undefined): AppEnvironment {
   if (value && supportedEnvironments.has(value as AppEnvironment)) {
     return value as AppEnvironment
   }
 
-  throw new Error('VITE_APP_ENV 必须是 mock、local 或 integration。')
+  throw new Error('VITE_APP_ENV 必须是 mock、local、integration 或 production。')
 }
 
 function parseBoolean(name: string, value: string | undefined): boolean {
